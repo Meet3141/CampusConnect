@@ -3,7 +3,6 @@ import bcryptjs from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-   
     name: {
       type: String,
       required: [true, "Name is required"],
@@ -28,19 +27,26 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       minlength: 8,
       select: false,
-      match: [
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
-        "Password must have uppercase, lowercase, and number",
-      ],
+      // No regex match here — raw password is validated in the controller,
+      // this field stores the bcrypt hash after the pre-save hook.
     },
 
-   
-    role: {
-      type: String,
+    // DB stores an array of role strings (e.g. ["member"], ["clubAdmin","editor"])
+    roles: {
+      type: [String],
       enum: ["member", "clubAdmin", "editor", "orgAdmin"],
-      default: "member",
+      default: ["member"],
     },
 
+    interests: {
+      type: [String],
+      default: [],
+    },
+
+    joinedClubs: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Club" }],
+      default: [],
+    },
 
     profilePicture: {
       type: String,
@@ -58,36 +64,20 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-  
     isVerified: {
       type: Boolean,
       default: false,
-    },
-
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-
-    updatedAt: {
-      type: Date,
-      default: Date.now,
     },
   },
   { timestamps: true }
 );
 
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
-  try {
-    const salt = await bcryptjs.genSalt(10);
-    this.password = await bcryptjs.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcryptjs.genSalt(10);
+  this.password = await bcryptjs.hash(this.password, salt);
 });
 
 
@@ -102,8 +92,6 @@ userSchema.methods.toJSON = function () {
 };
 
 
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ role: 1 });
 userSchema.index({ createdAt: -1 });
 
 export default mongoose.model("User", userSchema);
