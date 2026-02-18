@@ -6,19 +6,37 @@ import asyncHandler from "../middleware/asyncHandler.js";
 
 // REGISTER
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body || {};
+
+  // Validate required fields
+  if (!name || !email || !password) {
+    const error = new Error("Name, email, and password are required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Validate password strength before hashing
+  const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+  if (!pwdRegex.test(password)) {
+    const error = new Error(
+      "Password must be 8+ characters with uppercase, lowercase, and number"
+    );
+    error.statusCode = 400;
+    throw error;
+  }
 
   const exists = await User.findOne({ email });
   if (exists) {
-    res.status(409);
-    throw new Error("User already exists");
+    const error = new Error("User already exists");
+    error.statusCode = 409;
+    throw error;
   }
 
   const user = await User.create({
     name,
     email,
     password,
-    role,
+    roles: ["member"],
   });
 
   res.status(201).json({
@@ -31,12 +49,19 @@ export const register = asyncHandler(async (req, res) => {
 
 // LOGIN
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    const error = new Error("Email and password are required");
+    error.statusCode = 400;
+    throw error;
+  }
 
   const user = await User.findOne({ email }).select("+password");
   if (!user || !(await user.comparePassword(password))) {
-    res.status(401);
-    throw new Error("Invalid credentials");
+    const error = new Error("Invalid credentials");
+    error.statusCode = 401;
+    throw error;
   }
 
   res.json({
@@ -49,9 +74,17 @@ export const login = asyncHandler(async (req, res) => {
 
 // VERIFY TOKEN
 export const verify = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   res.json({
     success: true,
-    user: req.user,
+    user: user.toJSON(),
   });
 });
 
@@ -61,8 +94,9 @@ export const refreshToken = asyncHandler(async (req, res) => {
   const { token } = req.body;
 
   if (!token) {
-    res.status(400);
-    throw new Error("Token required");
+    const error = new Error("Token required");
+    error.statusCode = 400;
+    throw error;
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET, {
@@ -71,7 +105,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
   const newToken = generateToken({
     _id: decoded.id,
-    role: decoded.role,
+    roles: decoded.roles,
   });
 
   res.json({
