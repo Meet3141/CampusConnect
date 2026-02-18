@@ -12,25 +12,21 @@ connectDB();
 
 const app = express();
 
-
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-<<<<<<< HEAD
-app.use("/api/auth", authRoutes);
-app.use("/api/clubs", clubRoutes);
-app.use("/api/events", eventRoutes);
-app.use(errorHandler);
-
-=======
->>>>>>> e95542e16a2f21754124c69c93057f396060942c
+// Root route (health check)
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
+// API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/clubs", clubRoutes);
+app.use("/api/events", eventRoutes);
 
-// Error handler must be LAST middleware
+// Error handler (MUST BE LAST)
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
