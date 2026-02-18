@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import clubRoutes from "./routes/clubs.js";
+import eventRoutes from "./routes/events.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -15,6 +17,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/clubs", clubRoutes);
+app.use("/api/events", eventRoutes);
 app.use(errorHandler);
 
 app.get("/", (req, res) => {
