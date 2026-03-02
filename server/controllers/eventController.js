@@ -9,7 +9,8 @@ export const createEvent = async (req, res) => {
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
 
   // Only the club admin (or orgAdmin) may create events for this club
-  if (!(req.user.role === "orgAdmin" || club.adminId.toString() === req.user.id)) {
+  const userRoles = req.user.roles || [];
+  if (!(userRoles.includes("orgAdmin") || club.adminId.toString() === req.user.id)) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
@@ -54,7 +55,8 @@ export const updateEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-  if (event.createdBy.toString() !== req.user.id && req.user.role !== "orgAdmin") {
+  const userRoles = req.user.roles || [];
+  if (event.createdBy.toString() !== req.user.id && !userRoles.includes("orgAdmin")) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
@@ -73,11 +75,12 @@ export const deleteEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-  if (event.createdBy.toString() !== req.user.id && req.user.role !== "orgAdmin") {
+  const userRoles = req.user.roles || [];
+  if (event.createdBy.toString() !== req.user.id && !userRoles.includes("orgAdmin")) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
-  await event.remove();
+  await Event.findByIdAndDelete(req.params.id);
   res.json({ success: true, message: "Event deleted" });
 };
 
@@ -119,7 +122,7 @@ export const cancelRsvp = async (req, res) => {
 
 // Get attendees
 export const getAttendees = async (req, res) => {
-  const event = await Event.findById(req.params.id).populate("attendees.userId", "name email role");
+  const event = await Event.findById(req.params.id).populate("attendees.userId", "name email roles");
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
   res.json({ success: true, data: event.attendees });
 };

@@ -1,5 +1,4 @@
 import Club from "../models/Club.js";
-import User from "../models/User.js";
 
 // Create a new club
 export const createClub = async (req, res) => {
@@ -44,7 +43,8 @@ export const updateClub = async (req, res) => {
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
 
   // allow orgAdmin or the club admin
-  if (!(req.user.role === "orgAdmin" || club.adminId.toString() === req.user.id)) {
+  const userRoles = req.user.roles || [];
+  if (!(userRoles.includes("orgAdmin") || club.adminId.toString() === req.user.id)) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
@@ -60,13 +60,14 @@ export const updateClub = async (req, res) => {
 
 // Delete club (orgAdmin only)
 export const deleteClub = async (req, res) => {
-  if (req.user.role !== "orgAdmin")
+  const userRoles = req.user.roles || [];
+  if (!userRoles.includes("orgAdmin"))
     return res.status(403).json({ success: false, message: "Forbidden" });
 
   const club = await Club.findById(req.params.id);
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
 
-  await club.remove();
+  await Club.findByIdAndDelete(req.params.id);
   res.json({ success: true, message: "Club deleted" });
 };
 
@@ -101,7 +102,7 @@ export const leaveClub = async (req, res) => {
 
 // Get members with their approval status
 export const getMembers = async (req, res) => {
-  const club = await Club.findById(req.params.id).populate("members.userId", "name email role");
+  const club = await Club.findById(req.params.id).populate("members.userId", "name email roles");
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
   res.json({ success: true, data: club.members });
 };
@@ -112,7 +113,8 @@ export const approveMember = async (req, res) => {
   const club = await Club.findById(req.params.id);
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
 
-  if (!(req.user.role === "orgAdmin" || club.adminId.toString() === req.user.id)) {
+  const userRoles = req.user.roles || [];
+  if (!(userRoles.includes("orgAdmin") || club.adminId.toString() === req.user.id)) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
@@ -135,7 +137,8 @@ export const rejectMember = async (req, res) => {
   const club = await Club.findById(req.params.id);
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
 
-  if (!(req.user.role === "orgAdmin" || club.adminId.toString() === req.user.id)) {
+  const userRoles = req.user.roles || [];
+  if (!(userRoles.includes("orgAdmin") || club.adminId.toString() === req.user.id)) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
