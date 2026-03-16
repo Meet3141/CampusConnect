@@ -11,8 +11,6 @@ import EventDetail    from "./pages/EventDetail";
 import CreateEvent    from "./pages/CreateEvent";
 import EditEvent      from "./pages/EditEvent";
 import ExternalEvents from "./pages/ExternalEvents";
-import CreateExternalEvent from "./pages/CreateExternalEvent";
-import ExternalEventDetail from "./pages/ExternalEventDetail";
 import Bookmarks      from "./pages/Bookmarks";
 import ChatList       from "./pages/ChatList";
 import ChatRoom       from "./pages/ChatRoom";
@@ -52,9 +50,6 @@ export default function App() {
             <Route path="/events/:id/edit" element={<EditEvent />} />
             <Route path="/events/:id"      element={<EventDetail />} />
 
-            {/* IMPORTANT: /external-events/create MUST come before /external-events/:id */}
-            <Route path="/external-events/create" element={<CreateExternalEvent />} />
-            <Route path="/external-events/:id" element={<ExternalEventDetail />} />
             <Route path="/external-events" element={<ExternalEvents />} />
             <Route path="/bookmarks"       element={<Bookmarks />} />
             <Route path="/chats"           element={<ChatList />} />
