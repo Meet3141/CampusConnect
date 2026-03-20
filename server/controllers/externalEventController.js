@@ -106,9 +106,8 @@ export const getExternalEvents = async (req, res) => {
 
   if (category) filter.category = category;
   if (universityName) filter.universityName = { $regex: universityName, $options: "i" };
-  if (verified !== undefined) {
-    filter.isVerified = verified === "true";
-  }
+  // Default to verified-only in public listing; moderation views can pass verified explicitly.
+  filter.isVerified = verified !== undefined ? verified === "true" : true;
 
   const pageNumber = Number(page);
   const limitNumber = Number(limit);

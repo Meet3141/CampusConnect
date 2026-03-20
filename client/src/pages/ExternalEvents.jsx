@@ -39,7 +39,7 @@ export default function ExternalEvents() {
     const fetch = async () => {
       setLoading(true);
       try {
-        const params = { page, limit };
+        const params = { page, limit, verified: "true" };
         if (category) params.category = category;
         if (uniFilter) params.universityName = uniFilter;
         const res = await api.get("/external-events", { params });
