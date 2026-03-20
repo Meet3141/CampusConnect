@@ -37,8 +37,20 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isAdmin = user?.roles?.includes("orgAdmin");
+  const isEditor = user?.roles?.includes("editor");
+  const isClubAdmin = user?.roles?.includes("clubAdmin");
   const canCreateClub =
-    user?.roles?.includes("clubAdmin") || isAdmin;
+    isClubAdmin || isAdmin;
+
+  const adminNav = [
+    ...(isAdmin ? [{ label: "Admin Panel", path: "/admin", icon: IconAdmin }] : []),
+    ...((isEditor || isAdmin)
+      ? [{ label: "Verify Events", path: "/admin/verify", icon: IconVerify }]
+      : []),
+    ...((isClubAdmin || isAdmin)
+      ? [{ label: "Analytics", path: "/admin/stats", icon: IconStats }]
+      : []),
+  ];
 
   const userInitials = user?.name
     ? user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
@@ -109,6 +121,36 @@ export default function AppLayout() {
               </ul>
             </div>
           ))}
+
+          {adminNav.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-medium px-3 mb-2">
+                Administration
+              </p>
+              <ul className="space-y-0.5">
+                {adminNav.map(({ label, path, icon: Icon }) => {
+                  const active = location.pathname === path ||
+                    (path !== "/admin" && location.pathname.startsWith(path + "/"));
+
+                  return (
+                    <li key={path}>
+                      <button
+                        onClick={() => { navigate(path); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition-all ${
+                          active
+                            ? "bg-indigo-600/20 text-indigo-300"
+                            : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <Icon size={15} active={active} />
+                        <span className="flex-1 text-left">{label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </nav>
 
         {/* User + logout */}
@@ -267,6 +309,35 @@ function IconMenu({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
       <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function IconAdmin({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M8 1.5l5.5 2.5v4c0 3-2 5.5-5.5 6.5C4.5 13.5 2.5 11 2.5 8V4L8 1.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+      <path d="M8 5.2v5.6M5.2 8h5.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function IconVerify({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M3 3.5h10v9H3z" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M5 8l1.5 1.5L11 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function IconStats({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M2.5 13.5h11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      <rect x="3.5" y="7.5" width="2" height="4" rx="0.5" fill="currentColor"/>
+      <rect x="7" y="5.5" width="2" height="6" rx="0.5" fill="currentColor"/>
+      <rect x="10.5" y="3.5" width="2" height="8" rx="0.5" fill="currentColor"/>
     </svg>
   );
 }
