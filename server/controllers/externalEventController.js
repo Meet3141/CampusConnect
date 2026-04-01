@@ -136,6 +136,48 @@ export const getExternalEventById = async (req, res) => {
     throw createHttpError(404, "External event not found");
   }
 
+  // B: Non-admins/editors only see verified events. Use 404 (not 403) to avoid info leak.
+  const userRoles = req.user?.roles || [];
+  const canSeeUnverified = userRoles.includes("orgAdmin") || userRoles.includes("editor");
+  const isUploader = req.user && item.createdBy?.toString() === req.user.id;
+
+  if (!item.isVerified && !canSeeUnverified && !isUploader) {
+    throw createHttpError(404, "External event not found");
+  }
+
+  res.json({ success: true, data: item });
+};
+
+// C: Update external event — uploader (own unverified) or editor/orgAdmin
+export const updateExternalEvent = async (req, res) => {
+  const { id } = req.params;
+  ensureValidObjectId(id);
+
+  const item = await ExternalEvent.findById(id);
+  if (!item) throw createHttpError(404, "External event not found");
+
+  const userRoles = req.user.roles || [];
+  const isUploader = item.createdBy.toString() === req.user.id;
+  const isEditor   = userRoles.includes("editor") || userRoles.includes("orgAdmin");
+
+  if (!isUploader && !isEditor) {
+    throw createHttpError(403, "Forbidden");
+  }
+
+  // Uploaders can only edit their own UNVERIFIED events
+  if (isUploader && !isEditor && item.isVerified) {
+    throw createHttpError(403, "Cannot edit an already-verified event");
+  }
+
+  const editableFields = [
+    "title", "description", "universityName", "venue",
+    "category", "date", "registrationLink", "registrationDeadline", "image",
+  ];
+  editableFields.forEach((f) => {
+    if (req.body[f] !== undefined) item[f] = req.body[f];
+  });
+
+  await item.save();
   res.json({ success: true, data: item });
 };
 

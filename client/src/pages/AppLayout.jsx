@@ -14,7 +14,7 @@ import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-/* ─── Nav definition ────────────────────────────────────────── */
+/* ─── Nav definition ────────────────────────────── */
 const NAV = [
   {
     section: "Main",
@@ -29,30 +29,48 @@ const NAV = [
     section: "Discover",
     items: [
       { label: "External Events", path: "/external-events", icon: IconGlobe     },
+      { label: "Volunteer",       path: "/volunteers",      icon: IconVolunteer }, // F
       { label: "Bookmarks",       path: "/bookmarks",       icon: IconBookmark  },
     ],
   },
 ];
 
-/* Admin items are rendered separately — shown only to appropriate roles */
+/* E: Editors have a focused nav — they verify events, not participate in clubs/chats */
+const EDITOR_NAV = [
+  {
+    section: "Main",
+    items: [
+      { label: "Dashboard",       path: "/dashboard",        icon: IconDashboard },
+      { label: "External Events", path: "/external-events",  icon: IconGlobe     },
+    ],
+  },
+  {
+    section: "Moderation",
+    items: [
+      { label: "Verify Events",   path: "/admin/verify",     icon: IconVerify    },
+    ],
+  },
+];
+
+/* Admin items — shown only to appropriate roles */
 const ADMIN_NAV = [
   {
     label:  "Admin Panel",
     path:   "/admin",
     icon:   IconAdmin,
-    roles:  ["orgAdmin"],                    // only orgAdmin
+    roles:  ["orgAdmin"],
   },
   {
     label:  "Verify Events",
     path:   "/admin/verify",
     icon:   IconVerify,
-    roles:  ["editor", "orgAdmin"],          // editor + orgAdmin
+    roles:  ["editor", "orgAdmin"],
   },
   {
     label:  "Analytics",
     path:   "/admin/stats",
     icon:   IconStats,
-    roles:  ["clubAdmin", "orgAdmin"],       // clubAdmin + orgAdmin
+    roles:  ["clubAdmin", "orgAdmin"],
   },
 ];
 
@@ -68,10 +86,14 @@ export default function AppLayout() {
   const isEditor      = userRoles.includes("editor");
   const canCreateClub = isClubAdmin || isOrgAdmin;
 
+  // E: Pure editor (not also orgAdmin/clubAdmin) sees a stripped sidebar focused on moderation
+  const isPureEditor  = isEditor && !isOrgAdmin && !isClubAdmin;
+  const activeNav     = isPureEditor ? EDITOR_NAV : NAV;
+
   /* Filter admin nav items to those the current user can access */
-  const visibleAdminNav = ADMIN_NAV.filter((item) =>
-    item.roles.some((r) => userRoles.includes(r))
-  );
+  const visibleAdminNav = isPureEditor
+    ? [] // E: Editor-specific nav already includes Verify Events — no duplicate admin section
+    : ADMIN_NAV.filter((item) => item.roles.some((r) => userRoles.includes(r)));
 
   const userInitials = user?.name
     ? user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
@@ -118,8 +140,8 @@ export default function AppLayout() {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
 
-          {/* Main + Discover sections */}
-          {NAV.map(({ section, items }) => (
+          {/* Main + Discover sections (or editor-specific nav) */}
+          {activeNav.map(({ section, items }) => (
             <div key={section}>
               <p className="text-[11px] uppercase tracking-widest text-slate-600 font-medium px-3 mb-2">
                 {section}
@@ -296,6 +318,15 @@ function IconBookmark({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
       <path d="M3 2h10a1 1 0 011 1v11l-6-3.5L2 14V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IconVolunteer({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <circle cx="8" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M2.5 14c0-2.8 2.5-5 5.5-5s5.5 2.2 5.5 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M5.5 11l1.5 1.5 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }

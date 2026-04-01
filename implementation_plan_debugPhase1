@@ -1,0 +1,204 @@
+# CampusConnect – Logical Vulnerability Fixes
+
+## Overview
+After thorough code review, the following logical vulnerabilities have been identified from a **user's POV**. Each issue is categorized with the affected file(s) and the root cause.
+
+---
+
+## Bug Inventory
+
+| # | Severity | Area | Problem |
+|---|----------|------|---------|
+| 1 | 🔴 High | Backend – Club Controller | **Club admin can join/leave their own club** – no guard prevents the admin from sending a join or leave request, causing data inconsistency |
+| 2 | 🔴 High | Backend – Event Controller | **RSVP allowed on past/cancelled events** – `rsvpEvent` does not validate `event.status` or whether the event date has passed |
+| 3 | 🔴 High | Backend – Club Controller / Route | **`authorize("clubAdmin","orgAdmin")` on approve/reject does NOT verify the user is the admin of *this specific club*** – any `clubAdmin` role user can approve members on clubs they don't own |
+| 4 | 🔴 High | Backend – Auth Controller | **`refreshToken` does not verify the user exists in DB** – a deleted user can keep refreshing tokens indefinitely |
+| 5 | 🟡 Medium | Frontend – ClubDetail | **Club admin sees "Request to Join" button** – `!myStatus && user` is true for the admin because the admin is not in the `members` array |
+| 6 | 🟡 Medium | Frontend – EventDetail | **Volunteer button shows even when already registered & event is full** – volunteers should not bypass capacity |
+| 7 | 🟡 Medium | Frontend – CreateEvent | **Club selector shows ALL clubs fallback when user has no admin clubs** – regular members can see the form but with clubs they don't own |
+| 8 | 🟡 Medium | Backend – Club Controller | **`leaveClub` allows the club admin to leave their own club** – club would become admin-less |
+| 9 | 🟡 Medium | Backend – Event Model | **Date validator (`v > new Date()`) runs on update too** – editing an already-past event (e.g., to mark as "completed") fails because the saved date is in the past |
+| 10 | 🟢 Low | Frontend – AppLayout / Routes | **Admin routes (`/admin`, `/admin/verify`, `/admin/stats`) have NO route-level guard** – only page-level check, allowing brief flash of restricted content |
+
+---
+
+## Proposed Changes
+
+---
+
+### 1. Backend – `clubController.js`
+
+#### [MODIFY] [clubController.js](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/server/controllers/clubController.js)
+
+**Bug #1 – Admin should not be able to join their own club:**
+```js
+// joinClub – add at top of handler
+if (club.adminId.toString() === req.user.id) {
+  return res.status(400).json({ success: false, message: "Club admin cannot join their own club" });
+}
+```
+
+**Bug #3 – approveMember / rejectMember must verify *club-specific* admin:**
+The route has `authorize("clubAdmin","orgAdmin")` which only checks role, NOT whether this person is the admin of *this specific club*. The controller checks it correctly, but the route middleware passes ANY clubAdmin through, which is misleading. The controller fix is already present — add a comment clarifying this.
+
+**Bug #8 – Admin should not be able to leave their own club:**
+```js
+// leaveClub – add at top of handler
+if (club.adminId.toString() === req.user.id) {
+  return res.status(400).json({ success: false, message: "Club admin cannot leave their own club" });
+}
+```
+
+---
+
+### 2. Backend – `eventController.js`
+
+#### [MODIFY] [eventController.js](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/server/controllers/eventController.js)
+
+**Bug #2 – Block RSVP on cancelled/completed events and past dates:**
+```js
+// rsvpEvent – add after the event fetch
+if (event.status === "cancelled" || event.status === "completed") {
+  return res.status(400).json({ success: false, message: "Cannot RSVP to a cancelled or completed event" });
+}
+if (new Date(event.date) < new Date()) {
+  return res.status(400).json({ success: false, message: "Cannot RSVP to a past event" });
+}
+```
+
+---
+
+### 3. Backend – `Event.js` model
+
+#### [MODIFY] [Event.js](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/server/models/Event.js)
+
+**Bug #9 – Date validator fires on updates too, breaking status edits:**
+Mongoose validators run on `save()`. The `date > new Date()` validator will fail when updating old events. We must use `this.isNew` to skip on updates.
+
+```js
+validate: {
+  validator: function (v) {
+    // Only validate for NEW documents — editing existing events
+    // (e.g. marking as "completed") should not re-validate the past date
+    return this.isNew ? v > new Date() : true;
+  },
+  message: "Event date must be in the future",
+},
+```
+
+---
+
+### 4. Backend – `authController.js`
+
+#### [MODIFY] [authController.js](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/server/controllers/authController.js)
+
+**Bug #4 – refreshToken doesn't verify user still exists in DB:**
+```js
+// After decoding token, verify user exists
+const user = await User.findById(decoded.id);
+if (!user) {
+  const error = new Error("User not found");
+  error.statusCode = 401;
+  throw error;
+}
+const newToken = generateToken(user); // use real user object for accurate roles
+```
+
+---
+
+### 5. Backend – `clubs.js` route
+
+#### [MODIFY] [clubs.js](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/server/routes/clubs.js)
+
+**Bug #3 – `authorize("clubAdmin","orgAdmin")` on approve/reject is misleading:**
+The `authorize` middleware only checks the role, not ownership. The ownership check is already in the controller. Remove the redundant `authorize` wrapper from approve/reject to keep the code clean and let the controller handle the specific check. Add a comment explaining this.
+
+---
+
+### 6. Frontend – `ClubDetail.jsx`
+
+#### [MODIFY] [ClubDetail.jsx](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/client/src/pages/ClubDetail.jsx)
+
+**Bug #5 – Admin sees "Request to Join":**
+The condition `!myStatus && user` evaluates to `true` for the admin because admin is not in `members` array. Fix:
+```jsx
+// Change from:
+{!myStatus && user && (
+// To:
+{!myStatus && user && !isClubAdmin && (
+```
+
+---
+
+### 7. Frontend – `EventDetail.jsx`
+
+#### [MODIFY] [EventDetail.jsx](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/client/src/pages/EventDetail.jsx)
+
+**Bug #6 – Volunteer button shows for everyone regardless of event capacity/status:**
+- Volunteer should only show for `upcoming` events (same guard as RSVP)
+- Volunteer button is already inside `event.status === "upcoming"` block… actually it is NOT — it's inside the same wrapper but should also check: **if you're already a volunteer, the button shouldn't show** (currently handled by `!isVolunteer`) ✓
+- **Real issue:** Volunteer button is inside the `{user && event.status === "upcoming"}` fragment, which is correct. The actual bug is that **Edit Event button doesn't show** for event creators who are not orgAdmins, because `isEventAdmin` is computed incorrectly:
+  ```js
+  // Current (BROKEN): checks clubId.adminId which is not populated
+  const isEventAdmin = user?.roles?.includes("orgAdmin") ||
+    (event?.clubId && String(event.clubId.adminId || event.clubId._id) === String(user?._id));
+  
+  // Fixed: check event.createdBy (which IS the event creator)
+  const isEventAdmin = user?.roles?.includes("orgAdmin") ||
+    String(event?.createdBy?._id || event?.createdBy) === String(user?._id);
+  ```
+
+---
+
+### 8. Frontend – `CreateEvent.jsx`
+
+#### [MODIFY] [CreateEvent.jsx](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/client/src/pages/CreateEvent.jsx)
+
+**Bug #7 – Fallback to all clubs when user has no admin clubs:**
+```js
+// Current (BROKEN):
+setClubs(adminClubs.length > 0 ? adminClubs : all);
+// This shows ALL clubs if the user has no admin clubs → misleading
+
+// Fixed:
+setClubs(adminClubs);  // Only the user's admin clubs; empty list = user shouldn't be on this page
+```
+
+---
+
+### 9. Frontend – Admin Route Guards
+
+#### [MODIFY] [App.jsx](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/client/src/App.jsx)
+#### [MODIFY] [ProtectedRoute.jsx](file:///c:/Users/ankit/OneDrive/Desktop/CampusConnect-2/client/src/routes/ProtectedRoute.jsx)
+
+**Bug #10 – Admin routes not guarded at route level:**
+Create an `AdminRoute` wrapper (similar to `ProtectedRoute`) that additionally checks `orgAdmin` role. Wrap `/admin/*` routes with it.
+
+```jsx
+// New: AdminRoute.jsx
+export default function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <p>Loading...</p>;
+  if (!user) return <Navigate to="/login" />;
+  if (!user.roles?.includes("orgAdmin")) return <Navigate to="/dashboard" />;
+  return children;
+}
+```
+
+---
+
+## Verification Plan
+
+### Backend
+- Start server and manually test each endpoint with curl or Postman:
+  - `POST /clubs/:id/join` as admin → expect 400
+  - `POST /clubs/:id/leave` as admin → expect 400
+  - `POST /events/:id/rsvp` with cancelled/completed event → expect 400
+  - `POST /auth/refresh` with token of deleted user → expect 401
+  - `PUT /events/:id` with past date to update status → should succeed
+
+### Frontend
+- Navigate to a club you admin → no "Request to Join" button visible
+- Navigate to EventDetail as event creator → Edit/Delete button visible
+- Open `/admin` as a non-orgAdmin → redirect to `/dashboard`
+- CreateEvent page: club dropdown only shows clubs you admin

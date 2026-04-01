@@ -99,14 +99,21 @@ export const refreshToken = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  // Decode without expiry check (allows refresh of expired tokens)
   const decoded = jwt.verify(token, process.env.JWT_SECRET, {
     ignoreExpiration: true,
   });
 
-  const newToken = generateToken({
-    _id: decoded.id,
-    roles: decoded.roles,
-  });
+  // A4: Verify the user still exists in the database
+  const user = await User.findById(decoded.id);
+  if (!user) {
+    const error = new Error("User no longer exists");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  // Generate new token using the live user object (up-to-date roles)
+  const newToken = generateToken(user);
 
   res.json({
     success: true,

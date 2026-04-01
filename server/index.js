@@ -12,8 +12,10 @@ import chatRoutes from "./routes/chats.js";
 import messageRoutes from "./routes/messages.js";
 import externalEventRoutes from "./routes/externalEvents.js";
 import bookmarkRoutes from "./routes/bookmarks.js";
+import userRoutes from "./routes/users.js";
 import errorHandler from "./middleware/errorHandler.js";
 
+// ── Must run before anything that depends on env vars ──
 dotenv.config();
 connectDB();
 
@@ -28,23 +30,24 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-// Middlewares
+// ── Middlewares ──
 app.use(cors());
 app.use(express.json());
 
-// Root route (health check)
+// ── Health check ──
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-// API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/clubs", clubRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/chats", chatRoutes);
-app.use("/api/messages", messageRoutes);
+// ── API Routes ──
+app.use("/api/auth",           authRoutes);
+app.use("/api/clubs",          clubRoutes);
+app.use("/api/events",         eventRoutes);
+app.use("/api/chats",          chatRoutes);
+app.use("/api/messages",       messageRoutes);
 app.use("/api/external-events", externalEventRoutes);
-app.use("/api/bookmarks", bookmarkRoutes);
+app.use("/api/bookmarks",      bookmarkRoutes);
+app.use("/api/users",          userRoutes);  // user profile routes
 
 io.use((socket, next) => {
   try {

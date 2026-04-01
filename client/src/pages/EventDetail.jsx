@@ -75,15 +75,19 @@ export default function EventDetail() {
     load();
   }, [id, user]);
 
-  /* ── RSVP status ── */
+  /* ── Derived state ── */
   const myRsvp = attendees.find((a) => String(a.userId?._id || a.userId) === String(user?._id));
   const isRegistered = myRsvp?.status === "registered";
-  const isVolunteer = event?.volunteers?.some((v) => String(v) === String(user?._id));
+  // H: volunteers is now an array of { userId, skills, volunteeredAt } subdocuments
+  const isVolunteer = event?.volunteers?.some(
+    (v) => String(v.userId?._id || v.userId) === String(user?._id)
+  );
   const registeredCount = attendees.filter((a) => a.status === "registered").length;
   const isFull = event?.maxAttendees && registeredCount >= event.maxAttendees;
+  // A6: isEventAdmin must use event.createdBy (who created the event), NOT event.clubId.adminId
   const isEventAdmin =
     user?.roles?.includes("orgAdmin") ||
-    (event?.clubId && String(event.clubId.adminId || event.clubId._id) === String(user?._id));
+    String(event?.createdBy?._id || event?.createdBy) === String(user?._id);
 
   const handleRsvp = async () => {
     setActionLoading(true);
@@ -122,7 +126,11 @@ export default function EventDetail() {
     setActionLoading(true);
     try {
       await api.post(`/events/${id}/volunteer`);
-      setEvent((prev) => ({ ...prev, volunteers: [...(prev.volunteers || []), user._id] }));
+      // H: optimistic update — add subdocument shape to local state
+      setEvent((prev) => ({
+        ...prev,
+        volunteers: [...(prev.volunteers || []), { userId: { _id: user._id }, skills: [] }],
+      }));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to volunteer.");
     } finally {
@@ -251,7 +259,8 @@ export default function EventDetail() {
                   {isFull && !isRegistered && (
                     <span className="px-5 py-2.5 bg-slate-800/60 text-slate-500 rounded-xl text-sm text-center">Event Full</span>
                   )}
-                  {!isVolunteer && (
+                  {/* G: Hide volunteer button from event admins/creators — they manage, not volunteer */}
+                  {!isVolunteer && !isEventAdmin && (
                     <button onClick={handleVolunteer} disabled={actionLoading}
                       className="px-5 py-2.5 bg-white/[0.07] hover:bg-white/[0.12] rounded-xl text-sm text-white transition-colors disabled:opacity-50 whitespace-nowrap">
                       🙋 Volunteer
@@ -325,6 +334,37 @@ export default function EventDetail() {
           </div>
         </div>
       </div>
+      {/* H: Admin sees volunteer list with skills below main content */}
+      {isEventAdmin && (event?.volunteers?.length ?? 0) > 0 && (
+        <div className="px-5 lg:px-6 pb-6">
+          <div className="rounded-2xl border border-amber-900/40 bg-amber-950/20 p-5">
+            <h3 className="text-[11px] uppercase tracking-widest text-amber-500 font-semibold mb-4">
+              🙋 Volunteers ({event.volunteers.length})
+            </h3>
+            <div className="space-y-3">
+              {event.volunteers.map((v, i) => (
+                <div key={i} className="flex items-center justify-between py-2.5 border-b border-white/[0.05] last:border-0">
+                  <div>
+                    <p className="text-sm text-white font-medium">{v.userId?.name || "Unknown"}</p>
+                    {v.userId?.email && (
+                      <p className="text-[11px] text-slate-500">{v.userId.email}</p>
+                    )}
+                  </div>
+                  {v.skills?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 justify-end max-w-[55%]">
+                      {v.skills.map((s, si) => (
+                        <span key={si} className="text-[10px] px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded-full text-slate-400">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

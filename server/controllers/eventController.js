@@ -89,6 +89,14 @@ export const rsvpEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
+  // A2: Block RSVP on non-upcoming or past events
+  if (event.status === "cancelled" || event.status === "completed") {
+    return res.status(400).json({ success: false, message: `Cannot RSVP: event is ${event.status}` });
+  }
+  if (new Date(event.date) < new Date()) {
+    return res.status(400).json({ success: false, message: "Cannot RSVP: event has already passed" });
+  }
+
   const existing = event.attendees.find((a) => a.userId.toString() === req.user.id);
   if (existing && existing.status === "registered") return res.status(400).json({ success: false, message: "Already registered" });
 
@@ -127,18 +135,45 @@ export const getAttendees = async (req, res) => {
   res.json({ success: true, data: event.attendees });
 };
 
-// Volunteer for event
+// Volunteer for event (accepts optional skills[])
 export const volunteerForEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-  if (event.volunteers.find((v) => v.toString() === req.user.id)) {
+  // Block volunteering on non-upcoming/past events
+  if (event.status !== "upcoming") {
+    return res.status(400).json({ success: false, message: `Cannot volunteer: event is ${event.status}` });
+  }
+
+  // H: Check via subdocument userId
+  const alreadyVolunteered = event.volunteers.find(
+    (v) => v.userId.toString() === req.user.id
+  );
+  if (alreadyVolunteered) {
     return res.status(400).json({ success: false, message: "Already a volunteer" });
   }
 
-  event.volunteers.push(req.user.id);
+  const skills = Array.isArray(req.body.skills)
+    ? req.body.skills.map((s) => String(s).trim()).filter(Boolean).slice(0, 10)
+    : [];
+
+  event.volunteers.push({ userId: req.user.id, skills });
   await event.save();
   res.json({ success: true, message: "Signed up as volunteer" });
 };
 
-export default {};
+// Get volunteers list (event creator or orgAdmin only)
+export const getVolunteers = async (req, res) => {
+  const event = await Event.findById(req.params.id)
+    .populate("volunteers.userId", "name email bio interests profilePicture")
+    .lean();
+  if (!event) return res.status(404).json({ success: false, message: "Event not found" });
+
+  const userRoles = req.user.roles || [];
+  const isCreator = event.createdBy.toString() === req.user.id;
+  if (!isCreator && !userRoles.includes("orgAdmin")) {
+    return res.status(403).json({ success: false, message: "Forbidden" });
+  }
+
+  res.json({ success: true, data: event.volunteers });
+};

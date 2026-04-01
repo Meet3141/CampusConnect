@@ -47,11 +47,12 @@ export default function CreateEvent() {
       try {
         const res = await api.get("/clubs", { params: { limit: 200 } });
         const all = res.data.data || [];
-        // Show only clubs where user is admin
+        // A7: Only show clubs this user actually administers.
+        // If empty, they have no admin clubs and cannot create events.
         const adminClubs = all.filter(
           (c) => String(c.adminId?._id || c.adminId) === String(user?._id)
         );
-        setClubs(adminClubs.length > 0 ? adminClubs : all);
+        setClubs(adminClubs);
       } catch {}
     };
     if (user) fetchClubs();

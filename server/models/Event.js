@@ -35,7 +35,10 @@ const eventSchema = new mongoose.Schema(
       required: [true, "Event date is required"],
       validate: {
         validator: function (v) {
-          return v > new Date();
+          // A9: Only validate future date for NEW documents.
+          // Editing an existing event (e.g. marking as "completed") must not
+          // re-validate the saved date which may now be in the past.
+          return this.isNew ? v > new Date() : true;
         },
         message: "Event date must be in the future",
       },
@@ -78,10 +81,22 @@ const eventSchema = new mongoose.Schema(
     ],
 
 
+    // H: Each volunteer entry stores userId, skills they bring, and when they signed up
     volunteers: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        skills: {
+          type: [String],
+          default: [],
+        },
+        volunteeredAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
 

@@ -76,6 +76,11 @@ export const joinClub = async (req, res) => {
   const club = await Club.findById(req.params.id);
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
 
+  // A1: Club admin cannot join their own club
+  if (club.adminId.toString() === req.user.id) {
+    return res.status(400).json({ success: false, message: "Club admin cannot join their own club" });
+  }
+
   const existing = club.members.find((m) => m.userId.toString() === req.user.id);
   if (existing) return res.status(400).json({ success: false, message: "Already requested or member" });
 
@@ -88,6 +93,11 @@ export const joinClub = async (req, res) => {
 export const leaveClub = async (req, res) => {
   const club = await Club.findById(req.params.id);
   if (!club) return res.status(404).json({ success: false, message: "Club not found" });
+
+  // A8: Club admin cannot leave their own club (would make it admin-less)
+  if (club.adminId.toString() === req.user.id) {
+    return res.status(400).json({ success: false, message: "Club admin cannot leave their own club. Transfer ownership first." });
+  }
 
   const idx = club.members.findIndex((m) => m.userId.toString() === req.user.id);
   if (idx === -1) return res.status(400).json({ success: false, message: "Not a member" });

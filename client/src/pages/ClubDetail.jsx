@@ -312,8 +312,8 @@ export default function ClubDetail() {
 
             {/* Action buttons */}
             <div className="flex flex-col gap-2 shrink-0">
-              {/* Not a member at all */}
-              {!myStatus && user && (
+              {/* A5: Not a member AND not the club admin (admin is not in members array) */}
+              {!myStatus && user && !isClubAdmin && (
                 <button
                   onClick={handleJoin}
                   disabled={actionLoading}

@@ -14,9 +14,15 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import {
+  connectChatSocket,
+  joinChatRoom,
+  leaveChatRoom,
+  onChatEvent,
+} from "../services/chatSocket";
+// D: Centralized socket — no more inline io() to avoid duplicate connections
 
 export default function ChatRoom() {
   const { id: chatId } = useParams();
@@ -32,7 +38,6 @@ export default function ChatRoom() {
   const [editText, setEditText]   = useState("");
 
   const messagesEndRef = useRef(null);
-  const socketRef      = useRef(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -57,20 +62,13 @@ export default function ChatRoom() {
     load();
   }, [chatId]);
 
-  /* ── Socket.io for real-time messages ── */
+  /* ── Socket.io for real-time messages (D: uses shared socket service) ── */
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const socket = io("http://localhost:5000", {
-      auth: { token },
-      transports: ["websocket"],
-    });
-    socketRef.current = socket;
+    // Connect via shared service (reuses existing connection if already open)
+    connectChatSocket();
+    joinChatRoom(chatId);
 
-    socket.on("connect", () => {
-      socket.emit("chat:join", chatId);
-    });
-
-    socket.on("message:new", (msg) => {
+    const offNew = onChatEvent("message:new", (msg) => {
       setMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
@@ -78,23 +76,29 @@ export default function ChatRoom() {
       setTimeout(scrollToBottom, 100);
     });
 
-    socket.on("message:updated", (msg) => {
+    const offUpdated = onChatEvent("message:updated", (msg) => {
       setMessages((prev) => prev.map((m) => (m._id === msg._id ? msg : m)));
     });
 
-    socket.on("message:deleted", ({ _id }) => {
+    const offDeleted = onChatEvent("message:deleted", ({ _id }) => {
       setMessages((prev) =>
-        prev.map((m) => (m._id === _id ? { ...m, deleted: true, message: "This message was deleted" } : m))
+        prev.map((m) =>
+          m._id === _id ? { ...m, deleted: true, message: "This message was deleted" } : m
+        )
       );
     });
 
-    socket.on("message:reacted", (msg) => {
+    const offReacted = onChatEvent("message:reacted", (msg) => {
       setMessages((prev) => prev.map((m) => (m._id === msg._id ? msg : m)));
     });
 
     return () => {
-      socket.emit("chat:leave", chatId);
-      socket.disconnect();
+      // Unsubscribe handlers and leave room — do NOT disconnect the shared socket
+      offNew();
+      offUpdated();
+      offDeleted();
+      offReacted();
+      leaveChatRoom(chatId);
     };
   }, [chatId, scrollToBottom]);
 

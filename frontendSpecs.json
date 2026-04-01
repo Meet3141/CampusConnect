@@ -1,0 +1,147 @@
+{
+    "project": "CampusConnect Frontend",
+    "tech_stack": {
+        "framework": "React",
+        "routing": "react-router-dom",
+        "state_management": "React Context API (AuthContext)",
+        "styling": "CSS (App.css, index.css)",
+        "api_communication": "REST APIs (api.js, chatApi.js) & WebSockets (chatSocket.js)"
+    },
+    "architecture": {
+        "components": "Reusable UI layout elements (e.g., AppLayout.jsx).",
+        "pages": "Route-level functional React components grouped by feature (Clubs, Events, Chats, Admin).",
+        "context": "Global state managers, mainly handling user authentication logic and session storage.",
+        "services": "Centralized API layers segregating standard HTTP requests and real-time socket events.",
+        "routes": "Navigation security implementations preventing unauthorized access to specific areas."
+    },
+    "user_flow": [
+        {
+            "stage": "1. Authentication",
+            "steps": [
+                "Unauthenticated user lands on '/' and is redirected to '/login'.",
+                "User signs in via '/login' or creates an account via '/register'.",
+                "Upon success, AuthContext registers the session, and user is redirected to the protected application shell."
+            ]
+        },
+        {
+            "stage": "2. Main Dashboard & Navigation",
+            "steps": [
+                "User arrives at '/dashboard' (rendered inside the AppLayout shell) to see a personalized feed or overview.",
+                "User can access their profile at '/profile' to update their details.",
+                "User can view bookmarked clubs or events at '/bookmarks'."
+            ]
+        },
+        {
+            "stage": "3. Club Ecosystem",
+            "steps": [
+                "User browses all available campus clubs at '/clubs'.",
+                "User reviews clubs they manage or have joined at '/my-clubs'.",
+                "User can initiate a club creation request via '/clubs/create'.",
+                "User views in-depth details, members, and posts of a specific club at '/clubs/:id'.",
+                "Club admins can modify the club settings at '/clubs/:id/edit'."
+            ]
+        },
+        {
+            "stage": "4. Internal & External Events",
+            "steps": [
+                "Club admins organize internal club events via '/events/create' and modify them at '/events/:id/edit'.",
+                "Users explore broader campus/external events at '/external-events'.",
+                "Users can submit an external event for approval via '/external-events/create'.",
+                "Detailed views for internal and external events are available at '/events/:id' and '/external-events/:id' respectively."
+            ]
+        },
+        {
+            "stage": "5. Real-Time Communication",
+            "steps": [
+                "User navigates to '/chats' to see their active conversations/club groups.",
+                "User enters a specific room at '/chats/:id' where chatSocket.js establishes a WebSocket connection for real-time messaging."
+            ]
+        },
+        {
+            "stage": "6. Administration (Admins Only)",
+            "steps": [
+                "System administrators enter '/admin' for an overview.",
+                "Admins moderate the platform by verifying submitted external events at '/admin/verify'.",
+                "Admins analyze user activity and platform metrics at '/admin/stats'."
+            ]
+        }
+    ],
+    "directories_and_files": {
+        "root": {
+            "App.jsx": "The highest-level component defining all application routes. It wraps the router in the AuthProvider and uses AppLayout for all protected paths.",
+            "main.jsx": "The DOM rendering entry point.",
+            "App.css": "Global layout shifts and base application styling.",
+            "index.css": "Base typography, color variables, and CSS resets."
+        },
+        "components": {
+            "AppLayout.jsx": "The structural wrapper for authenticated users, typically containing the Sidebar/Navbar and the <Outlet /> for rendering nested page content."
+        },
+        "pages": {
+            "Authentication": [
+                "Login.jsx",
+                "Register.jsx"
+            ],
+            "Core": [
+                "Dashboard.jsx",
+                "Profile.jsx",
+                "Bookmarks.jsx",
+                "NotFound.jsx"
+            ],
+            "Clubs": [
+                "ClubList.jsx",
+                "MyClubs.jsx",
+                "CreateClub.jsx",
+                "EditClub.jsx",
+                "ClubDetail.jsx"
+            ],
+            "Internal_Events": [
+                "EventDetail.jsx",
+                "CreateEvent.jsx",
+                "EditEvent.jsx"
+            ],
+            "External_Events": [
+                "ExternalEvents.jsx",
+                "CreateExternalEvent.jsx",
+                "ExternalEventDetail.jsx"
+            ],
+            "Chat": [
+                "ChatList.jsx",
+                "ChatRoom.jsx"
+            ],
+            "Admin": [
+                "AdminPanel.jsx",
+                "AdminStats.jsx",
+                "VerifyEvents.jsx"
+            ]
+        },
+        "context": {
+            "AuthContext.jsx": "React Context provider containing the state for the currently logged-in user, managing login/logout functions and JWT token validation."
+        },
+        "services": {
+            "api.js": "Axios/Fetch utility configuring base URLs and interceptors (e.g., automatically attaching Bearer tokens to headers) for REST requests.",
+            "chatApi.js": "Dedicated API service for fetching chat histories, creating rooms, and managing chat participants via standard HTTP.",
+            "chatSocket.js": "WebSocket setup (e.g., socket.io-client) used to emit and listen to live events like 'message_received' or 'typing' for real-time functionality."
+        },
+        "routes": {
+            "ProtectedRoute.jsx": "A wrapper component safeguarding authenticated routes. It checks the AuthContext and redirects unauthenticated users back to '/login'."
+        }
+    },
+    "use_cases": [
+        {
+            "feature": "Campus Community Building",
+            "description": "Students easily discover and engage with university clubs and organizations in a central hub."
+        },
+        {
+            "feature": "Decentralized Event Management",
+            "description": "Empowers club leaders to manage their own events internally, while also allowing generalized external events to be showcased to the whole campus."
+        },
+        {
+            "feature": "Secure Communication Streams",
+            "description": "Provides dedicated, real-time chat rooms for club members to coordinate and interact seamlessly."
+        },
+        {
+            "feature": "Content Moderation",
+            "description": "Equips the administration with a verify step for external events to ensure platform content remains relevant and appropriate."
+        }
+    ]
+}

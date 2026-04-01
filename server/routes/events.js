@@ -12,6 +12,7 @@ import {
   cancelRsvp,
   getAttendees,
   volunteerForEvent,
+  getVolunteers,       // H: admin volunteer viewer
 } from "../controllers/eventController.js";
 
 const router = express.Router();
@@ -22,9 +23,10 @@ router.get("/:id", asyncHandler(getEventById));
 router.put("/:id", auth, asyncHandler(updateEvent));
 router.delete("/:id", auth, asyncHandler(deleteEvent));
 
-router.post("/:id/rsvp", auth, asyncHandler(rsvpEvent));
+router.post("/:id/rsvp",        auth, asyncHandler(rsvpEvent));
 router.post("/:id/cancel-rsvp", auth, asyncHandler(cancelRsvp));
-router.get("/:id/attendees", auth, asyncHandler(getAttendees));
-router.post("/:id/volunteer", auth, asyncHandler(volunteerForEvent));
+router.get("/:id/attendees",    auth, asyncHandler(getAttendees));
+router.post("/:id/volunteer",   auth, asyncHandler(volunteerForEvent));
+router.get("/:id/volunteers",   auth, asyncHandler(getVolunteers)); // H: admin only
 
 export default router;
