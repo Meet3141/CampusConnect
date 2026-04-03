@@ -341,3 +341,4 @@ function IconStats({ size = 16 }) {
     </svg>
   );
 }
+
