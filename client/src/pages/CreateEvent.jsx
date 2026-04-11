@@ -36,6 +36,10 @@ export default function CreateEvent() {
   const [form, setForm] = useState({
     title: "", description: "", clubId: preClubId, category: "",
     date: "", venue: "", maxAttendees: "", image: "",
+    // Volunteer programme
+    showOnVolunteerHub: false,
+    volunteerLimit: "",
+    volunteerSkillsNeeded: "",   // comma-separated string, converted to array on submit
   });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
@@ -47,8 +51,6 @@ export default function CreateEvent() {
       try {
         const res = await api.get("/clubs", { params: { limit: 200 } });
         const all = res.data.data || [];
-        // A7: Only show clubs this user actually administers.
-        // If empty, they have no admin clubs and cannot create events.
         const adminClubs = all.filter(
           (c) => String(c.adminId?._id || c.adminId) === String(user?._id)
         );
@@ -73,6 +75,8 @@ export default function CreateEvent() {
     if (!form.date) e.date = "Please select a date.";
     if (form.date && new Date(form.date) <= new Date()) e.date = "Date must be in the future.";
     if (!form.venue.trim()) e.venue = "Venue is required.";
+    if (form.showOnVolunteerHub && !form.volunteerLimit) e.volunteerLimit = "Set a volunteer limit when listing on Volunteer Hub.";
+    if (form.showOnVolunteerHub && form.volunteerLimit && Number(form.volunteerLimit) < 1) e.volunteerLimit = "Limit must be at least 1.";
     return e;
   };
 
@@ -84,15 +88,21 @@ export default function CreateEvent() {
     setApiError("");
     try {
       const body = {
-        title: form.title.trim(),
+        title:       form.title.trim(),
         description: form.description.trim(),
-        clubId: form.clubId,
-        category: form.category,
-        date: form.date,
-        venue: form.venue.trim(),
+        clubId:      form.clubId,
+        category:    form.category,
+        date:        form.date,
+        venue:       form.venue.trim(),
+        showOnVolunteerHub: form.showOnVolunteerHub,
       };
-      if (form.maxAttendees) body.maxAttendees = Number(form.maxAttendees);
-      if (form.image.trim()) body.image = form.image.trim();
+      if (form.maxAttendees)  body.maxAttendees = Number(form.maxAttendees);
+      if (form.image.trim())  body.image = form.image.trim();
+      if (form.showOnVolunteerHub) {
+        body.volunteerLimit = Number(form.volunteerLimit);
+        body.volunteerSkillsNeeded = form.volunteerSkillsNeeded
+          .split(",").map((s) => s.trim()).filter(Boolean);
+      }
 
       const res = await api.post("/events", body);
       navigate(`/events/${res.data.data._id}`);
@@ -190,7 +200,7 @@ export default function CreateEvent() {
               className={inputCls(!!errors.description) + " resize-none"} />
           </Field>
 
-          {/* Optional fields */}
+          {/* Optional: Max Attendees + Image */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Max Attendees" hint="Optional">
               <input type="number" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)}
@@ -200,6 +210,59 @@ export default function CreateEvent() {
               <input type="url" value={form.image} onChange={(e) => set("image", e.target.value)}
                 placeholder="https://..." className={inputCls(false)} />
             </Field>
+          </div>
+
+          {/* ── Volunteer Programme ── */}
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-white">🙋 Volunteer Opportunities</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  List this event on the Volunteer Hub so students can apply to help out.
+                </p>
+              </div>
+              {/* Toggle button */}
+              <button
+                type="button"
+                onClick={() => set("showOnVolunteerHub", !form.showOnVolunteerHub)}
+                className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${
+                  form.showOnVolunteerHub ? "bg-indigo-600" : "bg-white/[0.1]"
+                }`}
+              >
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                  form.showOnVolunteerHub ? "left-7" : "left-1"
+                }`} />
+              </button>
+            </div>
+
+            {form.showOnVolunteerHub && (
+              <div className="space-y-4 pt-1 border-t border-white/[0.06]">
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Volunteer Limit" required error={errors.volunteerLimit}>
+                    <input
+                      type="number"
+                      value={form.volunteerLimit}
+                      onChange={(e) => set("volunteerLimit", e.target.value)}
+                      placeholder="e.g. 10"
+                      min={1}
+                      className={inputCls(!!errors.volunteerLimit)}
+                    />
+                  </Field>
+                </div>
+                <Field label="Preferred Skills" hint="comma-separated, optional">
+                  <input
+                    type="text"
+                    value={form.volunteerSkillsNeeded}
+                    onChange={(e) => set("volunteerSkillsNeeded", e.target.value)}
+                    placeholder="e.g. Photography, Stage Setup, MCing, Design"
+                    className={inputCls(false)}
+                  />
+                  <p className="text-[11px] text-slate-600 mt-1.5">
+                    These are shown to applicants so they know what you're looking for.
+                  </p>
+                </Field>
+              </div>
+            )}
           </div>
 
           {apiError && (

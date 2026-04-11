@@ -32,10 +32,19 @@ const membershipSchema = new mongoose.Schema(
 
     approvedAt: Date,
 
-    role: {
+    // Club-scoped role — 'coordinator' is the student coordinator level.
+    // This is NOT in User.roles (which is global); it is per-club.
+    clubRole: {
       type: String,
-      enum: ["member", "moderator"],
+      enum: ["member", "coordinator"],
       default: "member",
+    },
+
+    // Optional coordinator specialisation, set by the club admin.
+    coordinatorCategory: {
+      type: String,
+      enum: ["event", "content", "technical", "none"],
+      default: "none",
     },
 
     createdAt: {

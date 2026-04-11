@@ -32,31 +32,51 @@ const CATEGORY_META = {
   other:     { emoji: "🌐", heroBg: "from-slate-800/50 via-slate-900/30",   accent: "text-slate-400",   ring: "ring-slate-500/20",   tabActive: "border-slate-400 text-slate-300"    },
 };
 
-const TABS = ["Overview", "Members", "Events"];
+// Base tabs — Announcements is injected only for members/coordinators/admins
+const BASE_TABS = ["Overview", "Members", "Events"];
+
 
 export default function ClubDetail() {
   const { id }  = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [club, setClub]       = useState(null);
-  const [members, setMembers] = useState([]);    // from GET /members (populated)
-  const [events, setEvents]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState("");
-  const [tab, setTab]         = useState("Overview");
-  const [actionLoading, setActionLoading] = useState(false);
-  const [memberActionId, setMemberActionId] = useState(null); // userId being approved/rejected
-  const [chatLoading, setChatLoading] = useState(false);
+  const [club, setClub]             = useState(null);
+  const [members, setMembers]       = useState([]);
+  const [events, setEvents]         = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [annLoading, setAnnLoading]       = useState(false);
+  const [annPosting, setAnnPosting]       = useState(false);
+  const [annForm, setAnnForm]             = useState({ title: "", body: "", tag: "general" });
+  const [showAnnForm, setShowAnnForm]     = useState(false);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState("");
+  const [tab, setTab]               = useState("Overview");
+  const [actionLoading, setActionLoading]   = useState(false);
+  const [memberActionId, setMemberActionId] = useState(null);
+  const [chatLoading, setChatLoading]       = useState(false);
+
+  // Coordinator promotion state
+  const [promotingMember, setPromotingMember] = useState(null);
+  const [coordCategory,   setCoordCategory]   = useState("none");
+  const [coordActing,     setCoordActing]      = useState(null);
+  const [coordDropOpen,   setCoordDropOpen]    = useState(false);
 
   /* ── Derived: is current user the club admin? ──
-     club.adminId is POPULATED as { _id, name, email } in getClubById       */
-  const isOrgAdmin   = user?.roles?.includes("orgAdmin");
-  const isClubAdmin  = isOrgAdmin || (club && String(club.adminId?._id) === String(user?._id));
+     club.adminId is POPULATED as { _id, name, email } in getClubById.
+     Mongoose toObject()/_id is serialised to a hex string by res.json().
+     user._id (from user.toJSON via AuthContext) is also a hex string.
+     We compare as strings to be safe across all serialisation paths.       */
+  const currentUserId = String(user?._id || user?.id || "");
+  const isOrgAdmin    = user?.roles?.includes("orgAdmin");
+  // isClubAdmin = orgAdmin OR this user is the specific admin of THIS club
+  const isClubAdmin   = isOrgAdmin ||
+    (club != null && currentUserId !== "" &&
+      String(club.adminId?._id || club.adminId) === currentUserId);
 
   /* ── My membership (from populated members list) ── */
   const myMembership = members.find(
-    (m) => String(m.userId?._id) === String(user?._id)
+    (m) => String(m.userId?._id || m.userId) === currentUserId
   );
   const myStatus = myMembership?.status;
 
@@ -70,14 +90,14 @@ export default function ClubDetail() {
         const clubRes = await api.get(`/clubs/${id}`);
         setClub(clubRes.data.data);              // response key: "data"
 
-        // Events — public endpoint, filter by clubId
+        // Events — public endpoint (drafts filtered server-side for non-admin)
         const eventsRes = await api.get("/events", { params: { clubId: id, limit: 50 } });
-        setEvents(eventsRes.data.data || []);    // response key: "data"
+        setEvents(eventsRes.data.data || []);
 
         // Members — requires auth; skip if not logged in
         if (user) {
           const membersRes = await api.get(`/clubs/${id}/members`);
-          setMembers(membersRes.data.data || []); // response key: "data"
+          setMembers(membersRes.data.data || []);
         }
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load club.");
@@ -87,6 +107,20 @@ export default function ClubDetail() {
     };
     load();
   }, [id, user]);
+
+  // Fetch announcements when that tab is opened
+  useEffect(() => {
+    if (tab !== "Announcements" || !user) return;
+    const loadAnn = async () => {
+      setAnnLoading(true);
+      try {
+        const res = await api.get(`/clubs/${id}/announcements`);
+        setAnnouncements(res.data.data || []);
+      } catch { /* member-only, ignore if not member */ }
+      finally { setAnnLoading(false); }
+    };
+    loadAnn();
+  }, [tab, id, user]);
 
   /* ── Join ── */
   const handleJoin = async () => {
@@ -122,7 +156,7 @@ export default function ClubDetail() {
       // POST /api/clubs/:id/leave → { success, message }
       await api.post(`/clubs/${id}/leave`);
       setMembers((prev) =>
-        prev.filter((m) => String(m.userId?._id) !== String(user?._id))
+        prev.filter((m) => String(m.userId?._id || m.userId) !== currentUserId)
       );
       setClub((prev) => ({
         ...prev,
@@ -144,8 +178,8 @@ export default function ClubDetail() {
       await api.post(`/clubs/${id}/approve-member`, { memberId: userId });
       setMembers((prev) =>
         prev.map((m) =>
-          String(m.userId?._id) === String(userId)
-            ? { ...m, status: "active", approvedBy: user._id, approvedAt: new Date() }
+          String(m.userId?._id || m.userId) === String(userId)
+            ? { ...m, status: "approved", approvedBy: currentUserId, approvedAt: new Date() }
             : m
         )
       );
@@ -165,7 +199,7 @@ export default function ClubDetail() {
       await api.post(`/clubs/${id}/reject-member`, { memberId: userId });
       setMembers((prev) =>
         prev.map((m) =>
-          String(m.userId?._id) === String(userId)
+          String(m.userId?._id || m.userId) === String(userId)
             ? { ...m, status: "rejected" }
             : m
         )
@@ -203,7 +237,92 @@ export default function ClubDetail() {
     }
   };
 
+  /* ── Promote to coordinator ── */
+  const handlePromote = async () => {
+    if (!promotingMember) return;
+    setCoordActing(promotingMember.userId);
+    try {
+      await api.post(`/clubs/${id}/coordinator/assign`, {
+        memberId: promotingMember.userId,
+        coordinatorCategory: coordCategory,
+      });
+      setMembers((prev) =>
+        prev.map((m) =>
+          String(m.userId?._id || m.userId) === String(promotingMember.userId)
+            ? { ...m, clubRole: "coordinator", coordinatorCategory: coordCategory }
+            : m
+        )
+      );
+      setPromotingMember(null);
+      setCoordCategory("none");
+      setCoordDropOpen(false);
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to assign coordinator.");
+    } finally {
+      setCoordActing(null);
+    }
+  };
+
+  /* ── Demote coordinator ── */
+  const handleDemote = async (userId) => {
+    if (!window.confirm("Remove coordinator role from this member?")) return;
+    setCoordActing(userId);
+    try {
+      await api.delete(`/clubs/${id}/coordinator/${userId}`);
+      setMembers((prev) =>
+        prev.map((m) =>
+          String(m.userId?._id || m.userId) === String(userId)
+            ? { ...m, clubRole: "member", coordinatorCategory: "none" }
+            : m
+        )
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to remove coordinator.");
+    } finally {
+      setCoordActing(null);
+    }
+  };
+
+  /* ── Publish draft event (clubAdmin only) ── */
+  const handlePublishEvent = async (eventId) => {
+    try {
+      const res = await api.post(`/events/${eventId}/publish`);
+      setEvents((prev) => prev.map((ev) => ev._id === eventId ? res.data.data : ev));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to publish event.");
+    }
+  };
+
+  /* ── Post announcement ── */
+  const handlePostAnnouncement = async (e) => {
+    e.preventDefault();
+    if (!annForm.title.trim() || !annForm.body.trim()) return;
+    setAnnPosting(true);
+    try {
+      const res = await api.post(`/clubs/${id}/announcements`, annForm);
+      setAnnouncements((prev) => [res.data.data, ...prev]);
+      setAnnForm({ title: "", body: "", tag: "general" });
+      setShowAnnForm(false);
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to post announcement.");
+    } finally {
+      setAnnPosting(false);
+    }
+  };
+
+  /* ── Delete announcement ── */
+  const handleDeleteAnnouncement = async (annId) => {
+    if (!window.confirm("Delete this announcement?")) return;
+    try {
+      await api.delete(`/clubs/${id}/announcements/${annId}`);
+      setAnnouncements((prev) => prev.filter((a) => a._id !== annId));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete.");
+    }
+  };
+
   /* ── Delete club (orgAdmin only) ── */
+
   const handleDeleteClub = async () => {
     if (!window.confirm("Are you sure you want to delete this club? This action is permanent and cannot be undone.")) return;
     setActionLoading(true);
@@ -218,8 +337,26 @@ export default function ClubDetail() {
   };
 
   const meta           = CATEGORY_META[club?.category] || CATEGORY_META.other;
-  const activeMembers  = members.filter((m) => m.status === "active");
+  const activeMembers  = members.filter((m) => m.status === "approved" || m.status === "active");
   const pendingMembers = members.filter((m) => m.status === "pending");
+
+  // Is the current user a coordinator of THIS club?
+  const isCoordinator = !isClubAdmin && members.some(
+    (m) =>
+      (String(m.userId?._id || m.userId) === currentUserId) &&
+      m.status === "approved" &&
+      m.clubRole === "coordinator"
+  );
+  const canCreateEvent = isClubAdmin || isCoordinator;
+
+  // isMember = approved member OR coordinator OR admin (can see Announcements)
+  const isMember = isClubAdmin || isCoordinator ||
+    (myMembership?.status === "approved" || myMembership?.status === "active");
+
+  // Announcements only visible to members+
+  const TABS = isMember
+    ? [...BASE_TABS, "Announcements"]
+    : BASE_TABS;
 
   /* ── Loading ── */
   if (loading) {
@@ -247,7 +384,7 @@ export default function ClubDetail() {
     );
   }
 
-  return (
+  return (<>
     <div className="text-white">
 
       {/* ── Hero ── */}
@@ -508,6 +645,7 @@ export default function ClubDetail() {
                       actionLoading={memberActionId === String(m.userId?._id)}
                       onApprove={() => handleApprove(String(m.userId?._id))}
                       onReject={() => handleReject(String(m.userId?._id))}
+                      onViewProfile={() => navigate(`/users/${m.userId?._id}`)}
                     />
                   ))}
                 </div>
@@ -522,7 +660,20 @@ export default function ClubDetail() {
               ) : (
                 <div className="space-y-2">
                   {activeMembers.map((m) => (
-                    <MemberRow key={m._id} member={m} isAdmin={false} />
+                    <MemberRow
+                      key={m._id}
+                      member={m}
+                      isAdmin={isClubAdmin}
+                      onViewProfile={() => navigate(`/users/${m.userId?._id}`)}
+                      onPromote={isClubAdmin ? () => {
+                        setPromotingMember({ userId: String(m.userId?._id), name: m.userId?.name });
+                        setCoordCategory(m.coordinatorCategory || "none");
+                      } : undefined}
+                      onDemote={isClubAdmin && m.clubRole === "coordinator"
+                        ? () => handleDemote(String(m.userId?._id))
+                        : undefined}
+                      coordActing={coordActing === String(m.userId?._id)}
+                    />
                   ))}
                 </div>
               )}
@@ -545,12 +696,12 @@ export default function ClubDetail() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <SectionHeading label="Club Events" count={events.length} />
-              {isClubAdmin && (
+              {canCreateEvent && (
                 <button
                   onClick={() => navigate(`/events/create?clubId=${id}`)}
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors"
                 >
-                  + Add Event
+                  {isCoordinator ? "+ Draft Event" : "+ Add Event"}
                 </button>
               )}
             </div>
@@ -570,11 +721,14 @@ export default function ClubDetail() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border font-medium ${
-                        ev.status === "upcoming"
-                          ? "bg-indigo-950 text-indigo-300 border-indigo-800"
-                          : "bg-white/[0.04] text-slate-500 border-white/[0.06]"
+                        ev.status === "upcoming"        ? "bg-indigo-950 text-indigo-300 border-indigo-800"
+                        : ev.status === "draft"         ? "bg-slate-900 text-slate-400 border-slate-700"
+                        : ev.status === "pending_approval" ? "bg-yellow-950 text-yellow-400 border-yellow-800"
+                        : ev.status === "ongoing"       ? "bg-emerald-950 text-emerald-300 border-emerald-800"
+                        : ev.status === "completed"     ? "bg-white/[0.04] text-slate-500 border-white/[0.06]"
+                        : "bg-red-950 text-red-400 border-red-900"
                       }`}>
-                        {ev.status}
+                        {ev.status === "pending_approval" ? "Pending Approval" : ev.status}
                       </span>
                     </div>
                     <h3 className="font-semibold text-white text-sm group-hover:text-indigo-300 transition-colors line-clamp-2">
@@ -584,16 +738,235 @@ export default function ClubDetail() {
                       📅 {new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                     <p className="text-slate-500 text-[11px] mt-0.5">📍 {ev.venue}</p>
+                    {/* Publish button for admin on draft events */}
+                    {isClubAdmin && ["draft", "pending_approval"].includes(ev.status) && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePublishEvent(ev._id); }}
+                        className="mt-3 w-full py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold transition-colors"
+                      >
+                        ✓ Publish Event
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </div>
         )}
+
+        {/* ─ Announcements ─ */}
+        {tab === "Announcements" && (
+          <div className="max-w-2xl space-y-6">
+
+            {/* Header row */}
+            <div className="flex items-center justify-between">
+              <SectionHeading label="Announcements" count={announcements.length} />
+              {(isClubAdmin || isCoordinator) && (
+                <button
+                  onClick={() => setShowAnnForm((v) => !v)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors"
+                >
+                  {showAnnForm ? "Cancel" : "+ Post"}
+                </button>
+              )}
+            </div>
+
+            {/* Compose form */}
+            {showAnnForm && (
+              <form onSubmit={handlePostAnnouncement} className="rounded-2xl border border-white/[0.1] bg-white/[0.03] p-5 space-y-3">
+                <input
+                  required
+                  maxLength={120}
+                  placeholder="Title…"
+                  value={annForm.title}
+                  onChange={(e) => setAnnForm((f) => ({ ...f, title: e.target.value }))}
+                  className="w-full px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-600/50"
+                />
+                <textarea
+                  required
+                  maxLength={2000}
+                  rows={4}
+                  placeholder="Write your announcement…"
+                  value={annForm.body}
+                  onChange={(e) => setAnnForm((f) => ({ ...f, body: e.target.value }))}
+                  className="w-full px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-600/50"
+                />
+                <div className="flex items-center gap-3">
+                  <select
+                    value={annForm.tag}
+                    onChange={(e) => setAnnForm((f) => ({ ...f, tag: e.target.value }))}
+                    className="px-3 py-2 text-xs bg-white/[0.04] border border-white/[0.08] rounded-xl text-slate-400 focus:outline-none"
+                  >
+                    <option value="general">📌 General</option>
+                    <option value="event">📅 Event</option>
+                    <option value="reminder">⏰ Reminder</option>
+                    <option value="urgent">🚨 Urgent</option>
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={annPosting}
+                    className="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {annPosting ? "Posting…" : "Post"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* List */}
+            {annLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+              </div>
+            ) : announcements.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-4xl mb-3">📢</div>
+                <p className="text-slate-600 text-sm">No announcements yet.</p>
+                {!user && <p className="text-slate-700 text-xs mt-1">Join the club to see announcements.</p>}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map((ann) => {
+                  const TAG_STYLE = {
+                    general:  "bg-slate-900 text-slate-400 border-slate-700",
+                    event:    "bg-indigo-950 text-indigo-300 border-indigo-800",
+                    reminder: "bg-amber-950 text-amber-400 border-amber-800",
+                    urgent:   "bg-red-950 text-red-400 border-red-900",
+                  };
+                  const canDel = isClubAdmin ||
+                    (ann.postedBy && String(ann.postedBy._id || ann.postedBy) === currentUserId);
+                  return (
+                    <div
+                      key={ann._id}
+                      className={`rounded-2xl border p-5 ${
+                        ann.pinned
+                          ? "border-amber-700/50 bg-amber-950/20"
+                          : "border-white/[0.07] bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {ann.pinned && <span className="text-amber-400 text-xs">📌</span>}
+                          <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border font-semibold ${TAG_STYLE[ann.tag] || TAG_STYLE.general}`}>
+                            {ann.tag}
+                          </span>
+                          <h3 className="text-sm font-semibold text-white">{ann.title}</h3>
+                        </div>
+                        {canDel && (
+                          <button
+                            onClick={() => handleDeleteAnnouncement(ann._id)}
+                            className="text-slate-700 hover:text-red-400 text-xs transition-colors shrink-0"
+                            title="Delete announcement"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-line">{ann.body}</p>
+                      <p className="text-[11px] text-slate-700 mt-3">
+                        {ann.postedBy?.name || "Unknown"} · {new Date(ann.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
-  );
+
+    {/* ── COORDINATOR PROMOTE MODAL ── */}
+    {promotingMember && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="w-full max-w-sm bg-[#111] border border-white/[0.1] rounded-2xl shadow-2xl">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07]">
+            <h2 className="text-sm font-bold text-white">Assign Coordinator</h2>
+            <button onClick={() => setPromotingMember(null)} className="text-slate-600 hover:text-white text-xl leading-none">×</button>
+          </div>
+          <div className="px-6 py-5 space-y-4">
+            <p className="text-slate-400 text-sm">
+              Promote <strong className="text-white">{promotingMember.name}</strong> to Student Club Coordinator?
+            </p>
+            <div className="relative">
+              <label className="block text-[11px] text-slate-500 uppercase tracking-widest mb-1.5">Coordinator Category (optional)</label>
+
+              {/* Custom dropdown trigger */}
+              <button
+                type="button"
+                onClick={() => setCoordDropOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm bg-[#1a1a2a] border border-white/[0.12] rounded-xl text-white hover:border-indigo-600/50 transition-colors focus:outline-none focus:border-indigo-600/50"
+              >
+                <span>
+                  {coordCategory === "none"      && "None (general)"}
+                  {coordCategory === "event"     && "📅 Event Coordinator"}
+                  {coordCategory === "content"   && "📝 Content Coordinator"}
+                  {coordCategory === "technical" && "⚡ Technical Coordinator"}
+                </span>
+                <svg className={`w-4 h-4 text-slate-500 transition-transform ${coordDropOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown options */}
+              {coordDropOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-10 rounded-xl border border-white/[0.12] bg-[#1a1a2a] shadow-2xl overflow-hidden">
+                  {[
+                    { value: "none",      label: "None (general)",        icon: "🌐" },
+                    { value: "event",     label: "Event Coordinator",     icon: "📅" },
+                    { value: "content",   label: "Content Coordinator",   icon: "📝" },
+                    { value: "technical", label: "Technical Coordinator",  icon: "⚡" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => { setCoordCategory(opt.value); setCoordDropOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
+                        coordCategory === opt.value
+                          ? "bg-indigo-600/20 text-indigo-300"
+                          : "text-slate-300 hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      <span className="text-base">{opt.icon}</span>
+                      <span>{opt.label}</span>
+                      {coordCategory === opt.value && (
+                        <svg className="ml-auto w-3.5 h-3.5 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="text-[11px] text-slate-600 bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 space-y-1">
+              <p>✓ Can create draft events, edit details, manage registrations</p>
+              <p>✓ Can mark attendance and post announcements</p>
+              <p>✗ Cannot publish events or remove members</p>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setPromotingMember(null)}
+                className="flex-1 py-2.5 border border-white/[0.1] text-slate-400 rounded-xl text-sm hover:border-white/[0.2] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePromote}
+                disabled={!!coordActing}
+                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                {coordActing ? "Assigning…" : "Assign Role"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </>);
 }
+
 
 /* ─────────────────────────────────────────────
    Sub-components
@@ -639,49 +1012,116 @@ function SectionHeading({ label, count, countCls = "text-slate-500" }) {
   );
 }
 
-function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject }) {
-  const name    = member.userId?.name  || "Unknown";
-  const email   = member.userId?.email || "";
-  const initial = name[0]?.toUpperCase() || "?";
-  const joined  = member.joinedAt
-    ? new Date(member.joinedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onViewProfile, onPromote, onDemote, coordActing }) {
+  const name      = member.userId?.name  || "Unknown";
+  const email     = member.userId?.email || "";
+  const initial   = name[0]?.toUpperCase() || "?";
+  const joined    = member.joinedAt || member.createdAt
+    ? new Date(member.joinedAt || member.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : "—";
+  const isApproved    = member.status === "approved" || member.status === "active";
+  const isCoordinator = member.clubRole === "coordinator";
+
+  const COORD_CAT_LABEL = {
+    event: "📅 Event", content: "📝 Content", technical: "⚡ Technical", none: "",
+  };
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.10] transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
-          {initial}
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.10] transition-colors group">
+      {/* Left — clickable profile area */}
+      <button
+        onClick={onViewProfile}
+        disabled={!onViewProfile}
+        className="flex items-center gap-3 min-w-0 flex-1 text-left disabled:cursor-default"
+        title={onViewProfile ? `View ${name}'s profile` : undefined}
+      >
+        <div className="relative">
+          <div className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
+            {initial}
+          </div>
+          {/* Coordinator dot */}
+          {isCoordinator && (
+            <span
+              className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 border-2 border-[#0a0a12]"
+              title="Coordinator"
+            />
+          )}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium text-white truncate">{name}</p>
-          <p className="text-[11px] text-slate-600 truncate">{email} · {joined}</p>
+          <div className="flex items-center gap-2">
+            <p className={`text-sm font-medium truncate transition-colors ${
+              onViewProfile ? "text-white group-hover:text-indigo-300" : "text-white"
+            }`}>
+              {name}
+              {onViewProfile && (
+                <span className="ml-1 text-slate-600 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+              )}
+            </p>
+            {/* Coordinator badge */}
+            {isCoordinator && (
+              <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-amber-950/60 text-amber-400 border border-amber-800/50 font-semibold whitespace-nowrap">
+                {COORD_CAT_LABEL[member.coordinatorCategory] || "Coordinator"}
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-slate-600 truncate">{email ? `${email} · ` : ""}{joined}</p>
         </div>
-      </div>
+      </button>
 
+      {/* Right — status + admin actions */}
       <div className="flex items-center gap-2 shrink-0 ml-3">
-        {/* Pending: show approve / reject buttons (admin only) */}
+        {/* Pending: approve / reject */}
         {member.status === "pending" && isAdmin && (
           <>
             <button
               onClick={onApprove}
               disabled={actionLoading}
-              className="text-[11px] px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-800 text-emerald-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="text-[11px] px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-800 text-emerald-300 transition-colors disabled:opacity-40"
             >
               {actionLoading ? "…" : "Approve"}
             </button>
             <button
               onClick={onReject}
               disabled={actionLoading}
-              className="text-[11px] px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 border border-red-900 text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="text-[11px] px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 border border-red-900 text-red-400 transition-colors disabled:opacity-40"
             >
               {actionLoading ? "…" : "Reject"}
             </button>
           </>
         )}
 
+        {/* Active member admin actions */}
+        {isApproved && isAdmin && (
+          isCoordinator ? (
+            // Demote button
+            <button
+              onClick={onDemote}
+              disabled={coordActing}
+              title="Remove coordinator role"
+              className="text-[11px] px-3 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/50 text-amber-400 transition-colors disabled:opacity-40"
+            >
+              {coordActing ? "…" : "Demote"}
+            </button>
+          ) : (
+            // Promote button
+            <button
+              onClick={onPromote}
+              disabled={coordActing}
+              title="Assign coordinator role"
+              className="text-[11px] px-3 py-1.5 rounded-lg bg-indigo-950/60 hover:bg-indigo-900/70 border border-indigo-800/60 text-indigo-300 transition-colors disabled:opacity-40"
+            >
+              {coordActing ? "…" : "★ Promote"}
+            </button>
+          )
+        )}
+
         {/* Status pill */}
-        {member.status === "active" && (
+        {isApproved && !isAdmin && (
+          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-full">
+            Active
+          </span>
+        )}
+        {isApproved && isAdmin && !isCoordinator && (
           <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-full">
             Active
           </span>
@@ -700,3 +1140,4 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject }) {
     </div>
   );
 }
+

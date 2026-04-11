@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const clubSchema = new mongoose.Schema(
   {
-    
     name: {
       type: String,
       required: [true, "Club name is required"],
@@ -23,7 +22,6 @@ const clubSchema = new mongoose.Schema(
       required: true,
     },
 
- 
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -36,50 +34,21 @@ const clubSchema = new mongoose.Schema(
       default: null,
     },
 
-    members: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        status: {
-          type: String,
-          enum: ["pending", "active", "rejected"],
-          default: "pending",
-        },
-        joinedAt: {
-          type: Date,
-          default: Date.now,
-        },
-        approvedBy: mongoose.Schema.Types.ObjectId, 
-        approvedAt: Date,
-      },
-    ],
-
+    // Denormalised counter — updated via Membership operations
+    // Source of truth is always: Membership.countDocuments({ clubId, status: 'approved' })
     memberCount: {
       type: Number,
       default: 0,
-    },
-
-
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+      min: 0,
     },
   },
   { timestamps: true }
 );
 
-// Create indexes for performance
+// Indexes for performance
 clubSchema.index({ name: 1 }, { unique: true });
 clubSchema.index({ adminId: 1 });
 clubSchema.index({ category: 1 });
 clubSchema.index({ createdAt: -1 });
-clubSchema.index({ "members.userId": 1 });
 
 export default mongoose.model("Club", clubSchema);

@@ -46,26 +46,15 @@ export default function Dashboard() {
     const fetchAll = async () => {
       setLoading(true);
 
-      const [clubsRes, eventsRes, chatsRes, bookmarksRes] = await Promise.allSettled([
-        api.get("/clubs",     { params: { limit: 200 } }),
+      const [myClubsRes, eventsRes, chatsRes, bookmarksRes] = await Promise.allSettled([
+        api.get("/clubs/mine"),
         api.get("/events",    { params: { limit: 5   } }),
         api.get("/chats"),
         api.get("/bookmarks"),
       ]);
 
-      if (clubsRes.status === "fulfilled") {
-        const all = clubsRes.value.data.data || [];
-        const mine = all
-          .filter((c) =>
-            c.members?.some((m) => String(m.userId) === String(user._id))
-          )
-          .map((c) => ({
-            ...c,
-            myStatus: c.members.find(
-              (m) => String(m.userId) === String(user._id)
-            )?.status,
-          }));
-        setMyClubs(mine);
+      if (myClubsRes.status === "fulfilled") {
+        setMyClubs(myClubsRes.value.data.data || []);
       }
 
       if (eventsRes.status === "fulfilled") {

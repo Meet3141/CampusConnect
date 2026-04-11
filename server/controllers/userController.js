@@ -1,5 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/User.js";
+import RefreshToken from "../models/RefreshToken.js";
 
 // @desc    Get current user's profile
 // @route   GET /api/users/profile
@@ -15,7 +16,7 @@ export const getProfile = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    user,
+    user: user.toJSON(),
   });
 });
 
@@ -98,6 +99,66 @@ export const updateProfile = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    user: updatedUser,
+    user: updatedUser.toJSON(),
   });
+});
+
+// @desc    Update a user's roles  (orgAdmin only)
+// @route   PATCH /api/users/:id/roles
+// @access  Private — orgAdmin
+export const updateRoles = asyncHandler(async (req, res) => {
+  const VALID_ROLES = ["member", "clubAdmin", "editor", "orgAdmin"];
+  const { roles } = req.body;
+
+  if (!Array.isArray(roles) || roles.length === 0) {
+    const error = new Error("roles must be a non-empty array");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const invalid = roles.filter((r) => !VALID_ROLES.includes(r));
+  if (invalid.length > 0) {
+    const error = new Error(`Invalid role(s): ${invalid.join(", ")}`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const targetUser = await User.findByIdAndUpdate(
+    req.params.id,
+    { $set: { roles } },
+    { new: true, runValidators: true }
+  );
+
+  if (!targetUser) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // S5.C4 — Invalidate all active sessions for this user so the next
+  // request forces re-authentication with the updated role payload.
+  await RefreshToken.deleteMany({ userId: req.params.id });
+
+  res.status(200).json({
+    success: true,
+    message: "Roles updated. User sessions have been invalidated.",
+    user: targetUser.toJSON(),
+  });
+});
+
+// @desc    Get any user's public profile (read-only, safe subset of fields)
+// @route   GET /api/users/:id
+// @access  Private (requires auth — club admin use case)
+export const getPublicProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select("name bio roles interests profilePicture createdAt")
+    .lean();
+
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  res.status(200).json({ success: true, user });
 });

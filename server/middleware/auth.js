@@ -1,23 +1,26 @@
 import jwt from "jsonwebtoken";
 
+/**
+ * auth middleware
+ * Reads the JWT from:
+ *  1. HttpOnly cookie "token"  ← primary (browser clients)
+ *  2. Authorization: Bearer header ← fallback (Socket.IO initial handshake)
+ *
+ * Attaches { id, roles } to req.user on success.
+ * Returns 401 for missing, invalid, or expired tokens.
+ */
 const auth = (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({
-        success: false,
-        message: "No token provided",
-      });
-    }
+    // Priority 1: Cookie (HttpOnly — XSS safe)
+    let token = req.cookies?.token;
 
-    if (!authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid authorization format",
-      });
+    // Priority 2: Bearer header fallback (for Socket.IO / Postman)
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      }
     }
-
-    const token = authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
@@ -27,7 +30,7 @@ const auth = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, roles }
+    req.user = { id: decoded.id, roles: decoded.roles || [] };
     next();
   } catch (error) {
     return res.status(401).json({

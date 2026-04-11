@@ -10,6 +10,7 @@ import MyClubs            from "./pages/MyClubs";
 import EventDetail        from "./pages/EventDetail";
 import CreateEvent        from "./pages/CreateEvent";
 import EditEvent          from "./pages/EditEvent";
+import Events             from "./pages/Events";
 import ExternalEvents     from "./pages/ExternalEvents";
 import CreateExternalEvent from "./pages/CreateExternalEvent";
 import ExternalEventDetail from "./pages/ExternalEventDetail";
@@ -17,13 +18,15 @@ import Bookmarks          from "./pages/Bookmarks";
 import ChatList           from "./pages/ChatList";
 import ChatRoom           from "./pages/ChatRoom";
 import Profile            from "./pages/Profile";
-import VolunteerHub       from "./pages/VolunteerHub";       // F: volunteer section
+import VolunteerHub       from "./pages/VolunteerHub";
 import AdminPanel         from "./pages/AdminPanel";
 import VerifyEvents       from "./pages/VerifyEvents";
 import AdminStats         from "./pages/AdminStats";
 import NotFound           from "./pages/NotFound";
+import UserProfile        from "./pages/UserProfile";
 import ProtectedRoute     from "./routes/ProtectedRoute";
-import AdminRoute         from "./routes/AdminRoute";         // A10: route-level orgAdmin guard
+import AdminRoute         from "./routes/AdminRoute";
+import RoleRoute          from "./routes/RoleRoute";
 import AppLayout          from "./components/AppLayout";
 import { AuthProvider }   from "./context/AuthContext";
 
@@ -40,36 +43,77 @@ export default function App() {
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
 
             {/* ── Member pages ── */}
-            <Route path="/dashboard"      element={<Dashboard />} />
-            <Route path="/my-clubs"       element={<MyClubs />} />
-            <Route path="/clubs"          element={<ClubList />} />
+            <Route path="/dashboard"  element={<Dashboard />} />
+            <Route path="/my-clubs"   element={<MyClubs />} />
+            <Route path="/clubs"      element={<ClubList />} />
 
             {/* IMPORTANT: specific paths before dynamic :id */}
-            <Route path="/clubs/create"   element={<CreateClub />} />
+            {/* S7.C2 — club creation locked to clubAdmin / orgAdmin at route level */}
+            <Route
+              path="/clubs/create"
+              element={
+                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                  <CreateClub />
+                </RoleRoute>
+              }
+            />
             <Route path="/clubs/:id/edit" element={<EditClub />} />
             <Route path="/clubs/:id"      element={<ClubDetail />} />
 
-            <Route path="/events/create"   element={<CreateEvent />} />
+            {/* S7.C2 — event creation locked to clubAdmin / orgAdmin */}
+            <Route
+              path="/events/create"
+              element={
+                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                  <CreateEvent />
+                </RoleRoute>
+              }
+            />
+            <Route path="/events"          element={<Events />} />
             <Route path="/events/:id/edit" element={<EditEvent />} />
             <Route path="/events/:id"      element={<EventDetail />} />
 
-            {/* C: /edit must come before /:id */}
-            <Route path="/external-events/create"    element={<CreateExternalEvent />} />
-            <Route path="/external-events/:id/edit"  element={<CreateExternalEvent editMode />} />
-            <Route path="/external-events/:id"       element={<ExternalEventDetail />} />
-            <Route path="/external-events"           element={<ExternalEvents />} />
+            {/* /edit must come before /:id */}
+            <Route path="/external-events/create"   element={<CreateExternalEvent />} />
+            <Route path="/external-events/:id/edit" element={<CreateExternalEvent editMode />} />
+            <Route path="/external-events/:id"      element={<ExternalEventDetail />} />
+            <Route path="/external-events"          element={<ExternalEvents />} />
 
             <Route path="/bookmarks"  element={<Bookmarks />} />
             <Route path="/chats"      element={<ChatList />} />
             <Route path="/chats/:id"  element={<ChatRoom />} />
-            <Route path="/volunteers" element={<VolunteerHub />} />  {/* F */}
+            <Route path="/volunteers" element={<VolunteerHub />} />
             <Route path="/profile"    element={<Profile />} />
 
-            {/* ── Admin pages — A10: wrapped in AdminRoute for route-level guard ── */}
-            {/* /admin/verify and /admin/stats MUST come before /admin */}
-            <Route path="/admin/verify" element={<VerifyEvents />} />
-            <Route path="/admin/stats"  element={<AdminStats />} />
-            <Route path="/admin"        element={<AdminRoute><AdminPanel /></AdminRoute>} />
+            {/* Public profile for any user — used by club admins to view members */}
+            <Route path="/users/:id"  element={<UserProfile />} />
+
+            {/* ── Admin / Editor pages — route-level role guards ── */}
+            {/* S7.C1 fix: /admin/verify and /admin/stats now have role guards */}
+            <Route
+              path="/admin/verify"
+              element={
+                <RoleRoute roles={["editor", "orgAdmin"]}>
+                  <VerifyEvents />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/admin/stats"
+              element={
+                <RoleRoute roles={["orgAdmin"]}>
+                  <AdminStats />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminPanel />
+                </AdminRoute>
+              }
+            />
           </Route>
 
           <Route path="*" element={<NotFound />} />

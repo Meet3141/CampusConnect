@@ -17,13 +17,15 @@ const NAV = [
     items: [
       { label: "Dashboard",       path: "/dashboard",       icon: IconDashboard },
       { label: "My Clubs",        path: "/my-clubs",        icon: IconClubs     },
-      { label: "Events",          path: "/clubs",           icon: IconEvents    },
+      { label: "Discover Clubs",  path: "/clubs",           icon: IconClubs     },
+      { label: "Events",          path: "/events",          icon: IconEvents    },
       { label: "Chats",           path: "/chats",           icon: IconChat      },
     ],
   },
   {
     section: "Discover",
     items: [
+      { label: "Volunteer Hub",   path: "/volunteers",      icon: IconVolunteer },
       { label: "External Events", path: "/external-events", icon: IconGlobe     },
       { label: "Bookmarks",       path: "/bookmarks",       icon: IconBookmark  },
     ],
@@ -163,19 +165,27 @@ export default function AppLayout() {
               <span className="text-base leading-none">+</span> New Club
             </button>
           )}
-          <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/[0.04] transition-colors group">
-            <div className="w-7 h-7 rounded-full bg-indigo-950 ring-1 ring-indigo-500/30 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
-              {userInitials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-[10px] text-slate-600 capitalize">
-                {user?.roles?.[0] || "member"}
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            {/* Clicking the avatar / name goes to /profile */}
+            <button
+              onClick={() => navigate("/profile")}
+              className="flex-1 flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/[0.06] transition-colors text-left group/profile"
+              title="View your profile"
+            >
+              <div className="w-7 h-7 rounded-full bg-indigo-950 ring-1 ring-indigo-500/30 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
+                {userInitials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate group-hover/profile:text-indigo-300 transition-colors">{user?.name}</p>
+                <p className="text-[10px] text-slate-600 capitalize">
+                  {user?.roles?.[0] || "member"}
+                </p>
+              </div>
+            </button>
+            {/* Logout button — always visible */}
             <button
               onClick={logout}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-red-400"
+              className="shrink-0 p-2 rounded-xl text-slate-600 hover:text-red-400 hover:bg-red-950/30 transition-all"
               title="Log out"
             >
               <IconLogout size={14} />
@@ -342,3 +352,12 @@ function IconStats({ size = 16 }) {
   );
 }
 
+function IconVolunteer({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M8 1.5C6.6 1.5 5.5 2.6 5.5 4s1.1 2.5 2.5 2.5S10.5 5.4 10.5 4 9.4 1.5 8 1.5z" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M11.5 8l1.5 1.5-3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}

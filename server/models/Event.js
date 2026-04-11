@@ -35,9 +35,7 @@ const eventSchema = new mongoose.Schema(
       required: [true, "Event date is required"],
       validate: {
         validator: function (v) {
-          // A9: Only validate future date for NEW documents.
-          // Editing an existing event (e.g. marking as "completed") must not
-          // re-validate the saved date which may now be in the past.
+          // Only validate future date for NEW documents.
           return this.isNew ? v > new Date() : true;
         },
         message: "Event date must be in the future",
@@ -52,36 +50,30 @@ const eventSchema = new mongoose.Schema(
 
     maxAttendees: {
       type: Number,
-      default: null, 
+      default: null,
     },
 
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    // ── Volunteer Programme ────────────────────────────────────────────────
+    // Set by admin/coordinator when creating/editing the event.
+    // When showOnVolunteerHub=true and volunteerLimit>0,
+    // the event appears on the Volunteer Hub until accepted count >= limit.
+
+    showOnVolunteerHub: {
+      type: Boolean,
+      default: false,      // admin must explicitly opt-in
     },
 
+    volunteerLimit: {
+      type: Number,
+      default: null,       // null or 0 = no limit defined
+    },
 
-    attendees: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        status: {
-          type: String,
-          enum: ["registered", "attended", "cancelled"],
-          default: "registered",
-        },
-        registeredAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    volunteerSkillsNeeded: {
+      type: [String],
+      default: [],         // e.g. ["Photography", "Stage Setup", "MCing"]
+    },
 
-
-    // H: Each volunteer entry stores userId, skills they bring, and when they signed up
+    // Application-based volunteer list
     volunteers: [
       {
         userId: {
@@ -93,13 +85,25 @@ const eventSchema = new mongoose.Schema(
           type: [String],
           default: [],
         },
-        volunteeredAt: {
+        // pending → waiting for admin review
+        // accepted → confirmed volunteer
+        // rejected → declined
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "rejected"],
+          default: "pending",
+        },
+        appliedAt: {
           type: Date,
           default: Date.now,
         },
+        reviewedAt: {
+          type: Date,
+          default: null,
+        },
       },
     ],
-
+    // ── End Volunteer Programme ────────────────────────────────────────────
 
     image: {
       type: String,
@@ -107,9 +111,12 @@ const eventSchema = new mongoose.Schema(
     },
 
     
+    // draft          → created by coordinator, awaiting admin approval
+    // pending_approval → coordinator explicitly submitted for review
+    // upcoming      → approved and public
     status: {
       type: String,
-      enum: ["upcoming", "ongoing", "completed", "cancelled"],
+      enum: ["draft", "pending_approval", "upcoming", "ongoing", "completed", "cancelled"],
       default: "upcoming",
     },
 
@@ -134,5 +141,6 @@ eventSchema.index({ category: 1 });
 eventSchema.index({ createdBy: 1 });
 eventSchema.index({ "attendees.userId": 1 });
 eventSchema.index({ date: 1, clubId: 1 });
+eventSchema.index({ showOnVolunteerHub: 1, status: 1 });
 
 export default mongoose.model("Event", eventSchema);

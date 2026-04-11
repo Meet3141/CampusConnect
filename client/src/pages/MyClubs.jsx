@@ -44,27 +44,9 @@ export default function MyClubs() {
 
     const fetchClubs = async () => {
       try {
-        // GET /api/clubs — public, no auth header needed
-        // members[].userId is a raw ObjectId string (not populated) in this list response
-        const res = await api.get("/clubs", { params: { limit: 200 } });
-        const clubs = res.data.data || [];
-
-        // Filter to only clubs where the current user appears in members[]
-        const mine = clubs.filter((club) =>
-          club.members?.some(
-            (m) => String(m.userId) === String(user._id)
-          )
-        );
-
-        // Attach the user's own status to each club for display
-        const enriched = mine.map((club) => {
-          const membership = club.members.find(
-            (m) => String(m.userId) === String(user._id)
-          );
-          return { ...club, myStatus: membership?.status };
-        });
-
-        setAllClubs(enriched);
+        // GET /api/clubs/mine — returns only the user's clubs with myStatus attached
+        const res = await api.get("/clubs/mine");
+        setAllClubs(res.data.data || []);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load your clubs.");
       } finally {

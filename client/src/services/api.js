@@ -1,24 +1,24 @@
 import axios from "axios";
 
+/**
+ * Axios instance for all API calls.
+ *
+ * withCredentials: true — instructs the browser to send/receive HttpOnly cookies
+ * automatically with every request.  No manual token handling needed.
+ */
 const api = axios.create({
   baseURL: "http://localhost:5000/api",
+  withCredentials: true,    // send cookies cross-origin
 });
 
-// Attach token automatically
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// ── Response interceptor: auto-refresh expired tokens ──
+// ── Response interceptor: auto-refresh on 401 ────────────────────────────────
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, token = null) => {
+const processQueue = (error) => {
   failedQueue.forEach((prom) => {
     if (error) prom.reject(error);
-    else prom.resolve(token);
+    else prom.resolve();
   });
   failedQueue = [];
 };
@@ -28,22 +28,17 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Only handle 401 (Unauthorized) responses, and skip if already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // Don't try to refresh on auth endpoints themselves
-      if (originalRequest.url?.includes("/auth/")) {
-        return Promise.reject(error);
-      }
-
+    // Only handle 401 responses; skip auth endpoints themselves
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/")
+    ) {
       if (isRefreshing) {
-        // Queue requests while a refresh is in progress
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
-          })
+          .then(() => api(originalRequest))
           .catch((err) => Promise.reject(err));
       }
 
@@ -51,21 +46,19 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const currentToken = localStorage.getItem("token");
-        const res = await axios.post(
+        // Refresh token is sent automatically via the HttpOnly cookie
+        await axios.post(
           "http://localhost:5000/api/auth/refresh-token",
-          { token: currentToken }
+          {},
+          { withCredentials: true }
         );
-        const newToken = res.data.token;
-        localStorage.setItem("token", newToken);
 
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        processQueue(null, newToken);
+        // New access token cookie is now set — retry the original request
+        processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
-        // Token refresh failed — clear token and let the app redirect to login
-        localStorage.removeItem("token");
+        processQueue(refreshError);
+        // Refresh failed — redirect to login
         window.location.href = "/login";
         return Promise.reject(refreshError);
       } finally {

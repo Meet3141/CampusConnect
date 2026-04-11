@@ -7,29 +7,29 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Login — server sets access + refresh token cookies; we receive the user object
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
-    localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
+  // Logout — server clears cookies; we clear local state
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Swallow errors — clear state regardless
+    }
     setUser(null);
   };
 
+  // Verify session on app load — reads the HttpOnly cookie automatically
   const verify = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await api.get("/auth/verify");
       setUser(res.data.user);
     } catch {
-      logout();
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

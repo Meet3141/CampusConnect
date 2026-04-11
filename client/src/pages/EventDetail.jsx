@@ -152,6 +152,44 @@ export default function EventDetail() {
     }
   };
 
+  const handleReviewVolunteer = async (userId, action) => {
+    setActionLoading(true);
+    try {
+      const res = await api.patch(`/events/${id}/volunteer/${userId}/review`, { action });
+      // Update local state optimistically
+      setEvent((prev) => ({
+        ...prev,
+        volunteers: prev.volunteers.map((v) =>
+          String(v.userId?._id || v.userId) === userId
+            ? { ...v, status: action === "accept" ? "accepted" : "rejected", reviewedAt: new Date() }
+            : v
+        ),
+      }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to review application.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRemoveVolunteer = async (userId) => {
+    if (!window.confirm("Remove this volunteer?")) return;
+    setActionLoading(true);
+    try {
+      await api.delete(`/events/${id}/volunteer/${userId}`);
+      setEvent((prev) => ({
+        ...prev,
+        volunteers: prev.volunteers.filter(
+          (v) => String(v.userId?._id || v.userId) !== userId
+        ),
+      }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to remove.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   /* ── Delete event ── */
   const handleDeleteEvent = async () => {
     if (!window.confirm("Are you sure you want to delete this event? This cannot be undone.")) return;
@@ -259,13 +297,6 @@ export default function EventDetail() {
                   {isFull && !isRegistered && (
                     <span className="px-5 py-2.5 bg-slate-800/60 text-slate-500 rounded-xl text-sm text-center">Event Full</span>
                   )}
-                  {/* G: Hide volunteer button from event admins/creators — they manage, not volunteer */}
-                  {!isVolunteer && !isEventAdmin && (
-                    <button onClick={handleVolunteer} disabled={actionLoading}
-                      className="px-5 py-2.5 bg-white/[0.07] hover:bg-white/[0.12] rounded-xl text-sm text-white transition-colors disabled:opacity-50 whitespace-nowrap">
-                      🙋 Volunteer
-                    </button>
-                  )}
                 </>
               )}
               {user && (
@@ -334,34 +365,100 @@ export default function EventDetail() {
           </div>
         </div>
       </div>
-      {/* H: Admin sees volunteer list with skills below main content */}
-      {isEventAdmin && (event?.volunteers?.length ?? 0) > 0 && (
-        <div className="px-5 lg:px-6 pb-6">
-          <div className="rounded-2xl border border-amber-900/40 bg-amber-950/20 p-5">
-            <h3 className="text-[11px] uppercase tracking-widest text-amber-500 font-semibold mb-4">
-              🙋 Volunteers ({event.volunteers.length})
-            </h3>
-            <div className="space-y-3">
-              {event.volunteers.map((v, i) => (
-                <div key={i} className="flex items-center justify-between py-2.5 border-b border-white/[0.05] last:border-0">
-                  <div>
-                    <p className="text-sm text-white font-medium">{v.userId?.name || "Unknown"}</p>
-                    {v.userId?.email && (
-                      <p className="text-[11px] text-slate-500">{v.userId.email}</p>
-                    )}
-                  </div>
-                  {v.skills?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 justify-end max-w-[55%]">
-                      {v.skills.map((s, si) => (
-                        <span key={si} className="text-[10px] px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded-full text-slate-400">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
+      {/* ── Volunteer Applications Panel (admin only) ── */}
+      {isEventAdmin && event.showOnVolunteerHub && (
+        <div className="px-5 lg:px-6 pb-8">
+          <div className="rounded-2xl border border-indigo-900/40 bg-indigo-950/10 p-5">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  🙋 Volunteer Applications
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {event.volunteers?.filter(v => v.status === "accepted").length ?? 0} / {event.volunteerLimit} accepted
+                  {event.volunteerSkillsNeeded?.length > 0 && (
+                    <span className="ml-2 text-slate-600">· Looking for: {event.volunteerSkillsNeeded.join(", ")}</span>
                   )}
-                </div>
-              ))}
+                </p>
+              </div>
+              <span className={`text-[10px] px-2 py-1 rounded-full border font-semibold ${
+                (event.volunteers?.filter(v => v.status === "accepted").length ?? 0) >= event.volunteerLimit
+                  ? "bg-amber-950 text-amber-400 border-amber-800"
+                  : "bg-emerald-950 text-emerald-400 border-emerald-800"
+              }`}>
+                {(event.volunteers?.filter(v => v.status === "accepted").length ?? 0) >= event.volunteerLimit
+                  ? "Slots Full" : "Open"}
+              </span>
             </div>
+
+            {(!event.volunteers || event.volunteers.length === 0) ? (
+              <p className="text-slate-600 text-sm text-center py-6">No applications yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {/* Pending */}
+                {event.volunteers.filter(v => v.status === "pending").map((v) => {
+                  const uid = String(v.userId?._id || v.userId);
+                  return (
+                    <div key={uid} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-amber-950/20 border border-amber-900/30">
+                      <div className="min-w-0">
+                        <p className="text-sm text-white font-medium">{v.userId?.name || "Unknown"}</p>
+                        {v.skills?.length > 0 && (
+                          <p className="text-[11px] text-slate-500 mt-0.5">Skills: {v.skills.join(", ")}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-amber-400 border border-amber-800 bg-amber-950 px-2 py-0.5 rounded-full">Pending</span>
+                        <button
+                          onClick={() => handleReviewVolunteer(uid, "accept")}
+                          disabled={actionLoading}
+                          className="px-3 py-1 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors disabled:opacity-40"
+                        >✓ Accept</button>
+                        <button
+                          onClick={() => handleReviewVolunteer(uid, "reject")}
+                          disabled={actionLoading}
+                          className="px-3 py-1 text-xs border border-red-900/50 text-red-400 hover:bg-red-950/30 rounded-lg transition-colors disabled:opacity-40"
+                        >✕ Reject</button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Accepted */}
+                {event.volunteers.filter(v => v.status === "accepted").map((v) => {
+                  const uid = String(v.userId?._id || v.userId);
+                  return (
+                    <div key={uid} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-emerald-950/20 border border-emerald-900/30">
+                      <div className="min-w-0">
+                        <p className="text-sm text-white font-medium">{v.userId?.name || "Unknown"}</p>
+                        {v.skills?.length > 0 && (
+                          <p className="text-[11px] text-slate-500 mt-0.5">Skills: {v.skills.join(", ")}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-emerald-400 border border-emerald-800 bg-emerald-950 px-2 py-0.5 rounded-full">✓ Accepted</span>
+                        <button
+                          onClick={() => handleRemoveVolunteer(uid)}
+                          disabled={actionLoading}
+                          className="px-3 py-1 text-xs border border-red-900/50 text-red-400 hover:bg-red-950/30 rounded-lg transition-colors disabled:opacity-40 text-[11px]"
+                        >Remove</button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Rejected */}
+                {event.volunteers.filter(v => v.status === "rejected").map((v) => {
+                  const uid = String(v.userId?._id || v.userId);
+                  return (
+                    <div key={uid} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.05] opacity-60">
+                      <p className="text-sm text-slate-500">{v.userId?.name || "Unknown"}</p>
+                      <span className="text-[10px] text-red-400 border border-red-900/40 px-2 py-0.5 rounded-full">✕ Rejected</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
