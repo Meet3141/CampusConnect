@@ -46,7 +46,6 @@ const clubSchema = new mongoose.Schema(
 );
 
 // Indexes for performance
-clubSchema.index({ name: 1 }, { unique: true });
 clubSchema.index({ adminId: 1 });
 clubSchema.index({ category: 1 });
 clubSchema.index({ createdAt: -1 });

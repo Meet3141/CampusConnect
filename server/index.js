@@ -25,7 +25,10 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:5173";
+const ALLOWED_ORIGIN =
+  process.env.CORS_ORIGIN ||
+  process.env.ALLOWED_ORIGIN ||
+  "http://localhost:5173";
 
 const io = new Server(server, {
   cors: {

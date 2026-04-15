@@ -38,7 +38,4 @@ const ocrCacheSchema = new mongoose.Schema(
   }
 );
 
-ocrCacheSchema.index({ imageUrl: 1 }, { unique: true });
-ocrCacheSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
-
 export default mongoose.model("OCRCache", ocrCacheSchema);
