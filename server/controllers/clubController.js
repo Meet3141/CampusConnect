@@ -183,8 +183,10 @@ export const joinClub = async (req, res) => {
 		clubId: club._id,
 	});
 
-	// Org admins are implicitly members — auto-approve their join requests
-	if ((req.user?.roles || []).includes("orgAdmin")) {
+	// Org admins and editors are implicitly members — auto-approve their join requests
+	const roles = req.user?.roles || [];
+	if (roles.includes("orgAdmin") || roles.includes("editor")) {
+		const autoApprovedRole = roles.includes("orgAdmin") ? "org admin" : "editor";
 		if (existing && existing.status === "approved") {
 			return res.status(400).json({ success: false, message: "Already a member" });
 		}
@@ -211,7 +213,7 @@ export const joinClub = async (req, res) => {
 		// Ensure club.memberCount is in sync
 		await syncMemberCount(club._id);
 
-		return res.json({ success: true, message: "Added as member (org admin)" });
+		return res.json({ success: true, message: `Added as member (${autoApprovedRole})` });
 	}
 
 	if (existing && existing.status === "approved") {
