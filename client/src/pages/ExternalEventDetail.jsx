@@ -96,6 +96,9 @@ export default function ExternalEventDetail() {
   const timeStr = event.date
     ? new Date(event.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
     : "";
+  
+  // Check if event date has passed
+  const isEventExpired = event.date && new Date(event.date) < new Date();
 
   return (
     <div className="text-white">
@@ -143,11 +146,18 @@ export default function ExternalEventDetail() {
 
             {/* Actions */}
             <div className="flex flex-col gap-2 shrink-0">
-              {event.registrationLink && (
+              {event.registrationLink && !isEventExpired && (
                 <a href={event.registrationLink} target="_blank" rel="noopener noreferrer"
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors text-center whitespace-nowrap">
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all text-center whitespace-nowrap shadow-lg hover:shadow-indigo-600/50 inline-block !text-white">
                   Register →
                 </a>
+              )}
+              {event.registrationLink && isEventExpired && (
+                <button disabled
+                  className="px-6 py-3 bg-slate-700 text-slate-400 font-bold rounded-xl text-sm cursor-not-allowed text-center whitespace-nowrap opacity-50"
+                  title="Event date has passed">
+                  Registration Closed
+                </button>
               )}
               {user && (
                 <button onClick={toggleBookmark}

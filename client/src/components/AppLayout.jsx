@@ -49,7 +49,7 @@ export default function AppLayout() {
     ...((isEditor || isAdmin)
       ? [{ label: "Verify Events", path: "/admin/verify", icon: IconVerify }]
       : []),
-    ...((isClubAdmin || isAdmin)
+    ...((isAdmin)
       ? [{ label: "Analytics", path: "/admin/stats", icon: IconStats }]
       : []),
   ];
@@ -157,14 +157,6 @@ export default function AppLayout() {
 
         {/* User + logout */}
         <div className="px-3 pb-4 pt-2 border-t border-white/[0.06]">
-          {canCreateClub && (
-            <button
-              onClick={() => navigate("/clubs/create")}
-              className="w-full mb-2 flex items-center justify-center gap-2 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
-            >
-              <span className="text-base leading-none">+</span> New Club
-            </button>
-          )}
           <div className="flex items-center gap-2">
             {/* Clicking the avatar / name goes to /profile */}
             <button

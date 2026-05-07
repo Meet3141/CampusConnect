@@ -282,7 +282,8 @@ export default function EventDetail() {
 
             {/* Actions */}
             <div className="flex flex-col gap-2 shrink-0">
-              {user && event.status === "upcoming" && (
+              {/* Hide RSVP for orgAdmin and clubAdmin (they are handlers, not attendees) */}
+              {user && event.status === "upcoming" && !isOrgAdmin && !isClubAdminOfEvent && (
                 <>
                   {!isRegistered && !isFull && (
                     <button onClick={handleRsvp} disabled={actionLoading}

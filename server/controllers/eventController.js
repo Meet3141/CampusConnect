@@ -168,7 +168,15 @@ export const rsvpEvent = async (req, res) => {
   const existing = event.attendees.find((a) => a.userId.toString() === req.user.id);
   if (existing && existing.status === "registered") return res.status(400).json({ success: false, message: "Already registered" });
 
-  if (event.maxAttendees && event.attendees.filter((a) => a.status === "registered").length >= event.maxAttendees) {
+  // OrgAdmin and clubAdmin are auto-approved (no limit checks)
+  const userRoles = req.user.roles || [];
+  const isOrgAdmin = userRoles.includes("orgAdmin");
+  const club = await Club.findById(event.clubId).lean();
+  const isClubAdmin = club && club.adminId.toString() === req.user.id;
+  const isHandler = isOrgAdmin || isClubAdmin;
+
+  // Only enforce capacity limits for regular attendees
+  if (!isHandler && event.maxAttendees && event.attendees.filter((a) => a.status === "registered").length >= event.maxAttendees) {
     return res.status(400).json({ success: false, message: "Event is full" });
   }
 
@@ -214,6 +222,7 @@ export const volunteerForEvent = async (req, res) => {
 
   const userRoles = req.user.roles || [];
   const isOrgAdmin = userRoles.includes("orgAdmin");
+  const isEditor = userRoles.includes("editor");
   const club = await Club.findById(event.clubId).select("adminId").lean();
   const isClubAdmin = club && String(club.adminId) === req.user.id;
   const isEventCreator = event.createdBy && String(event.createdBy) === req.user.id;
@@ -225,7 +234,7 @@ export const volunteerForEvent = async (req, res) => {
     clubRole: "coordinator",
   }).lean();
 
-  if (isOrgAdmin || isClubAdmin || isEventCreator || coordinatorMembership) {
+  if (isOrgAdmin || isEditor || isClubAdmin || isEventCreator || coordinatorMembership) {
     return res.status(403).json({
       success: false,
       message: "Event admins/coordinators cannot apply as volunteers for this event",

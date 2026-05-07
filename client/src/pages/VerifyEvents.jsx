@@ -29,6 +29,13 @@ const CAT_META = {
 };
 const catOf = (k) => CAT_META[k] || CAT_META.cultural;
 
+// Return true only when value can be parsed into a valid Date
+function isValidDate(val) {
+  if (!val) return false;
+  const d = new Date(val);
+  return !Number.isNaN(d.getTime());
+}
+
 export default function VerifyEvents() {
   const { user } = useAuth();
   const navigate  = useNavigate();
@@ -198,7 +205,7 @@ export default function VerifyEvents() {
                         {ev.title}
                       </h3>
                       <p className="text-[11px] text-slate-500 mb-0.5">🏫 {ev.universityName}</p>
-                      {ev.date && (
+                      {isValidDate(ev.date) && (
                         <p className="text-[11px] text-slate-500 mb-0.5">
                           📅 {new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>

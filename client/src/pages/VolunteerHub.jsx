@@ -96,6 +96,7 @@ export default function VolunteerHub() {
   const isAuthorityForEvent = (ev) => {
     if (!user) return false;
     if (user?.roles?.includes("orgAdmin")) return true;
+    if (user?.roles?.includes("editor")) return true;
     if (String(ev.createdBy?._id || ev.createdBy || "") === currentUserId) return true;
     if (String(ev.clubId?.adminId?._id || ev.clubId?.adminId || "") === currentUserId) return true;
     return false;

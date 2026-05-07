@@ -23,6 +23,19 @@ const CAT_META = {
 };
 const catOf = (k) => CAT_META[k] || CAT_META.cultural;
 
+// Helper: check if a date is valid
+function isValidDate(val) {
+  if (!val) return false;
+  const d = new Date(val);
+  return !Number.isNaN(d.getTime());
+}
+
+// Helper: check if event date has passed
+function isEventExpired(val) {
+  if (!val || !isValidDate(val)) return false;
+  return new Date(val) < new Date();
+}
+
 export default function ExternalEvents() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -130,7 +143,7 @@ export default function ExternalEvents() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {events.map((ev) => {
+              {events.filter(ev => isValidDate(ev.date)).map((ev) => {
                 const cat = catOf(ev.category);
                 return (
                   <div key={ev._id} onClick={() => navigate(`/external-events/${ev._id}`)}
@@ -149,17 +162,22 @@ export default function ExternalEvents() {
                       {ev.title}
                     </h3>
                     <p className="text-[11px] text-slate-500 mb-1">🏫 {ev.universityName}</p>
-                    {ev.date && (
+                    {isValidDate(ev.date) && (
                       <p className="text-[11px] text-slate-500">
                         📅 {new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </p>
                     )}
                     {ev.venue && <p className="text-[11px] text-slate-500 mt-0.5">📍 {ev.venue}</p>}
-                    {ev.registrationLink && (
+                    {ev.registrationLink && !isEventExpired(ev.date) && (
                       <a href={ev.registrationLink} target="_blank" rel="noopener noreferrer"
                         className="inline-block mt-3 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
                         Register →
                       </a>
+                    )}
+                    {ev.registrationLink && isEventExpired(ev.date) && (
+                      <p className="inline-block mt-3 text-xs text-slate-600 cursor-not-allowed" title="Event date has passed">
+                        Registration Closed
+                      </p>
                     )}
                   </div>
                 );

@@ -183,6 +183,37 @@ export const joinClub = async (req, res) => {
 		clubId: club._id,
 	});
 
+	// Org admins are implicitly members — auto-approve their join requests
+	if ((req.user?.roles || []).includes("orgAdmin")) {
+		if (existing && existing.status === "approved") {
+			return res.status(400).json({ success: false, message: "Already a member" });
+		}
+
+		if (existing) {
+			existing.status = "approved";
+			existing.clubRole = "member";
+			existing.coordinatorCategory = "none";
+			existing.approvedBy = req.user.id;
+			existing.approvedAt = new Date();
+			existing.updatedAt = new Date();
+			await existing.save();
+		} else {
+			await Membership.create({
+				userId: req.user.id,
+				clubId: club._id,
+				status: "approved",
+				clubRole: "member",
+				approvedBy: req.user.id,
+				approvedAt: new Date(),
+			});
+		}
+
+		// Ensure club.memberCount is in sync
+		await syncMemberCount(club._id);
+
+		return res.json({ success: true, message: "Added as member (org admin)" });
+	}
+
 	if (existing && existing.status === "approved") {
 		return res.status(400).json({ success: false, message: "Already a member" });
 	}
