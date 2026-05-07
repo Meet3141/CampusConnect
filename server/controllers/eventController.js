@@ -2,6 +2,18 @@ import Event from "../models/Event.js";
 import Club from "../models/Club.js";
 import Membership from "../models/Membership.js";
 
+const syncExpiredUpcomingEvents = async () => {
+  await Event.updateMany(
+    {
+      status: "upcoming",
+      date: { $lt: new Date() },
+    },
+    {
+      $set: { status: "completed" },
+    }
+  );
+};
+
 // Create internal event (clubAdmin or approved coordinator)
 export const createEvent = async (req, res) => {
   const {
@@ -48,6 +60,8 @@ export const createEvent = async (req, res) => {
 
 // Get events with filters (hide drafts from public; only show to creator/admin/coordinator)
 export const getEvents = async (req, res) => {
+  await syncExpiredUpcomingEvents();
+
   const { clubId, category, q, status, page = 1, limit = 20 } = req.query;
   const filter = {};
   if (clubId) filter.clubId = clubId;
@@ -69,7 +83,12 @@ export const getEvents = async (req, res) => {
 
 // Get event details
 export const getEventById = async (req, res) => {
-  const event = await Event.findById(req.params.id).populate("clubId", "name").lean();
+  await syncExpiredUpcomingEvents();
+
+  const event = await Event.findById(req.params.id)
+    .populate("clubId", "name adminId")
+    .populate("volunteers.userId", "name email profilePicture")
+    .lean();
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
   res.json({ success: true, data: event });
 };
@@ -133,6 +152,11 @@ export const rsvpEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
+  // Backward compatibility for legacy documents created before attendees existed.
+  if (!Array.isArray(event.attendees)) {
+    event.attendees = [];
+  }
+
   // A2: Block RSVP on non-upcoming or past events
   if (event.status === "cancelled" || event.status === "completed") {
     return res.status(400).json({ success: false, message: `Cannot RSVP: event is ${event.status}` });
@@ -164,6 +188,10 @@ export const cancelRsvp = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
+  if (!Array.isArray(event.attendees)) {
+    event.attendees = [];
+  }
+
   const attendee = event.attendees.find((a) => a.userId.toString() === req.user.id);
   if (!attendee || attendee.status !== "registered") return res.status(400).json({ success: false, message: "Not registered" });
 
@@ -176,13 +204,33 @@ export const cancelRsvp = async (req, res) => {
 export const getAttendees = async (req, res) => {
   const event = await Event.findById(req.params.id).populate("attendees.userId", "name email roles");
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
-  res.json({ success: true, data: event.attendees });
+  res.json({ success: true, data: Array.isArray(event.attendees) ? event.attendees : [] });
 };
 
 // Apply to volunteer for an event (creates a PENDING application)
 export const volunteerForEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
+
+  const userRoles = req.user.roles || [];
+  const isOrgAdmin = userRoles.includes("orgAdmin");
+  const club = await Club.findById(event.clubId).select("adminId").lean();
+  const isClubAdmin = club && String(club.adminId) === req.user.id;
+  const isEventCreator = event.createdBy && String(event.createdBy) === req.user.id;
+
+  const coordinatorMembership = await Membership.findOne({
+    userId: req.user.id,
+    clubId: event.clubId,
+    status: "approved",
+    clubRole: "coordinator",
+  }).lean();
+
+  if (isOrgAdmin || isClubAdmin || isEventCreator || coordinatorMembership) {
+    return res.status(403).json({
+      success: false,
+      message: "Event admins/coordinators cannot apply as volunteers for this event",
+    });
+  }
 
   if (event.status !== "upcoming") {
     return res.status(400).json({ success: false, message: `Cannot volunteer: event is ${event.status}` });
@@ -294,7 +342,7 @@ export const getVolunteerEvents = async (req, res) => {
     showOnVolunteerHub: true,
     volunteerLimit: { $gt: 0 },
   })
-    .populate("clubId", "name category")
+    .populate("clubId", "name category adminId")
     .populate("volunteers.userId", "name email")
     .sort({ date: 1 })
     .limit(Number(limit))
@@ -355,6 +403,10 @@ export const publishEvent = async (req, res) => {
 export const markAttendance = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
+
+  if (!Array.isArray(event.attendees)) {
+    event.attendees = [];
+  }
 
   const userRoles = req.user.roles || [];
   const isOrgAdmin = userRoles.includes("orgAdmin");

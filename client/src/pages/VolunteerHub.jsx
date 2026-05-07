@@ -50,19 +50,41 @@ export default function VolunteerHub() {
   const [applying,    setApplying]    = useState(false);
 
   /* ── Fetch open volunteer slots ── */
-  const fetchFeed = useCallback(async () => {
-    setLoading(true);
+  const fetchFeed = useCallback(async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const res = await api.get("/events/volunteer-feed");
       setEvents(res.data.data || []);
     } catch (err) {
       console.error("Volunteer feed error:", err);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchFeed(); }, [fetchFeed]);
+  useEffect(() => { fetchFeed(true); }, [fetchFeed]);
+
+  // Keep page status in sync when admins review applications in another session.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFeed(false);
+    }, 10000);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchFeed(false);
+      }
+    };
+
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [fetchFeed]);
 
   /* ── Derived ── */
   const currentUserId = String(user?._id || user?.id || "");
@@ -70,6 +92,14 @@ export default function VolunteerHub() {
   // Find the current user's application for an event (if any)
   const myApplication = (ev) =>
     ev.volunteers?.find((v) => String(v.userId?._id || v.userId) === currentUserId);
+
+  const isAuthorityForEvent = (ev) => {
+    if (!user) return false;
+    if (user?.roles?.includes("orgAdmin")) return true;
+    if (String(ev.createdBy?._id || ev.createdBy || "") === currentUserId) return true;
+    if (String(ev.clubId?.adminId?._id || ev.clubId?.adminId || "") === currentUserId) return true;
+    return false;
+  };
 
   const acceptedCount = (ev) =>
     ev.volunteers?.filter((v) => v.status === "accepted").length ?? 0;
@@ -103,6 +133,7 @@ export default function VolunteerHub() {
       );
       setApplyTarget(null);
       setApplySkills("");
+      await fetchFeed(false);
     } catch (err) {
       alert(err.response?.data?.message || "Failed to apply.");
     } finally {
@@ -122,6 +153,7 @@ export default function VolunteerHub() {
             : e
         )
       );
+      await fetchFeed(false);
     } catch (err) {
       alert(err.response?.data?.message || "Failed to withdraw.");
     } finally {
@@ -200,6 +232,7 @@ export default function VolunteerHub() {
             {filtered.map((ev) => {
               const spotsLeft   = ev.volunteerLimit - acceptedCount(ev);
               const myApp       = myApplication(ev);
+              const isAuthority = isAuthorityForEvent(ev);
               const catColor    = CAT_COLORS[ev.category] || CAT_COLORS.meeting;
               const dateStr     = ev.date ? fmt(ev.date) : "—";
               const statusBadge = myApp ? STATUS_BADGE[myApp.status] : null;
@@ -293,6 +326,10 @@ export default function VolunteerHub() {
                             {acting === ev._id ? "Withdrawing…" : "Withdraw Application"}
                           </button>
                         )}
+                      </div>
+                    ) : isAuthority ? (
+                      <div className="w-full text-center text-[12px] py-2 border rounded-xl font-medium bg-slate-900 text-slate-400 border-slate-700">
+                        Admin/Coordinator cannot volunteer
                       </div>
                     ) : (
                       <button

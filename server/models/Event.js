@@ -47,11 +47,36 @@ const eventSchema = new mongoose.Schema(
       required: [true, "Event venue is required"],
     },
 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
 
     maxAttendees: {
       type: Number,
       default: null,
     },
+
+    attendees: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        status: {
+          type: String,
+          enum: ["registered", "attended", "cancelled"],
+          default: "registered",
+        },
+        registeredAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
 
     // ── Volunteer Programme ────────────────────────────────────────────────
     // Set by admin/coordinator when creating/editing the event.

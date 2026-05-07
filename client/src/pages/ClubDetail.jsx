@@ -79,6 +79,7 @@ export default function ClubDetail() {
     (m) => String(m.userId?._id || m.userId) === currentUserId
   );
   const myStatus = myMembership?.status;
+  const isApprovedMember = myStatus === "approved" || myStatus === "active";
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -420,7 +421,7 @@ export default function ClubDetail() {
                 <span className="text-[11px] uppercase tracking-widest text-slate-600 font-mono">
                   {club.category}
                 </span>
-                {myStatus === "active" && (
+                {isApprovedMember && (
                   <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-700 rounded-full font-semibold">
                     Member
                   </span>
@@ -468,7 +469,7 @@ export default function ClubDetail() {
                 </button>
               )}
               {/* Active member (non-admin) */}
-              {myStatus === "active" && !isClubAdmin && (
+              {isApprovedMember && !isClubAdmin && (
                 <button
                   onClick={handleLeave}
                   disabled={actionLoading}
@@ -487,7 +488,7 @@ export default function ClubDetail() {
                 </button>
               )}
               {/* Club Chat — visible to active members & admins */}
-              {(myStatus === "active" || isClubAdmin) && (
+              {(isApprovedMember || isClubAdmin) && (
                 <button
                   onClick={handleOpenChat}
                   disabled={chatLoading}

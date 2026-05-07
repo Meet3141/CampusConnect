@@ -51,8 +51,7 @@ export const getClubs = async (req, res) => {
 export const getMyClubs = async (req, res) => {
 	const memberships = await Membership.find({
 		userId: req.user.id,
-		status: "approved",
-	}).select("clubId clubRole joinedAt").lean();
+	}).select("clubId clubRole joinedAt status").lean();
 
 	const clubIds = [...new Set(memberships.map((membership) => String(membership.clubId)))];
 	const memberClubs = clubIds.length
@@ -61,13 +60,38 @@ export const getMyClubs = async (req, res) => {
 
 	const ownedClubs = await Club.find({ adminId: req.user.id }).sort({ createdAt: -1 }).lean();
 
-	const clubsById = new Map();
-
-	for (const club of [...memberClubs, ...ownedClubs]) {
-		clubsById.set(String(club._id), club);
+	const membershipByClubId = new Map();
+	for (const membership of memberships) {
+		membershipByClubId.set(String(membership.clubId), membership);
 	}
 
-	const data = [...clubsById.values()];
+	const clubsById = new Map();
+
+	for (const club of memberClubs) {
+		const membership = membershipByClubId.get(String(club._id));
+		const normalizedStatus = membership?.status === "approved"
+			? "active"
+			: (membership?.status || "pending");
+
+		clubsById.set(String(club._id), {
+			...club,
+			myStatus: normalizedStatus,
+			myClubRole: membership?.clubRole || "member",
+			joinedAt: membership?.joinedAt || null,
+		});
+	}
+
+	for (const club of ownedClubs) {
+		clubsById.set(String(club._id), {
+			...club,
+			myStatus: "admin",
+			myClubRole: "admin",
+		});
+	}
+
+	const data = [...clubsById.values()].sort(
+		(a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+	);
 
 	res.json({ success: true, data });
 };

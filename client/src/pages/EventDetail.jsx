@@ -84,10 +84,12 @@ export default function EventDetail() {
   );
   const registeredCount = attendees.filter((a) => a.status === "registered").length;
   const isFull = event?.maxAttendees && registeredCount >= event.maxAttendees;
-  // A6: isEventAdmin must use event.createdBy (who created the event), NOT event.clubId.adminId
-  const isEventAdmin =
-    user?.roles?.includes("orgAdmin") ||
-    String(event?.createdBy?._id || event?.createdBy) === String(user?._id);
+  const isOrgAdmin = user?.roles?.includes("orgAdmin");
+  const isEventCreator = String(event?.createdBy?._id || event?.createdBy) === String(user?._id);
+  const isClubAdminOfEvent =
+    String(event?.clubId?.adminId?._id || event?.clubId?.adminId) === String(user?._id);
+  const canDeleteEvent = isOrgAdmin || isEventCreator;
+  const canReviewVolunteers = isOrgAdmin || isEventCreator || isClubAdminOfEvent;
 
   const handleRsvp = async () => {
     setActionLoading(true);
@@ -305,7 +307,7 @@ export default function EventDetail() {
                   {bookmarkId ? "🔖 Bookmarked" : "🔖 Bookmark"}
                 </button>
               )}
-              {isEventAdmin && (
+              {canDeleteEvent && (
                 <button onClick={handleDeleteEvent} disabled={actionLoading}
                   className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap">
                   🗑 Delete Event
@@ -366,7 +368,7 @@ export default function EventDetail() {
         </div>
       </div>
       {/* ── Volunteer Applications Panel (admin only) ── */}
-      {isEventAdmin && event.showOnVolunteerHub && (
+      {canReviewVolunteers && event.showOnVolunteerHub && (
         <div className="px-5 lg:px-6 pb-8">
           <div className="rounded-2xl border border-indigo-900/40 bg-indigo-950/10 p-5">
             {/* Header */}
