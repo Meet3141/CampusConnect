@@ -9,6 +9,32 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useToast } from "../context/ToastContext";
+import Button from "../components/common/Button";
+
+const styles = {
+  page: "text-cc",
+  header: "relative overflow-hidden border-b border-cc-soft",
+  headerInner: "relative px-5 lg:px-6 pt-6 pb-5",
+  headerKicker: "text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3",
+  headerTitle: "text-3xl font-bold tracking-tight",
+  headerCount: "text-cc-muted mt-1.5 text-sm",
+  content: "px-5 lg:px-6 py-6",
+  loadingCard: "h-16 rounded-xl bg-cc-surface-weak animate-pulse",
+  emptyState: "flex flex-col items-center py-16 gap-4 text-center",
+  emptyTitle: "text-lg font-semibold",
+  emptyMeta: "text-cc-muted text-sm mt-1",
+  chatList: "space-y-1.5",
+  chatRow:
+    "group w-full flex items-center gap-3 p-4 rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface hover-border-cc-strong transition-all text-left",
+  avatar: "w-10 h-10 rounded-full ring-1 ring-cc-soft flex items-center justify-center text-xs font-bold shrink-0",
+  chatName: "text-sm font-medium text-cc group-hover:text-indigo-300 transition-colors truncate",
+  chatTypeBadge:
+    "shrink-0 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium",
+  chatMessage: "text-[11px] text-cc-muted truncate",
+  chatMessageMuted: "text-[11px] text-cc-muted italic",
+  timeLabel: "text-[10px] text-cc-muted",
+  arrow: "text-[11px] text-cc-muted opacity-0 group-hover:opacity-100 transition-opacity",
+};
 
 export default function ChatList() {
   const navigate = useNavigate();
@@ -40,47 +66,46 @@ export default function ChatList() {
   const getAvatarCls = (name) => avatarColors[(name?.length || 0) % avatarColors.length];
 
   return (
-    <div className="text-cc">
+    <div className={styles.page}>
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-cc-soft">
+      <div className={styles.header}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-32 left-1/3 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
         </div>
-        <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3">
+        <div className={styles.headerInner}>
+          <p className={styles.headerKicker}>
             Dashboard / Chats
           </p>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className={styles.headerTitle}>
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Chats</span>
           </h1>
-          <p className="text-cc-muted mt-1.5 text-sm">
+          <p className={styles.headerCount}>
             {chats.length} conversation{chats.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-5 lg:px-6 py-6">
+      <div className={styles.content}>
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-cc-surface-weak animate-pulse" />
+              <div key={i} className={styles.loadingCard} />
             ))}
           </div>
         ) : chats.length === 0 ? (
-          <div className="flex flex-col items-center py-16 gap-4 text-center">
+          <div className={styles.emptyState}>
             <span className="text-4xl">💬</span>
             <div>
-              <h2 className="text-lg font-semibold">No chats yet</h2>
-              <p className="text-cc-muted text-sm mt-1">Join a club or event to start chatting.</p>
+              <h2 className={styles.emptyTitle}>No chats yet</h2>
+              <p className={styles.emptyMeta}>Join a club or event to start chatting.</p>
             </div>
-            <button onClick={() => navigate("/clubs")}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            <Button onClick={() => navigate("/clubs")}>
               Browse Clubs
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className={styles.chatList}>
             {chats.map((chat) => {
               const initials = chat.name
                 ? chat.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
@@ -94,29 +119,29 @@ export default function ChatList() {
                 <button
                   key={chat._id}
                   onClick={() => navigate(`/chats/${chat._id}`)}
-                  className="group w-full flex items-center gap-3 p-4 rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface hover-border-cc-strong transition-all text-left"
+                  className={styles.chatRow}
                 >
-                  <div className={`w-10 h-10 rounded-full ${getAvatarCls(chat.name)} ring-1 ring-cc-soft flex items-center justify-center text-xs font-bold shrink-0`}>
+                  <div className={`${styles.avatar} ${getAvatarCls(chat.name)}`}>
                     {initials}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-medium text-cc group-hover:text-indigo-300 transition-colors truncate">
+                      <p className={styles.chatName}>
                         {chat.name}
                       </p>
-                      <span className={`shrink-0 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium ${typeBadge}`}>
+                      <span className={`${styles.chatTypeBadge} ${typeBadge}`}>
                         {chat.type}
                       </span>
                     </div>
                     {chat.lastMessage ? (
-                      <p className="text-[11px] text-cc-muted truncate">{chat.lastMessage}</p>
+                      <p className={styles.chatMessage}>{chat.lastMessage}</p>
                     ) : (
-                      <p className="text-[11px] text-cc-muted italic">No messages yet</p>
+                      <p className={styles.chatMessageMuted}>No messages yet</p>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    {timeLabel && <span className="text-[10px] text-cc-muted">{timeLabel}</span>}
-                    <span className="text-[11px] text-cc-muted opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                    {timeLabel && <span className={styles.timeLabel}>{timeLabel}</span>}
+                    <span className={styles.arrow}>→</span>
                   </div>
                 </button>
               );

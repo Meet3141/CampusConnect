@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useToast } from "../context/ToastContext";
+import Button from "../components/common/Button";
 
 const CAT_META = {
   hackathon:   { emoji: "💻", badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
@@ -25,6 +26,36 @@ const CAT_META = {
   meeting:     { emoji: "📋", badge: "bg-slate-800 text-slate-300 border-slate-700" },
 };
 const catOf = (k) => CAT_META[k] || CAT_META.meeting;
+
+const styles = {
+  page: "text-cc",
+  header: "relative overflow-hidden border-b border-cc-soft",
+  headerInner: "relative px-5 lg:px-6 pt-6 pb-5",
+  headerKicker: "text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3",
+  headerTitle: "text-3xl font-bold tracking-tight",
+  headerCount: "text-cc-muted mt-1.5 text-sm",
+  tabBar: "flex gap-1 mt-5 border-b border-cc-soft -mb-px",
+  tabButton:
+    "flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all",
+  tabCount:
+    "text-[10px] px-1.5 py-0.5 rounded-md font-mono tabular-nums",
+  content: "px-5 lg:px-6 py-6",
+  loadingCard: "h-16 rounded-xl bg-cc-surface-weak animate-pulse",
+  emptyState: "flex flex-col items-center py-16 gap-4 text-center",
+  emptyTitle: "text-lg font-semibold",
+  emptyMeta: "text-cc-muted text-sm mt-1",
+  bookmarkList: "space-y-2",
+  bookmarkRow:
+    "group flex items-center gap-4 p-4 rounded-xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all cursor-pointer",
+  bookmarkIcon:
+    "w-10 h-10 rounded-xl bg-cc-surface-weak flex items-center justify-center text-xl shrink-0",
+  bookmarkTitle: "text-sm font-medium text-cc group-hover:text-indigo-300 transition-colors truncate",
+  bookmarkMeta: "text-[11px] text-cc-muted",
+  eventTypeBadge:
+    "text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium",
+  removeButton:
+    "opacity-0 group-hover:opacity-100 text-cc-muted hover:text-red-400 transition-all px-2 py-1 rounded-lg hover:bg-red-950/30 text-sm shrink-0",
+};
 
 export default function Bookmarks() {
   const navigate = useNavigate();
@@ -60,37 +91,37 @@ export default function Bookmarks() {
     : bookmarks.filter((b) => b.eventType === filter);
 
   return (
-    <div className="text-cc">
+    <div className={styles.page}>
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-cc-soft">
+      <div className={styles.header}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-32 right-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
         </div>
-        <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3">
+        <div className={styles.headerInner}>
+          <p className={styles.headerKicker}>
             Dashboard / Bookmarks
           </p>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className={styles.headerTitle}>
             My{" "}
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Bookmarks</span>
           </h1>
-          <p className="text-cc-muted mt-1.5 text-sm">
+          <p className={styles.headerCount}>
             {bookmarks.length} saved event{bookmarks.length !== 1 ? "s" : ""}
           </p>
 
           {bookmarks.length > 0 && (
-            <div className="flex gap-1 mt-5 border-b border-cc-soft -mb-px">
+            <div className={styles.tabBar}>
               {[
                 { key: "all", label: "All", count: bookmarks.length },
                 { key: "internal", label: "Internal", count: bookmarks.filter((b) => b.eventType === "internal").length },
                 { key: "external", label: "External", count: bookmarks.filter((b) => b.eventType === "external").length },
               ].map(({ key, label, count }) => (
                 <button key={key} onClick={() => setFilter(key)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all ${
+                  className={`${styles.tabButton} ${
                     filter === key ? "border-indigo-500 text-cc" : "border-transparent text-cc-muted hover:text-cc"
                   }`}>
                   {label}
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono tabular-nums ${
+                  <span className={`${styles.tabCount} ${
                     filter === key ? "bg-indigo-600/30 text-indigo-300" : "bg-cc-surface-weak text-cc-muted"
                   }`}>{count}</span>
                 </button>
@@ -101,27 +132,26 @@ export default function Bookmarks() {
       </div>
 
       {/* Content */}
-      <div className="px-5 lg:px-6 py-6">
+      <div className={styles.content}>
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-cc-surface-weak animate-pulse" />
+              <div key={i} className={styles.loadingCard} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center py-16 gap-4 text-center">
+          <div className={styles.emptyState}>
             <span className="text-4xl">🔖</span>
             <div>
-              <h2 className="text-lg font-semibold">No bookmarks</h2>
-              <p className="text-cc-muted text-sm mt-1">Bookmark events to find them quickly later.</p>
+              <h2 className={styles.emptyTitle}>No bookmarks</h2>
+              <p className={styles.emptyMeta}>Bookmark events to find them quickly later.</p>
             </div>
-            <button onClick={() => navigate("/clubs")}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            <Button onClick={() => navigate("/clubs")}>
               Browse Events
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className={styles.bookmarkList}>
             {filtered.map((bk) => {
               const ev  = bk.event;
               const cat = catOf(ev?.category);
@@ -131,19 +161,19 @@ export default function Bookmarks() {
 
               return (
                 <div key={bk._id}
-                  className="group flex items-center gap-4 p-4 rounded-xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all cursor-pointer"
+                  className={styles.bookmarkRow}
                   onClick={() => {
                     if (bk.eventType === "internal") navigate(`/events/${bk.eventId}`);
                   }}>
-                  <div className="w-10 h-10 rounded-xl bg-cc-surface-weak flex items-center justify-center text-xl shrink-0">
+                  <div className={styles.bookmarkIcon}>
                     {cat.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-cc group-hover:text-indigo-300 transition-colors truncate">
+                    <p className={styles.bookmarkTitle}>
                       {ev?.title || "Untitled Event"}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium ${
+                      <span className={`${styles.eventTypeBadge} ${
                         bk.eventType === "external" ? "bg-violet-950 text-violet-300 border-violet-800" : "bg-indigo-950 text-indigo-300 border-indigo-800"
                       }`}>
                         {bk.eventType}
@@ -154,7 +184,7 @@ export default function Bookmarks() {
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleRemove(bk._id); }}
-                    className="opacity-0 group-hover:opacity-100 text-cc-muted hover:text-red-400 transition-all px-2 py-1 rounded-lg hover:bg-red-950/30 text-sm shrink-0"
+                    className={styles.removeButton}
                     title="Remove bookmark">
                     ✕
                   </button>
