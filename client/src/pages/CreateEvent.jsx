@@ -115,8 +115,8 @@ export default function CreateEvent() {
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
           <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm">Only club admins can create events.</p>
+          <h2 className="text-xl font-semibold text-cc mb-2">Access Restricted</h2>
+          <p className="text-cc-muted text-sm">Only club admins can create events.</p>
           <button onClick={() => navigate(-1)} className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
             Go Back
           </button>
@@ -126,9 +126,9 @@ export default function CreateEvent() {
   }
 
   return (
-    <div className="text-white">
+    <div className="text-cc">
       <div className="max-w-xl mx-auto px-5 py-8">
-        <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-8 transition-colors">
+        <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-cc-muted hover:text-cc text-sm mb-8 transition-colors">
           <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span> Back
         </button>
 
@@ -137,7 +137,7 @@ export default function CreateEvent() {
             Create an{" "}
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Event</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-2">Plan and schedule a new event for your club.</p>
+          <p className="text-cc-muted text-sm mt-2">Plan and schedule a new event for your club.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -145,9 +145,9 @@ export default function CreateEvent() {
           <FormField label="Club" required error={errors.clubId}>
             <select value={form.clubId} onChange={(e) => set("clubId", e.target.value)}
               className={inputCls(!!errors.clubId) + " cursor-pointer"}>
-              <option value="" className="bg-[#0a0a12]">Select a club…</option>
+              <option value="" className="bg-cc-surface">Select a club…</option>
               {clubs.map((c) => (
-                <option key={c._id} value={c._id} className="bg-[#0a0a12]">{c.name}</option>
+                <option key={c._id} value={c._id} className="bg-cc-surface">{c.name}</option>
               ))}
             </select>
           </FormField>
@@ -168,10 +168,10 @@ export default function CreateEvent() {
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15]"
+                        : "bg-cc-surface-weak border-cc-soft hover-border-cc-strong"
                     }`}>
                     <div className="text-xl mb-1">{m.emoji}</div>
-                    <div className="text-xs font-medium text-white capitalize">{cat}</div>
+                    <div className="text-xs font-medium text-cc capitalize">{cat}</div>
                   </button>
                 );
               })}
@@ -210,11 +210,11 @@ export default function CreateEvent() {
           </div>
 
           {/* ── Volunteer Programme ── */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 space-y-4">
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-white">🙋 Volunteer Opportunities</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-sm font-semibold text-cc">🙋 Volunteer Opportunities</p>
+                <p className="text-[11px] text-cc-muted mt-0.5">
                   List this event on the Volunteer Hub so students can apply to help out.
                 </p>
               </div>
@@ -223,7 +223,7 @@ export default function CreateEvent() {
                 type="button"
                 onClick={() => set("showOnVolunteerHub", !form.showOnVolunteerHub)}
                 className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${
-                  form.showOnVolunteerHub ? "bg-indigo-600" : "bg-white/[0.1]"
+                  form.showOnVolunteerHub ? "bg-indigo-600" : "bg-cc-surface"
                 }`}
               >
                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -233,7 +233,7 @@ export default function CreateEvent() {
             </div>
 
             {form.showOnVolunteerHub && (
-              <div className="space-y-4 pt-1 border-t border-white/[0.06]">
+              <div className="space-y-4 pt-1 border-t border-cc-soft">
                 <div className="grid grid-cols-2 gap-3">
                   <FormField label="Volunteer Limit" required error={errors.volunteerLimit}>
                     <input

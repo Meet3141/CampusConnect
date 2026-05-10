@@ -104,7 +104,7 @@ export default function AppLayout() {
     (path !== "/dashboard" && location.pathname.startsWith(path + "/"));
 
   return (
-    <div className="flex h-screen bg-[#0a0a12] text-white overflow-hidden">
+    <div className="flex h-screen bg-cc-bg text-cc overflow-hidden">
 
       {/* ── Mobile overlay ── */}
       {sidebarOpen && (
@@ -119,11 +119,11 @@ export default function AppLayout() {
       ════════════════════════════════════ */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-30 w-[220px] flex flex-col
-          bg-[#0d0d18] border-r border-white/[0.06] transition-transform duration-300
+          bg-cc-surface border-r border-cc-soft transition-transform duration-300
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-cc-soft">
           <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="1" y="1" width="5" height="5" rx="1" fill="white" fillOpacity="0.95"/>
@@ -132,7 +132,7 @@ export default function AppLayout() {
               <rect x="8" y="8" width="5" height="5" rx="1" fill="white" fillOpacity="0.3"/>
             </svg>
           </div>
-          <span className="font-semibold text-base text-white tracking-tight">
+          <span className="font-semibold text-base text-cc tracking-tight">
             CampusConnect
           </span>
         </div>
@@ -143,7 +143,7 @@ export default function AppLayout() {
           {/* Main + Discover sections (or editor-specific nav) */}
           {activeNav.map(({ section, items }) => (
             <div key={section}>
-              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-medium px-3 mb-2">
+              <p className="text-[11px] uppercase tracking-widest text-cc-muted font-medium px-3 mb-2">
                 {section}
               </p>
               <ul className="space-y-0.5">
@@ -156,7 +156,7 @@ export default function AppLayout() {
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition-all ${
                           active
                             ? "bg-indigo-600/20 text-indigo-300"
-                            : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                            : "text-cc-muted hover:text-cc hover:bg-cc-surface"
                         }`}
                       >
                         <Icon size={15} active={active} />
@@ -172,7 +172,7 @@ export default function AppLayout() {
           {/* Admin section — only rendered if user has at least one admin role */}
           {visibleAdminNav.length > 0 && (
             <div>
-              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-medium px-3 mb-2">
+              <p className="text-[11px] uppercase tracking-widest text-cc-muted font-medium px-3 mb-2">
                 Admin
               </p>
               <ul className="space-y-0.5">
@@ -185,7 +185,7 @@ export default function AppLayout() {
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition-all ${
                           active
                             ? "bg-amber-600/20 text-amber-300"   // amber accent for admin
-                            : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                            : "text-cc-muted hover:text-cc hover:bg-cc-surface"
                         }`}
                       >
                         <Icon size={15} active={active} />
@@ -200,7 +200,7 @@ export default function AppLayout() {
         </nav>
 
         {/* User + logout */}
-        <div className="px-3 pb-4 pt-2 border-t border-white/[0.06]">
+        <div className="px-3 pb-4 pt-2 border-t border-cc-soft">
           {canCreateClub && (
             <button
               onClick={() => navigate("/clubs/create")}
@@ -211,21 +211,21 @@ export default function AppLayout() {
           )}
           <button
             onClick={() => navigate("/profile")}
-            className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/[0.04] transition-colors group"
+            className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-cc-surface transition-colors group"
           >
             <div className="w-7 h-7 rounded-full bg-indigo-950 ring-1 ring-indigo-500/30 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
               {userInitials}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-[10px] text-slate-600 capitalize">
+              <p className="text-sm font-medium text-cc truncate">{user?.name}</p>
+              <p className="text-[10px] text-cc-muted capitalize">
                 {userRoles[0] || "member"}
-                {userRoles.length > 1 && <span className="text-slate-700"> +{userRoles.length - 1}</span>}
+                {userRoles.length > 1 && <span className="text-cc-surface"> +{userRoles.length - 1}</span>}
               </p>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); logout(); navigate("/login"); }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-red-400 p-1"
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-cc-muted hover:text-red-400 p-1"
               title="Log out"
             >
               <IconLogout size={14} />
@@ -240,11 +240,11 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Topbar */}
-        <header className="flex items-center justify-between px-6 py-3 border-b border-white/[0.06] bg-[#0a0a12]/90 backdrop-blur-md shrink-0">
+        <header className="flex items-center justify-between px-6 py-3 border-b border-cc-soft bg-cc-bg/90 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-slate-400 hover:text-white"
+              className="lg:hidden text-cc-muted hover:text-cc"
             >
               <IconMenu size={20} />
             </button>
@@ -252,11 +252,11 @@ export default function AppLayout() {
 
           <button
             onClick={() => navigate("/clubs")}
-            className="hidden sm:flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-slate-500 hover:text-white hover:border-white/[0.15] transition-all"
+            className="hidden sm:flex items-center gap-2 bg-cc-surface border border-cc-soft rounded-xl px-4 py-2.5 text-sm text-cc-muted hover:text-cc hover:border-cc-strong transition-all"
           >
             <IconSearch size={14} />
             Search clubs, events…
-            <span className="text-[11px] px-1.5 py-px bg-white/[0.06] rounded-md text-slate-600">/</span>
+            <span className="text-[11px] px-1.5 py-px bg-cc-surface-weak rounded-md text-cc-muted">/</span>
           </button>
         </header>
 
