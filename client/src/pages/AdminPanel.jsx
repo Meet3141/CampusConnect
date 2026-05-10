@@ -18,6 +18,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CATEGORY_BADGE = {
   technical: "bg-cyan-950 text-cyan-300 border-cyan-800",
@@ -36,6 +37,7 @@ const CAT_EMOJI = {
 export default function AdminPanel() {
   const { user } = useAuth();
   const navigate  = useNavigate();
+  const toast = useToast();
 
   const isOrgAdmin = user?.roles?.includes("orgAdmin");
 
@@ -56,7 +58,9 @@ export default function AdminPanel() {
       const res = await api.get("/clubs", { params: { page, limit: 20 } });
       setClubs(res.data.data || []);
       setMeta(res.data.meta || { total: 0, page: 1, limit: 20 });
-    } catch {}
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to load clubs.");
+    }
     setLoading(false);
   }, []);
 
@@ -95,7 +99,7 @@ export default function AdminPanel() {
       setClubs((prev) => prev.filter((c) => c._id !== clubId));
       setMeta((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete club.");
+      toast.error(err.response?.data?.message || "Failed to delete club.");
     } finally {
       setDeletingId(null);
     }

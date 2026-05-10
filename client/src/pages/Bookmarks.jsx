@@ -9,6 +9,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useToast } from "../context/ToastContext";
 
 const CAT_META = {
   hackathon:   { emoji: "💻", badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
@@ -27,6 +28,7 @@ const catOf = (k) => CAT_META[k] || CAT_META.meeting;
 
 export default function Bookmarks() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [filter, setFilter]       = useState("all"); // all, internal, external
@@ -36,7 +38,9 @@ export default function Bookmarks() {
       try {
         const res = await api.get("/bookmarks");
         setBookmarks(res.data.data || []);
-      } catch {}
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to load bookmarks.");
+      }
       setLoading(false);
     };
     fetch();
@@ -47,7 +51,7 @@ export default function Bookmarks() {
       await api.delete(`/bookmarks/${id}`);
       setBookmarks((prev) => prev.filter((b) => b._id !== id));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove bookmark.");
+      toast.error(err.response?.data?.message || "Failed to remove bookmark.");
     }
   };
 

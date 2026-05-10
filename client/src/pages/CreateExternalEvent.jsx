@@ -9,6 +9,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import FormField from "../components/FormField";
+import { inputCls } from "../utils/inputCls";
+import { useToast } from "../context/ToastContext";
 
 const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "conference", "competition"];
 const CAT_META = {
@@ -23,6 +26,7 @@ const CAT_META = {
 
 export default function CreateExternalEvent() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [form, setForm] = useState({
     title: "", description: "", universityName: "", date: "",
@@ -58,7 +62,7 @@ export default function CreateExternalEvent() {
       }));
       setOcrDone(true);
     } catch (err) {
-      alert(err.response?.data?.message || "OCR extraction failed.");
+      toast.error(err.response?.data?.message || "OCR extraction failed.");
     } finally {
       setOcrLoading(false);
     }
@@ -153,17 +157,17 @@ export default function CreateExternalEvent() {
 
         {/* ── Form ── */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <Field label="Event Title" required error={errors.title}>
+          <FormField label="Event Title" required error={errors.title}>
             <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)}
               placeholder="e.g. Inter-university Hackathon" maxLength={200} className={inputCls(!!errors.title)} />
-          </Field>
+          </FormField>
 
-          <Field label="University / Organization" required error={errors.universityName}>
+          <FormField label="University / Organization" required error={errors.universityName}>
             <input type="text" value={form.universityName} onChange={(e) => set("universityName", e.target.value)}
               placeholder="e.g. IIT Delhi" className={inputCls(!!errors.universityName)} />
-          </Field>
+          </FormField>
 
-          <Field label="Category" required error={errors.category}>
+          <FormField label="Category" required error={errors.category}>
             <div className="grid grid-cols-4 gap-2">
               {CATEGORIES.map((cat) => {
                 const sel = form.category === cat;
@@ -179,34 +183,34 @@ export default function CreateExternalEvent() {
                 );
               })}
             </div>
-          </Field>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Date & Time" required error={errors.date}>
+            <FormField label="Date & Time" required error={errors.date}>
               <input type="datetime-local" value={form.date} onChange={(e) => set("date", e.target.value)}
                 className={inputCls(!!errors.date)} />
-            </Field>
-            <Field label="Venue" hint="Optional">
+            </FormField>
+            <FormField label="Venue" hint="Optional">
               <input type="text" value={form.venue} onChange={(e) => set("venue", e.target.value)}
                 placeholder="e.g. Main Auditorium" className={inputCls(false)} />
-            </Field>
+            </FormField>
           </div>
 
-          <Field label="Description" required error={errors.description}>
+          <FormField label="Description" required error={errors.description}>
             <textarea value={form.description} onChange={(e) => set("description", e.target.value)}
               rows={4} maxLength={2000} placeholder="Describe the event…"
               className={inputCls(!!errors.description) + " resize-none"} />
-          </Field>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Registration Link" hint="Optional">
+            <FormField label="Registration Link" hint="Optional">
               <input type="url" value={form.registrationLink} onChange={(e) => set("registrationLink", e.target.value)}
                 placeholder="https://..." className={inputCls(false)} />
-            </Field>
-            <Field label="Poster URL" hint="Optional">
+            </FormField>
+            <FormField label="Poster URL" hint="Optional">
               <input type="url" value={form.posterUrl} onChange={(e) => set("posterUrl", e.target.value)}
                 placeholder="https://..." className={inputCls(false)} />
-            </Field>
+            </FormField>
           </div>
 
           {apiError && (
@@ -228,22 +232,4 @@ export default function CreateExternalEvent() {
   );
 }
 
-const inputCls = (err) =>
-  `w-full bg-white/[0.04] border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-    err ? "border-red-800 focus:border-red-600" : "border-white/[0.08] focus:border-indigo-500/60 focus:bg-white/[0.06]"
-  }`;
-
-function Field({ label, required, hint, error, children }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
-          {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-        </label>
-        {hint && <span className="text-[11px] text-slate-700 font-mono">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-red-400 text-[11px] mt-1.5">{error}</p>}
-    </div>
-  );
-}
+// Use shared inputCls and FormField from utils/components

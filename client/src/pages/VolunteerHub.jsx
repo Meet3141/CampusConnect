@@ -16,6 +16,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CAT_COLORS = {
   hackathon: "text-indigo-400 bg-indigo-950/60 border-indigo-800/50",
@@ -38,6 +39,7 @@ const fmt = (d) =>
 export default function VolunteerHub() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
+  const toast = useToast();
 
   const [events,      setEvents]      = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -136,7 +138,7 @@ export default function VolunteerHub() {
       setApplySkills("");
       await fetchFeed(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to apply.");
+      toast.error(err.response?.data?.message || "Failed to apply.");
     } finally {
       setApplying(false);
     }
@@ -156,7 +158,7 @@ export default function VolunteerHub() {
       );
       await fetchFeed(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to withdraw.");
+      toast.error(err.response?.data?.message || "Failed to withdraw.");
     } finally {
       setActing(null);
     }

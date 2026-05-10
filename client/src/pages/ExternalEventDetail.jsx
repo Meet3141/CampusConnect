@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CAT_META = {
   hackathon:   { emoji: "💻", bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
@@ -26,6 +27,7 @@ export default function ExternalEventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [event, setEvent]     = useState(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function ExternalEventDetail() {
         setBookmarkId(res.data.data._id);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Bookmark failed.");
+      toast.error(err.response?.data?.message || "Bookmark failed.");
     }
   };
 

@@ -6,8 +6,10 @@ import axios from "axios";
  * withCredentials: true — instructs the browser to send/receive HttpOnly cookies
  * automatically with every request.  No manual token handling needed.
  */
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${API_BASE_URL}/api`,
   withCredentials: true,    // send cookies cross-origin
 });
 
@@ -47,11 +49,7 @@ api.interceptors.response.use(
 
       try {
         // Refresh token is sent automatically via the HttpOnly cookie
-        await axios.post(
-          "http://localhost:5000/api/auth/refresh-token",
-          {},
-          { withCredentials: true }
-        );
+        await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {}, { withCredentials: true });
 
         // New access token cookie is now set — retry the original request
         processQueue(null);

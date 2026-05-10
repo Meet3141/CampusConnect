@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
 
@@ -28,6 +29,7 @@ const CATEGORY_META = {
 export default function ClubList() {
   const { user } = useAuth();
   const navigate  = useNavigate();
+  const toast = useToast();
 
   const [clubs, setClubs]       = useState([]);
   const [meta, setMeta]         = useState({ total: 0, page: 1, limit: 20 });
@@ -88,7 +90,7 @@ export default function ClubList() {
         )
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send join request.");
+      toast.error(err.response?.data?.message || "Failed to send join request.");
     } finally {
       setJoiningId(null);
     }

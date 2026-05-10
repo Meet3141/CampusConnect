@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { inputCls } from "../utils/inputCls";
 
 const CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
 
@@ -358,26 +359,4 @@ export default function CreateClub() {
   );
 }
 
-/* ─── Shared helpers ─── */
-
-const inputCls = (hasError) =>
-  `w-full bg-white/[0.04] border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-    hasError
-      ? "border-red-800 focus:border-red-600"
-      : "border-white/[0.08] focus:border-indigo-500/60 focus:bg-white/[0.06]"
-  }`;
-
-function FormField({ label, required, hint, error, children }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
-          {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-        </label>
-        {hint && <span className="text-[11px] text-slate-700 font-mono">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-red-400 text-[11px] mt-1.5">{error}</p>}
-    </div>
-  );
-}
+// Using shared `inputCls` and `FormField` component

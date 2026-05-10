@@ -22,6 +22,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CATEGORY_META = {
   technical: { emoji: "⚙️", heroBg: "from-cyan-900/50 via-blue-900/30",    accent: "text-cyan-400",    ring: "ring-cyan-500/20",    tabActive: "border-cyan-500 text-cyan-400"    },
@@ -40,6 +41,7 @@ export default function ClubDetail() {
   const { id }  = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [club, setClub]             = useState(null);
   const [members, setMembers]       = useState([]);
@@ -117,7 +119,9 @@ export default function ClubDetail() {
       try {
         const res = await api.get(`/clubs/${id}/announcements`);
         setAnnouncements(res.data.data || []);
-      } catch { /* member-only, ignore if not member */ }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to load announcements.");
+      }
       finally { setAnnLoading(false); }
     };
     loadAnn();
@@ -143,7 +147,7 @@ export default function ClubDetail() {
       // Bump the displayed member count
       setClub((prev) => ({ ...prev, memberCount: (prev.memberCount || 0) }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to join.");
+      toast.error(err.response?.data?.message || "Failed to join.");
     } finally {
       setActionLoading(false);
     }
@@ -164,7 +168,7 @@ export default function ClubDetail() {
         memberCount: Math.max(0, (prev.memberCount || 1) - 1),
       }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave.");
+      toast.error(err.response?.data?.message || "Failed to leave.");
     } finally {
       setActionLoading(false);
     }
@@ -186,7 +190,7 @@ export default function ClubDetail() {
       );
       setClub((prev) => ({ ...prev, memberCount: (prev.memberCount || 0) + 1 }));
     } catch (err) {
-      alert(err.response?.data?.message || "Approval failed.");
+      toast.error(err.response?.data?.message || "Approval failed.");
     } finally {
       setMemberActionId(null);
     }
@@ -206,7 +210,7 @@ export default function ClubDetail() {
         )
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Rejection failed.");
+      toast.error(err.response?.data?.message || "Rejection failed.");
     } finally {
       setMemberActionId(null);
     }
@@ -232,7 +236,7 @@ export default function ClubDetail() {
 
       navigate(`/chats/${chatId}`);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to open chat.");
+      toast.error(err.response?.data?.message || "Failed to open chat.");
     } finally {
       setChatLoading(false);
     }
@@ -258,7 +262,7 @@ export default function ClubDetail() {
       setCoordCategory("none");
       setCoordDropOpen(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to assign coordinator.");
+      toast.error(err.response?.data?.message || "Failed to assign coordinator.");
     } finally {
       setCoordActing(null);
     }
@@ -278,7 +282,7 @@ export default function ClubDetail() {
         )
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove coordinator.");
+      toast.error(err.response?.data?.message || "Failed to remove coordinator.");
     } finally {
       setCoordActing(null);
     }
@@ -290,7 +294,7 @@ export default function ClubDetail() {
       const res = await api.post(`/events/${eventId}/publish`);
       setEvents((prev) => prev.map((ev) => ev._id === eventId ? res.data.data : ev));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to publish event.");
+      toast.error(err.response?.data?.message || "Failed to publish event.");
     }
   };
 
@@ -305,7 +309,7 @@ export default function ClubDetail() {
       setAnnForm({ title: "", body: "", tag: "general" });
       setShowAnnForm(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to post announcement.");
+      toast.error(err.response?.data?.message || "Failed to post announcement.");
     } finally {
       setAnnPosting(false);
     }
@@ -318,7 +322,7 @@ export default function ClubDetail() {
       await api.delete(`/clubs/${id}/announcements/${annId}`);
       setAnnouncements((prev) => prev.filter((a) => a._id !== annId));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete.");
+      toast.error(err.response?.data?.message || "Failed to delete.");
     }
   };
 
@@ -331,7 +335,7 @@ export default function ClubDetail() {
       await api.delete(`/clubs/${id}`);
       navigate("/clubs");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete club.");
+      toast.error(err.response?.data?.message || "Failed to delete club.");
     } finally {
       setActionLoading(false);
     }

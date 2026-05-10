@@ -8,9 +8,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useToast } from "../context/ToastContext";
 
 export default function ChatList() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [chats, setChats]     = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +21,9 @@ export default function ChatList() {
       try {
         const res = await api.get("/chats");
         setChats(res.data.data || []);
-      } catch {}
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to load chats.");
+      }
       setLoading(false);
     };
     fetch();

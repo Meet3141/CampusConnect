@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || "http://localhost:5000").replace(/\/$/, "");
 
 let socket;
 
@@ -9,11 +9,13 @@ export const connectChatSocket = () => {
     return socket;
   }
 
-  const token = localStorage.getItem("token");
   socket = io(SOCKET_URL, {
     autoConnect: true,
-    auth: { token },
-    transports: ["websocket"],
+    withCredentials: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 10000,
   });
 
   return socket;

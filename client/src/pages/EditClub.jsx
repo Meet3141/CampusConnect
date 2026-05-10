@@ -15,6 +15,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import FormField from "../components/FormField";
+import { inputCls } from "../utils/inputCls";
 
 const CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
 const CATEGORY_META = {
@@ -29,27 +31,7 @@ const CATEGORY_META = {
 const NAME_MAX = 100;
 const DESC_MAX = 1000;
 
-const inputCls = (err) =>
-  `w-full bg-white/[0.04] border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-    err
-      ? "border-red-800 focus:border-red-600"
-      : "border-white/[0.08] focus:border-indigo-500/60 focus:bg-white/[0.06]"
-  }`;
-
-function Field({ label, required, hint, error, children }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
-          {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-        </label>
-        {hint && <span className="text-[11px] text-slate-700 font-mono">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-red-400 text-[11px] mt-1.5">{error}</p>}
-    </div>
-  );
-}
+// Using shared FormField and inputCls utilities
 
 export default function EditClub() {
   const { id }    = useParams();
@@ -90,7 +72,7 @@ export default function EditClub() {
     fetch();
   }, [id]);
 
-  /* ── Role check (after club loads) ── */
+  /* ── Role/ownership check (after club loads) ── */
   const isOrgAdmin  = user?.roles?.includes("orgAdmin");
   const isClubAdmin = club && (
     String(club.adminId?._id || club.adminId) === String(user?._id)
@@ -167,7 +149,6 @@ export default function EditClub() {
     );
   }
 
-  /* ── Permission gate ── */
   if (!canEdit) {
     return (
       <div className="flex items-center justify-center px-4 py-20">
@@ -222,14 +203,14 @@ export default function EditClub() {
         <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
 
           {/* Name */}
-          <Field label="Club Name" required hint={`${form.name.length} / ${NAME_MAX}`} error={fieldErrors.name}>
+          <FormField label="Club Name" required hint={`${form.name.length} / ${NAME_MAX}`} error={fieldErrors.name}>
             <input
               type="text" value={form.name}
               onChange={(e) => set("name", e.target.value)}
               maxLength={NAME_MAX} placeholder="e.g. Robotics Society"
               className={inputCls(!!fieldErrors.name)}
             />
-          </Field>
+          </FormField>
 
           {/* Category */}
           <div>
@@ -262,7 +243,7 @@ export default function EditClub() {
           </div>
 
           {/* Description */}
-          <Field label="Description" required hint={`${form.description.length} / ${DESC_MAX}`} error={fieldErrors.description}>
+          <FormField label="Description" required hint={`${form.description.length} / ${DESC_MAX}`} error={fieldErrors.description}>
             <textarea
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
@@ -270,10 +251,10 @@ export default function EditClub() {
               placeholder="What is this club about?"
               className={`${inputCls(!!fieldErrors.description)} resize-none`}
             />
-          </Field>
+          </FormField>
 
           {/* Cover image */}
-          <Field label="Cover Image URL" hint="Optional" error={fieldErrors.coverImage}>
+          <FormField label="Cover Image URL" hint="Optional" error={fieldErrors.coverImage}>
             <input
               type="url" value={form.coverImage}
               onChange={(e) => set("coverImage", e.target.value)}
@@ -287,7 +268,7 @@ export default function EditClub() {
                   onError={(e) => { e.currentTarget.style.display = "none"; }} />
               </div>
             )}
-          </Field>
+          </FormField>
 
           {/* API error */}
           {apiError && (

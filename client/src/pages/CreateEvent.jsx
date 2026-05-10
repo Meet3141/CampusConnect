@@ -13,6 +13,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import FormField from "../components/FormField";
+import { inputCls } from "../utils/inputCls";
+import { useToast } from "../context/ToastContext";
 
 const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "meeting"];
 const CAT_META = {
@@ -27,6 +30,7 @@ const CAT_META = {
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const preClubId = searchParams.get("clubId") || "";
 
@@ -55,7 +59,9 @@ export default function CreateEvent() {
           (c) => String(c.adminId?._id || c.adminId) === String(user?._id)
         );
         setClubs(adminClubs);
-      } catch {}
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to load clubs.");
+      }
     };
     if (user) fetchClubs();
   }, [user]);
@@ -145,7 +151,7 @@ export default function CreateEvent() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Club selector */}
-          <Field label="Club" required error={errors.clubId}>
+          <FormField label="Club" required error={errors.clubId}>
             <select value={form.clubId} onChange={(e) => set("clubId", e.target.value)}
               className={inputCls(!!errors.clubId) + " cursor-pointer"}>
               <option value="" className="bg-[#0a0a12]">Select a club…</option>
@@ -153,16 +159,16 @@ export default function CreateEvent() {
                 <option key={c._id} value={c._id} className="bg-[#0a0a12]">{c.name}</option>
               ))}
             </select>
-          </Field>
+          </FormField>
 
           {/* Title */}
-          <Field label="Event Title" required error={errors.title}>
+          <FormField label="Event Title" required error={errors.title}>
             <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)}
               placeholder="e.g. Spring Hackathon 2026" maxLength={200} className={inputCls(!!errors.title)} />
-          </Field>
+          </FormField>
 
           {/* Category */}
-          <Field label="Category" required error={errors.category}>
+          <FormField label="Category" required error={errors.category}>
             <div className="grid grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => {
                 const m = CAT_META[cat];
@@ -179,37 +185,37 @@ export default function CreateEvent() {
                 );
               })}
             </div>
-          </Field>
+          </FormField>
 
           {/* Date & Venue */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Date & Time" required error={errors.date}>
+            <FormField label="Date & Time" required error={errors.date}>
               <input type="datetime-local" value={form.date} onChange={(e) => set("date", e.target.value)}
                 className={inputCls(!!errors.date)} />
-            </Field>
-            <Field label="Venue" required error={errors.venue}>
+            </FormField>
+            <FormField label="Venue" required error={errors.venue}>
               <input type="text" value={form.venue} onChange={(e) => set("venue", e.target.value)}
                 placeholder="e.g. Hall A, Block 3" className={inputCls(!!errors.venue)} />
-            </Field>
+            </FormField>
           </div>
 
           {/* Description */}
-          <Field label="Description" required error={errors.description}>
+          <FormField label="Description" required error={errors.description}>
             <textarea value={form.description} onChange={(e) => set("description", e.target.value)}
               rows={4} maxLength={2000} placeholder="Describe the event…"
               className={inputCls(!!errors.description) + " resize-none"} />
-          </Field>
+          </FormField>
 
           {/* Optional: Max Attendees + Image */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Max Attendees" hint="Optional">
+            <FormField label="Max Attendees" hint="Optional">
               <input type="number" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)}
                 placeholder="Unlimited" min={1} className={inputCls(false)} />
-            </Field>
-            <Field label="Image URL" hint="Optional">
+            </FormField>
+            <FormField label="Image URL" hint="Optional">
               <input type="url" value={form.image} onChange={(e) => set("image", e.target.value)}
                 placeholder="https://..." className={inputCls(false)} />
-            </Field>
+            </FormField>
           </div>
 
           {/* ── Volunteer Programme ── */}
@@ -238,7 +244,7 @@ export default function CreateEvent() {
             {form.showOnVolunteerHub && (
               <div className="space-y-4 pt-1 border-t border-white/[0.06]">
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Volunteer Limit" required error={errors.volunteerLimit}>
+                  <FormField label="Volunteer Limit" required error={errors.volunteerLimit}>
                     <input
                       type="number"
                       value={form.volunteerLimit}
@@ -247,9 +253,9 @@ export default function CreateEvent() {
                       min={1}
                       className={inputCls(!!errors.volunteerLimit)}
                     />
-                  </Field>
+                  </FormField>
                 </div>
-                <Field label="Preferred Skills" hint="comma-separated, optional">
+                <FormField label="Preferred Skills" hint="comma-separated, optional">
                   <input
                     type="text"
                     value={form.volunteerSkillsNeeded}
@@ -260,7 +266,7 @@ export default function CreateEvent() {
                   <p className="text-[11px] text-slate-600 mt-1.5">
                     These are shown to applicants so they know what you're looking for.
                   </p>
-                </Field>
+                </FormField>
               </div>
             )}
           </div>
@@ -284,22 +290,4 @@ export default function CreateEvent() {
   );
 }
 
-const inputCls = (err) =>
-  `w-full bg-white/[0.04] border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-    err ? "border-red-800 focus:border-red-600" : "border-white/[0.08] focus:border-indigo-500/60 focus:bg-white/[0.06]"
-  }`;
-
-function Field({ label, required, hint, error, children }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
-          {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-        </label>
-        {hint && <span className="text-[11px] text-slate-700 font-mono">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-red-400 text-[11px] mt-1.5">{error}</p>}
-    </div>
-  );
-}
+// Using shared FormField and inputCls utilities from components and utils
