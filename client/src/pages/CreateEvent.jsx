@@ -16,16 +16,7 @@ import { useAuth } from "../context/AuthContext";
 import FormField from "../components/FormField";
 import { inputCls } from "../utils/inputCls";
 import { useToast } from "../context/ToastContext";
-
-const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "meeting"];
-const CAT_META = {
-  hackathon: { emoji: "💻", desc: "Code competitions" },
-  workshop:  { emoji: "🛠",  desc: "Hands-on learning" },
-  webinar:   { emoji: "🎙",  desc: "Online talks" },
-  cultural:  { emoji: "🎭", desc: "Culture & arts" },
-  sports:    { emoji: "⚡", desc: "Athletics events" },
-  meeting:   { emoji: "📋", desc: "General meetings" },
-};
+import { EVENT_CATEGORIES, EVENT_CATEGORY_META } from "../theme";
 
 export default function CreateEvent() {
   const { user } = useAuth();
@@ -170,8 +161,8 @@ export default function CreateEvent() {
           {/* Category */}
           <FormField label="Category" required error={errors.category}>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map((cat) => {
-                const m = CAT_META[cat];
+              {EVENT_CATEGORIES.map((cat) => {
+                const m = EVENT_CATEGORY_META[cat];
                 const sel = form.category === cat;
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}

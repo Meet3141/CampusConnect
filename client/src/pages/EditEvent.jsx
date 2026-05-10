@@ -17,27 +17,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-
-const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "meeting"];
-const CAT_META = {
-  hackathon: { emoji: "💻", desc: "Code competitions" },
-  workshop:  { emoji: "🛠",  desc: "Hands-on learning" },
-  webinar:   { emoji: "🎙",  desc: "Online talks"      },
-  cultural:  { emoji: "🎭", desc: "Culture & arts"     },
-  sports:    { emoji: "⚡", desc: "Athletics events"   },
-  meeting:   { emoji: "📋", desc: "General meetings"   },
-};
-
-const STATUSES = ["upcoming", "ongoing", "completed", "cancelled"];
-const STATUS_CLS = {
-  upcoming:  "bg-indigo-950 text-indigo-300 border-indigo-800",
-  ongoing:   "bg-emerald-950 text-emerald-300 border-emerald-800",
-  completed: "bg-slate-800 text-slate-400 border-slate-700",
-  cancelled: "bg-red-950 text-red-400 border-red-900",
-};
-
 import FormField from "../components/FormField";
 import { inputCls } from "../utils/inputCls";
+import {
+  EVENT_CATEGORIES,
+  EVENT_CATEGORY_META,
+  EVENT_STATUSES,
+  EVENT_STATUS_CLASS,
+} from "../theme";
 
 
 /* Convert ISO date to datetime-local input format */
@@ -224,11 +211,11 @@ export default function EditEvent() {
               Event Status
             </p>
             <div className="flex flex-wrap gap-2">
-              {STATUSES.map((s) => (
+              {EVENT_STATUSES.map((s) => (
                 <button key={s} type="button" onClick={() => set("status", s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all capitalize ${
                     form.status === s
-                      ? STATUS_CLS[s]
+                      ? EVENT_STATUS_CLASS[s]
                       : "bg-white/[0.03] border-white/[0.07] text-slate-500 hover:text-white hover:border-white/[0.15]"
                   }`}>
                   {s}
@@ -248,8 +235,8 @@ export default function EditEvent() {
           {/* Category */}
           <FormField label="Category" required error={fieldErrors.category}>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map((cat) => {
-                const m   = CAT_META[cat];
+              {EVENT_CATEGORIES.map((cat) => {
+                const m   = EVENT_CATEGORY_META[cat];
                 const sel = form.category === cat;
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}

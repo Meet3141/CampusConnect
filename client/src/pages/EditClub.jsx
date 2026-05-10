@@ -17,16 +17,7 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import FormField from "../components/FormField";
 import { inputCls } from "../utils/inputCls";
-
-const CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
-const CATEGORY_META = {
-  technical: { emoji: "⚙️", desc: "Coding, robotics, engineering"  },
-  cultural:  { emoji: "🎭", desc: "Drama, music, festivals"         },
-  sports:    { emoji: "⚡", desc: "Athletics, fitness, competition" },
-  academic:  { emoji: "📚", desc: "Research, debate, study groups"  },
-  arts:      { emoji: "🎨", desc: "Visual arts, design, film"       },
-  other:     { emoji: "🌐", desc: "Everything else"                 },
-};
+import { CLUB_CATEGORIES, CLUB_CATEGORY_META } from "../theme";
 
 const NAME_MAX = 100;
 const DESC_MAX = 1000;
@@ -223,8 +214,8 @@ export default function EditClub() {
               <p className="text-red-400 text-[11px] mb-2">{fieldErrors.category}</p>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {CATEGORIES.map((cat) => {
-                const cm  = CATEGORY_META[cat];
+              {CLUB_CATEGORIES.map((cat) => {
+                const cm  = CLUB_CATEGORY_META[cat];
                 const sel = form.category === cat;
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}

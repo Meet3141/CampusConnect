@@ -14,15 +14,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-
-const CATEGORY_META = {
-  technical: { emoji: "⚙️", gradient: "from-cyan-500/20 to-blue-600/20",    badge: "bg-cyan-950 text-cyan-300 border-cyan-800/60" },
-  cultural:  { emoji: "🎭", gradient: "from-purple-500/20 to-pink-600/20",   badge: "bg-purple-950 text-purple-300 border-purple-800/60" },
-  sports:    { emoji: "⚡", gradient: "from-emerald-500/20 to-green-600/20", badge: "bg-emerald-950 text-emerald-300 border-emerald-800/60" },
-  academic:  { emoji: "📚", gradient: "from-amber-500/20 to-orange-600/20",  badge: "bg-amber-950 text-amber-300 border-amber-800/60" },
-  arts:      { emoji: "🎨", gradient: "from-rose-500/20 to-red-600/20",      badge: "bg-rose-950 text-rose-300 border-rose-800/60" },
-  other:     { emoji: "🌐", gradient: "from-slate-600/20 to-slate-700/20",   badge: "bg-slate-800 text-slate-300 border-slate-700/60" },
-};
+import { CLUB_CATEGORY_META } from "../theme";
 
 const STATUS_META = {
   active:   { label: "Member",  cls: "bg-emerald-950 text-emerald-300 border-emerald-700" },
@@ -231,14 +223,14 @@ export default function MyClubs() {
    Club Card
 ───────────────────────────────────────────── */
 function MyClubCard({ club, index, onClick }) {
-  const meta   = CATEGORY_META[club.category] || CATEGORY_META.other;
+  const meta   = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
   const status = STATUS_META[club.myStatus];
 
   return (
     <button
       onClick={onClick}
       style={{ animationDelay: `${index * 55}ms` }}
-      className="group text-left rounded-2xl border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+      className="group text-left rounded-2xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
     >
       {/* Gradient header */}
       <div className={`relative h-24 bg-gradient-to-br ${meta.gradient} flex items-center justify-center`}>
@@ -263,7 +255,7 @@ function MyClubCard({ club, index, onClick }) {
       {/* Body */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-semibold text-white text-sm leading-snug group-hover:text-indigo-300 transition-colors line-clamp-1">
+          <h3 className="font-semibold text-cc text-sm leading-snug group-hover:text-indigo-300 transition-colors line-clamp-1">
             {club.name}
           </h3>
           <span className={`shrink-0 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border font-medium ${meta.badge}`}>
@@ -271,12 +263,12 @@ function MyClubCard({ club, index, onClick }) {
           </span>
         </div>
 
-        <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">
+        <p className="text-cc-muted text-xs line-clamp-2 leading-relaxed">
           {club.description}
         </p>
 
-        <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-white/[0.05]">
-          <span className="text-[11px] text-slate-600">
+        <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-cc-soft">
+          <span className="text-[11px] text-cc-muted">
             {club.memberCount ?? 0} member{club.memberCount !== 1 ? "s" : ""}
           </span>
           <span className="text-[11px] text-indigo-400 font-medium group-hover:translate-x-0.5 transition-transform duration-200">

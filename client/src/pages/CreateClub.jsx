@@ -17,17 +17,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { inputCls } from "../utils/inputCls";
-
-const CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
-
-const CATEGORY_META = {
-  technical: { emoji: "⚙️", desc: "Coding, robotics, engineering",   color: "from-cyan-600/20 to-blue-600/20"     },
-  cultural:  { emoji: "🎭", desc: "Drama, music, festivals",          color: "from-purple-600/20 to-pink-600/20"   },
-  sports:    { emoji: "⚡", desc: "Athletics, fitness, competition",  color: "from-emerald-600/20 to-green-600/20" },
-  academic:  { emoji: "📚", desc: "Research, debate, study groups",   color: "from-amber-600/20 to-orange-600/20"  },
-  arts:      { emoji: "🎨", desc: "Visual arts, design, film",        color: "from-rose-600/20 to-red-600/20"      },
-  other:     { emoji: "🌐", desc: "Everything else",                  color: "from-slate-600/20 to-slate-700/20"   },
-};
+import { CLUB_CATEGORIES, CLUB_CATEGORY_META } from "../theme";
 
 const NAME_MAX = 100;
 const DESC_MAX = 1000;
@@ -137,7 +127,7 @@ export default function CreateClub() {
     );
   }
 
-  const selectedCat = CATEGORY_META[form.category];
+  const selectedCat = CLUB_CATEGORY_META[form.category];
 
   return (
     <div className="text-white">
@@ -230,8 +220,8 @@ export default function CreateClub() {
                 <p className="text-red-400 text-[11px] mb-2">{fieldErrors.category}</p>
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {CATEGORIES.map((cat) => {
-                  const cm       = CATEGORY_META[cat];
+                {CLUB_CATEGORIES.map((cat) => {
+                  const cm       = CLUB_CATEGORY_META[cat];
                   const selected = form.category === cat;
                   return (
                     <button

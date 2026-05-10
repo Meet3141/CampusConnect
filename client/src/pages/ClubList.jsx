@@ -14,17 +14,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-
-const CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
-
-const CATEGORY_META = {
-  technical: { emoji: "⚙️", gradient: "from-cyan-600/25 to-blue-700/25",     badge: "bg-cyan-950 text-cyan-300 border-cyan-800/60",     accent: "text-cyan-400"    },
-  cultural:  { emoji: "🎭", gradient: "from-purple-600/25 to-pink-700/25",    badge: "bg-purple-950 text-purple-300 border-purple-800/60",accent: "text-purple-400"  },
-  sports:    { emoji: "⚡", gradient: "from-emerald-600/25 to-green-700/25",  badge: "bg-emerald-950 text-emerald-300 border-emerald-800/60", accent: "text-emerald-400" },
-  academic:  { emoji: "📚", gradient: "from-amber-600/25 to-orange-700/25",   badge: "bg-amber-950 text-amber-300 border-amber-800/60",   accent: "text-amber-400"   },
-  arts:      { emoji: "🎨", gradient: "from-rose-600/25 to-red-700/25",       badge: "bg-rose-950 text-rose-300 border-rose-800/60",      accent: "text-rose-400"    },
-  other:     { emoji: "🌐", gradient: "from-slate-600/25 to-slate-700/25",    badge: "bg-slate-800 text-slate-300 border-slate-700/60",   accent: "text-slate-400"   },
-};
+import { CLUB_CATEGORIES, CLUB_CATEGORY_META } from "../theme";
 
 export default function ClubList() {
   const { user } = useAuth();
@@ -176,9 +166,9 @@ export default function ClubList() {
               className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-indigo-500/60 transition-all cursor-pointer min-w-[160px]"
             >
               <option value="" className="bg-[#0a0a12]">All Categories</option>
-              {CATEGORIES.map((cat) => (
+              {CLUB_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat} className="bg-[#0a0a12] capitalize">
-                  {CATEGORY_META[cat].emoji} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {CLUB_CATEGORY_META[cat].emoji} {cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </option>
               ))}
             </select>
@@ -196,7 +186,7 @@ export default function ClubList() {
             >
               All
             </button>
-            {CATEGORIES.map((cat) => (
+            {CLUB_CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat === category ? "" : cat)}
@@ -206,7 +196,7 @@ export default function ClubList() {
                     : "border-white/[0.08] text-slate-500 hover:text-slate-300 hover:border-white/[0.15]"
                 }`}
               >
-                {CATEGORY_META[cat].emoji}{" "}
+                {CLUB_CATEGORY_META[cat].emoji}{" "}
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </button>
             ))}
@@ -313,7 +303,7 @@ export default function ClubList() {
    Club Card
 ───────────────────────────────────────────── */
 function ClubCard({ club, index, myStatus, joining, onOpen, onJoin }) {
-  const meta = CATEGORY_META[club.category] || CATEGORY_META.other;
+  const meta = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
 
   const statusBadge = {
     active:   { label: "Member",  cls: "bg-emerald-950 text-emerald-300 border-emerald-700" },
@@ -324,7 +314,7 @@ function ClubCard({ club, index, myStatus, joining, onOpen, onJoin }) {
   return (
     <div
       style={{ animationDelay: `${index * 45}ms` }}
-      className="group rounded-2xl border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] transition-all duration-300 overflow-hidden flex flex-col"
+      className="group rounded-2xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all duration-300 overflow-hidden flex flex-col"
     >
       {/* Cover */}
       <div
@@ -350,7 +340,7 @@ function ClubCard({ club, index, myStatus, joining, onOpen, onJoin }) {
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3
             onClick={onOpen}
-            className="font-semibold text-white text-sm leading-snug cursor-pointer hover:text-indigo-300 transition-colors line-clamp-1"
+            className="font-semibold text-cc text-sm leading-snug cursor-pointer hover:text-indigo-300 transition-colors line-clamp-1"
           >
             {club.name}
           </h3>
@@ -359,12 +349,12 @@ function ClubCard({ club, index, myStatus, joining, onOpen, onJoin }) {
           </span>
         </div>
 
-        <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed flex-1">
+        <p className="text-cc-muted text-xs line-clamp-2 leading-relaxed flex-1">
           {club.description}
         </p>
 
-        <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-white/[0.05]">
-          <span className="text-[11px] text-slate-600">
+        <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-cc-soft">
+          <span className="text-[11px] text-cc-muted">
             {club.memberCount ?? 0} member{club.memberCount !== 1 ? "s" : ""}
           </span>
 

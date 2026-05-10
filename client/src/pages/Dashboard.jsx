@@ -142,7 +142,7 @@ export default function Dashboard() {
             {events.length === 0 ? (
               <EmptyState icon="📅" message="No upcoming events found." />
             ) : (
-              <div className="rounded-2xl border border-white/[0.07] overflow-hidden">
+              <div className="rounded-2xl border border-cc-soft overflow-hidden">
                 {events.map((ev, i) => (
                   <EventRow key={ev._id} event={ev} last={i === events.length - 1} onClick={() => navigate(`/events/${ev._id}`)} />
                 ))}
@@ -159,7 +159,7 @@ export default function Dashboard() {
             {chats.length === 0 ? (
               <EmptyState icon="💬" message="No chats yet." />
             ) : (
-              <div className="rounded-2xl border border-white/[0.07] overflow-hidden">
+              <div className="rounded-2xl border border-cc-soft overflow-hidden">
                 {chats.slice(0, 4).map((chat, i) => (
                   <ChatRow key={chat._id} chat={chat} last={i === Math.min(chats.length, 4) - 1} onClick={() => navigate(`/chats/${chat._id}`)} />
                 ))}
@@ -172,7 +172,7 @@ export default function Dashboard() {
             {bookmarks.length === 0 ? (
               <EmptyState icon="🔖" message="No bookmarks saved." />
             ) : (
-              <div className="rounded-2xl border border-white/[0.07] overflow-hidden">
+              <div className="rounded-2xl border border-cc-soft overflow-hidden">
                 {bookmarks.slice(0, 4).map((bk, i) => (
                   <BookmarkRow key={bk._id} bookmark={bk} last={i === Math.min(bookmarks.length, 4) - 1} />
                 ))}
@@ -192,9 +192,9 @@ function Section({ title, count, linkLabel, onLink, children }) {
     <div>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-white">{title}</h2>
+          <h2 className="text-base font-semibold text-cc">{title}</h2>
           {count > 0 && (
-            <span className="text-[10px] font-mono tabular-nums px-1.5 py-px bg-white/[0.06] text-slate-500 rounded-md">
+            <span className="text-[10px] font-mono tabular-nums px-1.5 py-px bg-cc-surface-weak text-cc-muted rounded-md">
               {count}
             </span>
           )}
@@ -214,11 +214,11 @@ function StatCard({ label, value, sub, subHighlight, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group text-left bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/[0.14] rounded-2xl p-4 transition-all"
+      className="group text-left bg-cc-surface-weak hover-bg-cc-surface border border-cc-soft hover-border-cc-strong rounded-2xl p-4 transition-all"
     >
-      <p className="text-xs text-slate-500 mb-2">{label}</p>
-      <p className="text-3xl font-semibold text-white tabular-nums leading-none">{value}</p>
-      <p className={`text-xs mt-1.5 ${subHighlight ? "text-yellow-400" : "text-slate-600"}`}>
+      <p className="text-xs text-cc-muted mb-2">{label}</p>
+      <p className="text-3xl font-semibold text-cc tabular-nums leading-none">{value}</p>
+      <p className={`text-xs mt-1.5 ${subHighlight ? "text-yellow-400" : "text-cc-muted"}`}>
         {sub}
       </p>
     </button>
@@ -237,16 +237,16 @@ function ClubMiniCard({ club, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group text-left flex items-center gap-3 p-3 rounded-xl border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] transition-all"
+      className="group text-left flex items-center gap-3 p-3 rounded-xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all"
     >
       <div className={`w-9 h-9 rounded-xl ${cat.bg} flex items-center justify-center text-lg shrink-0`}>
         {cat.emoji}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-base font-medium text-white group-hover:text-indigo-300 transition-colors truncate">
+        <p className="text-base font-medium text-cc group-hover:text-indigo-300 transition-colors truncate">
           {club.name}
         </p>
-        <p className="text-xs text-slate-600 mt-0.5">
+        <p className="text-xs text-cc-muted mt-0.5">
           {club.memberCount ?? 0} member{club.memberCount !== 1 ? "s" : ""}
         </p>
       </div>
@@ -268,20 +268,20 @@ function EventRow({ event, last, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`group w-full flex items-center gap-4 px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-left ${
-        !last ? "border-b border-white/[0.06]" : ""
+      className={`group w-full flex items-center gap-4 px-4 py-3 bg-cc-surface-weak hover-bg-cc-surface transition-colors text-left ${
+        !last ? "border-b border-cc-soft" : ""
       }`}
     >
       <div className="w-9 shrink-0 text-center">
-        <p className="text-base font-semibold text-white leading-none tabular-nums">{day}</p>
-        <p className="text-[10px] text-slate-600 uppercase tracking-wide mt-0.5">{mon}</p>
+        <p className="text-base font-semibold text-cc leading-none tabular-nums">{day}</p>
+        <p className="text-[10px] text-cc-muted uppercase tracking-wide mt-0.5">{mon}</p>
       </div>
-      <div className="w-px h-8 bg-white/[0.06] shrink-0" />
+      <div className="w-px h-8 bg-cc-border-soft shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-base font-medium text-white group-hover:text-indigo-300 transition-colors truncate">
+        <p className="text-base font-medium text-cc group-hover:text-indigo-300 transition-colors truncate">
           {event.title}
         </p>
-        <p className="text-xs text-slate-500 mt-0.5 truncate">📍 {event.venue}</p>
+        <p className="text-xs text-cc-muted mt-0.5 truncate">📍 {event.venue}</p>
       </div>
       <span className={`shrink-0 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium ${cat.badge}`}>
         {event.category}
@@ -306,20 +306,20 @@ function ChatRow({ chat, last, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`group w-full flex items-center gap-3 px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-left ${
-        !last ? "border-b border-white/[0.06]" : ""
+      className={`group w-full flex items-center gap-3 px-4 py-3 bg-cc-surface-weak hover-bg-cc-surface transition-colors text-left ${
+        !last ? "border-b border-cc-soft" : ""
       }`}
     >
       <div className={`w-7 h-7 rounded-full ${avatarCls} flex items-center justify-center text-[11px] font-bold shrink-0`}>
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{chat.name}</p>
+        <p className="text-sm font-medium text-cc truncate">{chat.name}</p>
         {chat.lastMessage && (
-          <p className="text-[11px] text-slate-600 truncate mt-0.5">{chat.lastMessage}</p>
+          <p className="text-[11px] text-cc-muted truncate mt-0.5">{chat.lastMessage}</p>
         )}
       </div>
-      {timeLabel && <span className="text-[10px] text-slate-600 shrink-0">{timeLabel}</span>}
+      {timeLabel && <span className="text-[10px] text-cc-muted shrink-0">{timeLabel}</span>}
     </button>
   );
 }
@@ -334,13 +334,13 @@ function BookmarkRow({ bookmark, last }) {
     : "";
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 bg-white/[0.02] ${!last ? "border-b border-white/[0.06]" : ""}`}>
+    <div className={`flex items-center gap-3 px-4 py-3 bg-cc-surface-weak ${!last ? "border-b border-cc-soft" : ""}`}>
       <div className={`w-7 h-7 rounded-lg ${cat.bg} flex items-center justify-center text-sm shrink-0`}>
         {cat.emoji}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{title}</p>
-        <p className="text-[10px] text-slate-600 mt-0.5">
+        <p className="text-sm font-medium text-cc truncate">{title}</p>
+        <p className="text-[10px] text-cc-muted mt-0.5">
           {isExt ? "External" : "Internal"} · {dateLabel}
         </p>
       </div>
@@ -350,9 +350,9 @@ function BookmarkRow({ bookmark, last }) {
 
 function EmptyState({ icon, message, action, onAction }) {
   return (
-    <div className="flex flex-col items-center py-8 gap-3 text-center rounded-2xl border border-white/[0.06] border-dashed">
+    <div className="flex flex-col items-center py-8 gap-3 text-center rounded-2xl border border-cc-soft border-dashed">
       <span className="text-3xl">{icon}</span>
-      <p className="text-slate-500 text-xs max-w-[160px] leading-relaxed">{message}</p>
+      <p className="text-cc-muted text-xs max-w-[160px] leading-relaxed">{message}</p>
       {action && (
         <button onClick={onAction} className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
           {action} →
@@ -367,28 +367,28 @@ function DashboardSkeleton() {
     <div className="px-5 lg:px-6 py-6 space-y-6 animate-pulse">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-2xl bg-white/[0.04]" />
+          <div key={i} className="h-20 rounded-2xl bg-cc-surface-weak" />
         ))}
       </div>
       <div>
-        <div className="h-4 w-24 bg-white/[0.04] rounded mb-3" />
+        <div className="h-4 w-24 bg-cc-surface-weak rounded mb-3" />
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-14 rounded-xl bg-white/[0.04]" />
+            <div key={i} className="h-14 rounded-xl bg-cc-surface-weak" />
           ))}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <div className="lg:col-span-3 space-y-2">
-          <div className="h-4 w-32 bg-white/[0.04] rounded mb-3" />
+          <div className="h-4 w-32 bg-cc-surface-weak rounded mb-3" />
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-14 rounded-xl bg-white/[0.04]" />
+            <div key={i} className="h-14 rounded-xl bg-cc-surface-weak" />
           ))}
         </div>
         <div className="lg:col-span-2 space-y-4">
-          <div className="h-4 w-24 bg-white/[0.04] rounded" />
+          <div className="h-4 w-24 bg-cc-surface-weak rounded" />
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-12 rounded-xl bg-white/[0.04]" />
+            <div key={i} className="h-12 rounded-xl bg-cc-surface-weak" />
           ))}
         </div>
       </div>

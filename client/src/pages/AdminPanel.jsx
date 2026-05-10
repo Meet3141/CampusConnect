@@ -19,20 +19,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-
-const CATEGORY_BADGE = {
-  technical: "bg-cyan-950 text-cyan-300 border-cyan-800",
-  cultural:  "bg-purple-950 text-purple-300 border-purple-800",
-  sports:    "bg-emerald-950 text-emerald-300 border-emerald-800",
-  academic:  "bg-amber-950 text-amber-300 border-amber-800",
-  arts:      "bg-rose-950 text-rose-300 border-rose-800",
-  other:     "bg-slate-800 text-slate-300 border-slate-700",
-};
-
-const CAT_EMOJI = {
-  technical: "⚙️", cultural: "🎭", sports: "⚡",
-  academic: "📚", arts: "🎨", other: "🌐",
-};
+import { CLUB_CATEGORY_META } from "../theme";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -209,8 +196,9 @@ export default function AdminPanel() {
                   </div>
 
                   {clubs.map((club, i) => {
-                    const badge = CATEGORY_BADGE[club.category] || CATEGORY_BADGE.other;
-                    const emoji = CAT_EMOJI[club.category] || "🌐";
+                    const catMeta = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
+                    const badge = catMeta.badge;
+                    const emoji = catMeta.emoji;
                     const isLast = i === clubs.length - 1;
                     return (
                       <div key={club._id}
@@ -304,7 +292,7 @@ export default function AdminPanel() {
                     {/* Club header */}
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{CAT_EMOJI[club.category] || "🌐"}</span>
+                        <span className="text-lg">{(CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other).emoji}</span>
                         <div>
                           <p className="text-sm font-semibold text-white">{club.name}</p>
                           <p className="text-[11px] text-slate-600">

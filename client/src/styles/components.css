@@ -1,0 +1,40 @@
+@keyframes cc-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: cc-fade-in 0.3s ease both;
+}
+
+.cc-card {
+  border: 1px solid var(--cc-border-soft);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Theme utility classes mapping to CSS variables. Use these gradually to replace Tailwind color utilities. */
+.bg-cc-surface { background-color: var(--cc-surface) !important; }
+.bg-cc-bg { background-color: var(--cc-bg) !important; }
+.bg-cc-surface-weak { background-color: var(--cc-surface-weak) !important; }
+.bg-cc-surface-overlay { background-color: var(--cc-surface-overlay) !important; }
+.bg-cc-brand { background-color: var(--cc-brand) !important; }
+.text-cc { color: var(--cc-text) !important; }
+.text-cc-muted { color: var(--cc-muted) !important; }
+.border-cc-soft { border-color: var(--cc-border-soft) !important; }
+.border-cc-strong { border-color: var(--cc-border-strong) !important; }
+.bg-cc-border-soft { background-color: var(--cc-border-soft) !important; }
+.hover-bg-cc-surface:hover { background-color: var(--cc-surface-hover) !important; }
+.hover-border-cc-strong:hover { border-color: var(--cc-border-strong) !important; }
+.btn-cc-primary { background-color: var(--cc-brand); color: var(--cc-text); border-radius: 0.75rem; padding: 0.5rem 0.9rem; }
+.btn-cc-primary:hover { background-color: var(--cc-brand-hover); }
+
+/* Small helpers for badges */
+.badge-cc { padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 10px; font-weight: 600; display: inline-block; }

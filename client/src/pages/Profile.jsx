@@ -196,7 +196,7 @@ export default function Profile() {
     <div style={S.page}>
       <div style={S.loadWrap}>
         <div style={S.spinner} />
-        <p style={{ color: "#666", marginTop: 16, fontFamily: "'DM Mono', monospace", fontSize: 13 }}>loading profile_</p>
+        <p style={{ color: "var(--cc-muted)", marginTop: 16, fontFamily: "'DM Mono', monospace", fontSize: 13 }}>loading profile_</p>
       </div>
     </div>
   );
@@ -213,17 +213,17 @@ export default function Profile() {
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: var(--cc-muted); border-radius: 2px; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-        .avatar-opt:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.5) !important; }
+        .avatar-opt:hover { transform: scale(1.08); border-color: var(--cc-border-strong) !important; }
         .avatar-opt { transition: transform 0.18s ease, border-color 0.18s ease; }
         .tag-chip:hover .rm { opacity: 1 !important; }
-        .nav-btn:hover { background: rgba(255,255,255,0.06) !important; }
+        .nav-btn:hover { background: var(--cc-surface-hover) !important; }
         .action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
         .action-btn { transition: opacity 0.2s, transform 0.2s; }
-        .edit-input:focus { border-color: rgba(255,255,255,0.35) !important; background: rgba(255,255,255,0.06) !important; outline: none; }
+        .edit-input:focus { border-color: var(--cc-border-strong) !important; background: var(--cc-surface-hover) !important; outline: none; }
         .edit-input { transition: border-color 0.2s, background 0.2s; }
       `}</style>
 
@@ -274,7 +274,7 @@ export default function Profile() {
                         onClick={() => { setForm(f => ({ ...f, avatar: key })); setShowAvatarPicker(false); }}
                         style={{
                           ...S.pickerOption,
-                          border: form.avatar === key ? "2px solid #e94560" : "2px solid rgba(255,255,255,0.1)",
+                          border: form.avatar === key ? "2px solid #e94560" : "2px solid var(--cc-border-soft)",
                         }}
                       >
                         {AVATARS[key]}
@@ -309,8 +309,8 @@ export default function Profile() {
               </div>
 
               <p style={S.memberSince}>
-                <span style={{ fontFamily: "'DM Mono', monospace", color: "#555", fontSize: 11 }}>member since </span>
-                <span style={{ fontFamily: "'DM Mono', monospace", color: "#888", fontSize: 11 }}>{memberSince}</span>
+                <span style={{ fontFamily: "'DM Mono', monospace", color: "var(--cc-muted)", fontSize: 11 }}>member since </span>
+                <span style={{ fontFamily: "'DM Mono', monospace", color: "var(--cc-muted)", fontSize: 11 }}>{memberSince}</span>
               </p>
             </div>
 
@@ -359,7 +359,7 @@ export default function Profile() {
                     <p style={S.charCount}>{form.bio.length}/500</p>
                   </>
                 ) : (
-                  <p style={S.bioText}>{profile?.bio || <span style={{ color: "#444", fontStyle: "italic" }}>No bio yet.</span>}</p>
+                  <p style={S.bioText}>{profile?.bio || <span style={{ color: "var(--cc-muted)", fontStyle: "italic" }}>No bio yet.</span>}</p>
                 )}
               </div>
 
@@ -376,7 +376,7 @@ export default function Profile() {
                     </span>
                   ))}
                   {(editMode ? form.interests : profile?.interests || []).length === 0 && (
-                    <span style={{ color: "#444", fontStyle: "italic", fontSize: 13 }}>No interests added.</span>
+                    <span style={{ color: "var(--cc-muted)", fontStyle: "italic", fontSize: 13 }}>No interests added.</span>
                   )}
                 </div>
                 {editMode && (
@@ -422,7 +422,7 @@ export default function Profile() {
                     label="verified"
                     value={profile?.isVerified ? "Verified ✓" : "Not verified"}
                     editMode={false}
-                    valueStyle={{ color: profile?.isVerified ? "#66bb6a" : "#888" }}
+                    valueStyle={{ color: profile?.isVerified ? "#66bb6a" : "var(--cc-muted)" }}
                   />
                   <DetailRow
                     icon="⬡"
@@ -461,9 +461,9 @@ export default function Profile() {
 // ── Small reusable detail row ─────────────────────────────────────────────────
 function DetailRow({ icon, label, value, editMode, placeholder, onChange, valueStyle = {} }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-      <span style={{ fontSize: 16, width: 22, textAlign: "center", color: "#555" }}>{icon}</span>
-      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555", width: 70, flexShrink: 0 }}>{label}</span>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--cc-border-soft)" }}>
+      <span style={{ fontSize: 16, width: 22, textAlign: "center", color: "var(--cc-muted)" }}>{icon}</span>
+      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "var(--cc-muted)", width: 70, flexShrink: 0 }}>{label}</span>
       {editMode ? (
         <input
           className="edit-input"
@@ -471,14 +471,14 @@ function DetailRow({ icon, label, value, editMode, placeholder, onChange, valueS
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           style={{
-            flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 6, color: "#e0e0e0", padding: "5px 10px", fontSize: 13,
+            flex: 1, background: "var(--cc-surface-weak)", border: "1px solid var(--cc-border-strong)",
+            borderRadius: 6, color: "var(--cc-text)", padding: "5px 10px", fontSize: 13,
             fontFamily: "'DM Mono', monospace",
           }}
         />
       ) : (
-        <span style={{ fontSize: 13, color: "#c0c0c0", fontFamily: "'DM Mono', monospace", ...valueStyle }}>
-          {value || <span style={{ color: "#3a3a3a" }}>—</span>}
+        <span style={{ fontSize: 13, color: "var(--cc-text)", fontFamily: "'DM Mono', monospace", ...valueStyle }}>
+          {value || <span style={{ color: "var(--cc-muted)" }}>—</span>}
         </span>
       )}
     </div>
@@ -489,8 +489,8 @@ function DetailRow({ icon, label, value, editMode, placeholder, onChange, valueS
 const S = {
   page: {
     minHeight: "100vh",
-    background: "#0d0d0d",
-    color: "#e0e0e0",
+    background: "var(--cc-bg)",
+    color: "var(--cc-text)",
     fontFamily: "'Syne', sans-serif",
   },
   loadWrap: {
@@ -499,7 +499,7 @@ const S = {
   },
   spinner: {
     width: 32, height: 32, borderRadius: "50%",
-    border: "2px solid rgba(255,255,255,0.05)",
+    border: "2px solid var(--cc-border-soft)",
     borderTopColor: "#e94560",
     animation: "spin 0.7s linear infinite",
   },
@@ -508,19 +508,19 @@ const S = {
   nav: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
     padding: "0 32px", height: 56,
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    background: "rgba(13,13,13,0.95)",
+    borderBottom: "1px solid var(--cc-border-soft)",
+    background: "var(--cc-surface-overlay)",
     backdropFilter: "blur(10px)",
     position: "sticky", top: 0, zIndex: 50,
   },
   navBack: {
     display: "flex", alignItems: "center", gap: 8,
-    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 8, padding: "6px 14px", color: "#888", cursor: "pointer",
+    background: "var(--cc-surface-weak)", border: "1px solid var(--cc-border-soft)",
+    borderRadius: 8, padding: "6px 14px", color: "var(--cc-muted)", cursor: "pointer",
   },
   navBrand: {
     fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 15,
-    letterSpacing: "0.12em", color: "#e0e0e0",
+    letterSpacing: "0.12em", color: "var(--cc-text)",
   },
   navLogout: {
     background: "transparent", border: "1px solid rgba(233,69,96,0.3)",
@@ -536,8 +536,8 @@ const S = {
   // Header strip
   headerStrip: {
     position: "relative",
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.07)",
+    background: "var(--cc-surface-weak)",
+    border: "1px solid var(--cc-border-soft)",
     borderRadius: 16, padding: "28px 28px 24px",
     display: "flex", alignItems: "flex-start", gap: 24,
     flexWrap: "wrap",
@@ -557,12 +557,12 @@ const S = {
   avatarInner: {
     width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden",
     display: "flex", alignItems: "center", justifyContent: "center",
-    background: "#111",
+    background: "var(--cc-bg)",
   },
   avatarEditBtn: {
     position: "absolute", bottom: -2, right: -2,
     width: 26, height: 26, borderRadius: "50%",
-    background: "#e94560", border: "2px solid #0d0d0d",
+    background: "#e94560", border: "2px solid var(--cc-bg)",
     color: "#fff", fontSize: 13, cursor: "pointer",
     display: "flex", alignItems: "center", justifyContent: "center",
     fontFamily: "sans-serif",
@@ -571,14 +571,14 @@ const S = {
   // Avatar picker
   avatarPicker: {
     position: "absolute", top: 100, left: 0, zIndex: 100,
-    background: "#181818", border: "1px solid rgba(255,255,255,0.12)",
+    background: "var(--cc-surface)", border: "1px solid var(--cc-border-strong)",
     borderRadius: 14, padding: "16px 16px 12px",
     boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
     width: 260,
     animation: "fadeUp 0.2s ease both",
   },
   pickerLabel: {
-    fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#555",
+    fontFamily: "'DM Mono', monospace", fontSize: 10, color: "var(--cc-muted)",
     letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12,
   },
   pickerGrid: {
@@ -586,19 +586,19 @@ const S = {
   },
   pickerOption: {
     width: 52, height: 52, borderRadius: 10, overflow: "hidden",
-    cursor: "pointer", padding: 4, background: "#111",
+    cursor: "pointer", padding: 4, background: "var(--cc-bg)",
   },
 
   headerInfo: { flex: 1, minWidth: 0 },
   userName: {
     fontFamily: "'Syne', sans-serif", fontWeight: 800,
     fontSize: "clamp(22px, 3vw, 30px)", margin: "0 0 8px",
-    color: "#f0f0f0", letterSpacing: "-0.01em",
+    color: "var(--cc-text)", letterSpacing: "-0.01em",
   },
   nameInput: {
     fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 26,
-    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
-    borderRadius: 8, color: "#f0f0f0", padding: "6px 12px",
+    background: "var(--cc-surface-weak)", border: "1px solid var(--cc-border-strong)",
+    borderRadius: 8, color: "var(--cc-text)", padding: "6px 12px",
     width: "100%", marginBottom: 8,
   },
   rolesRow: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 },
@@ -622,8 +622,8 @@ const S = {
     fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer",
   },
   cancelBtn: {
-    background: "transparent", border: "1px solid rgba(255,255,255,0.12)",
-    color: "#888", borderRadius: 10, padding: "9px 18px",
+    background: "transparent", border: "1px solid var(--cc-border-strong)",
+    color: "var(--cc-muted)", borderRadius: 10, padding: "9px 18px",
     fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer",
   },
 
@@ -648,34 +648,34 @@ const S = {
 
   // Card
   card: {
-    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+    background: "var(--cc-surface-weak)", border: "1px solid var(--cc-border-soft)",
     borderRadius: 14, padding: "20px 22px",
     animation: "fadeUp 0.4s ease both",
   },
   cardTitle: {
-    fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555",
+    fontFamily: "'DM Mono', monospace", fontSize: 11, color: "var(--cc-muted)",
     textTransform: "uppercase", letterSpacing: "0.12em",
     margin: "0 0 14px", paddingBottom: 10,
-    borderBottom: "1px solid rgba(255,255,255,0.05)",
+    borderBottom: "1px solid var(--cc-border-soft)",
   },
 
   // Bio
-  bioText: { color: "#b0b0b0", fontSize: 14, lineHeight: 1.7, margin: 0 },
+  bioText: { color: "var(--cc-muted)", fontSize: 14, lineHeight: 1.7, margin: 0 },
   bioTextarea: {
     width: "100%", minHeight: 100, resize: "vertical",
-    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 8, color: "#e0e0e0", padding: "10px 12px",
+    background: "var(--cc-surface-weak)", border: "1px solid var(--cc-border-strong)",
+    borderRadius: 8, color: "var(--cc-text)", padding: "10px 12px",
     fontSize: 13, lineHeight: 1.6, fontFamily: "'DM Mono', monospace",
   },
-  charCount: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", margin: "4px 0 0", textAlign: "right" },
+  charCount: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: "var(--cc-muted)", margin: "4px 0 0", textAlign: "right" },
 
   // Tags
   tagsWrap: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 0 },
   tagChip: {
     display: "inline-flex", alignItems: "center", gap: 5,
-    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+    background: "var(--cc-surface-hover)", border: "1px solid var(--cc-border-soft)",
     borderRadius: 6, padding: "4px 10px",
-    fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#a0a0a0",
+    fontFamily: "'DM Mono', monospace", fontSize: 12, color: "var(--cc-muted)",
     position: "relative",
   },
   tagRemove: {
@@ -684,8 +684,8 @@ const S = {
   },
   tagInputRow: { display: "flex", gap: 8, marginTop: 12 },
   tagInput: {
-    flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 8, color: "#e0e0e0", padding: "7px 12px",
+    flex: 1, background: "var(--cc-surface-weak)", border: "1px solid var(--cc-border-strong)",
+    borderRadius: 8, color: "var(--cc-text)", padding: "7px 12px",
     fontFamily: "'DM Mono', monospace", fontSize: 12,
   },
   addTagBtn: {
@@ -701,8 +701,8 @@ const S = {
   statsList: { display: "flex", flexDirection: "column", gap: 0 },
   statRow: {
     display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "9px 0", borderBottom: "1px solid rgba(255,255,255,0.05)",
+    padding: "9px 0", borderBottom: "1px solid var(--cc-border-soft)",
   },
-  statLabel: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555" },
-  statValue: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#888" },
+  statLabel: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: "var(--cc-muted)" },
+  statValue: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: "var(--cc-muted)" },
 };
