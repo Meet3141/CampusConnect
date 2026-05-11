@@ -212,13 +212,8 @@ export default function Register() {
               className="flex items-center gap-2.5 mb-10"
               style={{ animation: "cc-slide-up 0.5s ease 0.05s both" }}
             >
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <rect x="1" y="1" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95"/>
-                  <rect x="9" y="1" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.55"/>
-                  <rect x="1" y="9" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.55"/>
-                  <rect x="9" y="9" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.28"/>
-                </svg>
+              <div className="w-14 h-14 rounded-xl overflow-hidden">
+                <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-1 bg-white" />
               </div>
               <span className="text-sm font-semibold tracking-tight text-white/80">
                 CampusConnect

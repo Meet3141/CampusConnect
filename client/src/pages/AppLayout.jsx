@@ -124,13 +124,8 @@ export default function AppLayout() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-cc-soft">
-          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1" y="1" width="5" height="5" rx="1" fill="white" fillOpacity="0.95"/>
-              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" fillOpacity="0.6"/>
-              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" fillOpacity="0.6"/>
-              <rect x="8" y="8" width="5" height="5" rx="1" fill="white" fillOpacity="0.3"/>
-            </svg>
+          <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+            <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-1 bg-white" />
           </div>
           <span className="font-semibold text-base text-cc tracking-tight">
             CampusConnect

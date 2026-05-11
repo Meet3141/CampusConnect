@@ -1,0 +1,10 @@
+PLACEHOLDER FILE FOR DEPSTAR LOGO
+
+This file is a placeholder created by the development assistant. Please replace this file with the exact JPEG you provided (attachment: file:image-1778485331816.jpeg) to ensure the logo is used verbatim.
+
+Steps to replace:
+1. Save the provided JPEG to your machine.
+2. Overwrite this file at `client/public/depstar-logo.jpeg` with the original binary JPEG file (no edits).
+3. Rebuild the client if necessary: `cd client && npm run build`.
+
+DO NOT EDIT the JPEG image file; the user requested verbatim usage.

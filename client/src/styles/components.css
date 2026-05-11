@@ -38,3 +38,42 @@
 
 /* Small helpers for badges */
 .badge-cc { padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 10px; font-weight: 600; display: inline-block; }
+
+/* Light theme visibility fixes for legacy dark utility classes.
+   These are scoped to the light theme so dark mode stays unchanged. */
+html[data-theme="light"] [class*="bg-white/"] {
+  background-color: var(--cc-surface) !important;
+}
+
+html[data-theme="light"] [class*="border-white/"] {
+  border-color: var(--cc-border-soft) !important;
+}
+
+html[data-theme="light"] [class*="bg-white/"] h1,
+html[data-theme="light"] [class*="bg-white/"] h2,
+html[data-theme="light"] [class*="bg-white/"] h3,
+html[data-theme="light"] [class*="bg-white/"] h4,
+html[data-theme="light"] [class*="bg-white/"] h5,
+html[data-theme="light"] [class*="bg-white/"] h6,
+html[data-theme="light"] [class*="bg-white/"] p,
+html[data-theme="light"] [class*="bg-white/"] li,
+html[data-theme="light"] [class*="bg-white/"] label,
+html[data-theme="light"] [class*="bg-white/"] small {
+  color: var(--cc-text) !important;
+}
+
+html[data-theme="light"] [class*="bg-white/"] .text-slate-400 {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] [class*="bg-white/"] .text-slate-500 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] [class*="bg-white/"] .text-slate-600 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] [class*="bg-white/"]:hover {
+  background-color: var(--cc-surface-hover) !important;
+}

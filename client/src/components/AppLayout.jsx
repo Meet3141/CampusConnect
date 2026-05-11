@@ -17,7 +17,7 @@ function isActivePath(pathname, path) {
 function NavSection({ section, items, pathname, onNavigate }) {
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-widest text-slate-600 font-medium px-3 mb-2">
+      <p className="text-[11px] uppercase tracking-widest text-cc-muted font-medium px-3 mb-2">
         {section}
       </p>
       <ul className="space-y-0.5">
@@ -29,8 +29,8 @@ function NavSection({ section, items, pathname, onNavigate }) {
                 onClick={() => onNavigate(path)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition-all ${
                   active
-                    ? "bg-indigo-600/20 text-indigo-300"
-                    : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                    ? "bg-cc-surface-hover text-cc"
+                    : "text-cc-muted hover:text-cc hover-bg-cc-surface"
                 }`}
               >
                 <Icon size={15} active={active} />
@@ -67,26 +67,21 @@ export default function AppLayout() {
     <div className="flex h-screen bg-cc-bg text-cc overflow-hidden">
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-20 lg:hidden"
+          className="fixed inset-0 bg-black/60 z-50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-30 w-[220px] flex flex-col bg-cc-surface-weak border-r border-cc-soft transition-transform duration-300 ${
+        className={`fixed lg:sticky lg:top-0 inset-y-0 left-0 z-60 w-[220px] flex flex-col bg-cc-surface border-r border-cc-soft transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/[0.06]">
-          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1" y="1" width="5" height="5" rx="1" fill="white" fillOpacity="0.95" />
-              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" fillOpacity="0.6" />
-              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" fillOpacity="0.6" />
-              <rect x="8" y="8" width="5" height="5" rx="1" fill="white" fillOpacity="0.3" />
-            </svg>
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-cc-soft">
+          <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+            <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-1 bg-white" />
           </div>
-          <span className="font-semibold text-base text-white tracking-tight">CampusConnect</span>
+          <span className="font-semibold text-base text-cc tracking-tight">CampusConnect</span>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
@@ -114,21 +109,21 @@ export default function AppLayout() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate("/profile")}
-              className="flex-1 flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/[0.06] transition-colors text-left group/profile"
+              className="flex-1 flex items-center gap-3 px-2 py-2 rounded-xl hover-bg-cc-surface transition-colors text-left group/profile"
               title="View your profile"
             >
               <div className="w-7 h-7 rounded-full bg-indigo-950 ring-1 ring-indigo-500/30 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
                 {userInitials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate group-hover/profile:text-indigo-300 transition-colors">
+                <p className="text-sm font-medium text-cc truncate group-hover/profile:text-cc transition-colors">
                   {user?.name}
                 </p>
-                <p className="text-[10px] text-slate-600 capitalize">{user?.roles?.[0] || "member"}</p>
+                <p className="text-[10px] text-cc-muted capitalize">{user?.roles?.[0] || "member"}</p>
               </div>
             </button>
 
-            <button onClick={logout} className="shrink-0 p-2 rounded-xl text-slate-600 hover:text-red-400 hover:bg-red-950/30 transition-all" title="Log out">
+            <button onClick={logout} className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-red-500 hover:bg-red-500/10 transition-all" title="Log out">
               <IconLogout size={14} />
             </button>
           </div>
@@ -136,7 +131,11 @@ export default function AppLayout() {
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex items-center justify-between px-6 py-3 border-b border-cc-soft bg-cc-surface-overlay backdrop-blur-md shrink-0">
+        <header
+          className={`flex items-center justify-between px-6 py-3 border-b border-cc-soft bg-cc-surface-overlay backdrop-blur-md shrink-0 relative transition-opacity ${
+            sidebarOpen ? "z-0 opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto" : "z-10"
+          }`}
+        >
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
