@@ -17,46 +17,15 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import FormField from "../components/FormField";
+import { inputCls } from "../utils/inputCls";
+import {
+  EVENT_CATEGORIES,
+  EVENT_CATEGORY_META,
+  EVENT_STATUSES,
+  EVENT_STATUS_CLASS,
+} from "../theme";
 
-const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "meeting"];
-const CAT_META = {
-  hackathon: { emoji: "💻", desc: "Code competitions" },
-  workshop:  { emoji: "🛠",  desc: "Hands-on learning" },
-  webinar:   { emoji: "🎙",  desc: "Online talks"      },
-  cultural:  { emoji: "🎭", desc: "Culture & arts"     },
-  sports:    { emoji: "⚡", desc: "Athletics events"   },
-  meeting:   { emoji: "📋", desc: "General meetings"   },
-};
-
-const STATUSES = ["upcoming", "ongoing", "completed", "cancelled"];
-const STATUS_CLS = {
-  upcoming:  "bg-indigo-950 text-indigo-300 border-indigo-800",
-  ongoing:   "bg-emerald-950 text-emerald-300 border-emerald-800",
-  completed: "bg-slate-800 text-slate-400 border-slate-700",
-  cancelled: "bg-red-950 text-red-400 border-red-900",
-};
-
-const inputCls = (err) =>
-  `w-full bg-white/[0.04] border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-    err
-      ? "border-red-800 focus:border-red-600"
-      : "border-white/[0.08] focus:border-indigo-500/60 focus:bg-white/[0.06]"
-  }`;
-
-function Field({ label, required, hint, error, children }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
-          {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-        </label>
-        {hint && <span className="text-[11px] text-slate-700 font-mono">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-red-400 text-[11px] mt-1.5">{error}</p>}
-    </div>
-  );
-}
 
 /* Convert ISO date to datetime-local input format */
 const toDatetimeLocal = (iso) => {
@@ -110,10 +79,11 @@ export default function EditEvent() {
     fetch();
   }, [id]);
 
-  /* ── Role check ── */
+  /* ── Role/ownership check ── */
   const isOrgAdmin = user?.roles?.includes("orgAdmin");
   const isCreator  = event && String(event.createdBy?._id || event.createdBy) === String(user?._id);
-  const canEdit    = isOrgAdmin || isCreator;
+  const isClubAdminOfEvent = event && String(event?.clubId?.adminId?._id || event?.clubId?.adminId) === String(user?._id);
+  const canEdit    = isOrgAdmin || isCreator || isClubAdminOfEvent;
 
   const set = (key, value) => {
     setForm((p) => ({ ...p, [key]: value }));
@@ -190,7 +160,7 @@ export default function EditEvent() {
         <div className="text-center max-w-sm">
           <div className="text-5xl mb-5">🔒</div>
           <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm">Only the event creator or Org Admins can edit events.</p>
+          <p className="text-slate-500 text-sm">Only the event creator, the club admin, or Org Admins can edit events.</p>
           <button onClick={() => navigate(`/events/${id}`)}
             className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
             Back to Event
@@ -241,11 +211,11 @@ export default function EditEvent() {
               Event Status
             </p>
             <div className="flex flex-wrap gap-2">
-              {STATUSES.map((s) => (
+              {EVENT_STATUSES.map((s) => (
                 <button key={s} type="button" onClick={() => set("status", s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all capitalize ${
                     form.status === s
-                      ? STATUS_CLS[s]
+                      ? EVENT_STATUS_CLASS[s]
                       : "bg-white/[0.03] border-white/[0.07] text-slate-500 hover:text-white hover:border-white/[0.15]"
                   }`}>
                   {s}
@@ -255,18 +225,18 @@ export default function EditEvent() {
           </div>
 
           {/* Title */}
-          <Field label="Event Title" required error={fieldErrors.title}>
+          <FormField label="Event Title" required error={fieldErrors.title}>
             <input type="text" value={form.title}
               onChange={(e) => set("title", e.target.value)}
               maxLength={200} placeholder="e.g. Spring Hackathon 2026"
               className={inputCls(!!fieldErrors.title)} />
-          </Field>
+          </FormField>
 
           {/* Category */}
-          <Field label="Category" required error={fieldErrors.category}>
+          <FormField label="Category" required error={fieldErrors.category}>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map((cat) => {
-                const m   = CAT_META[cat];
+              {EVENT_CATEGORIES.map((cat) => {
+                const m   = EVENT_CATEGORY_META[cat];
                 const sel = form.category === cat;
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}
@@ -281,45 +251,45 @@ export default function EditEvent() {
                 );
               })}
             </div>
-          </Field>
+          </FormField>
 
           {/* Date & Venue */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Date & Time" required error={fieldErrors.date}>
+            <FormField label="Date & Time" required error={fieldErrors.date}>
               <input type="datetime-local" value={form.date}
                 onChange={(e) => set("date", e.target.value)}
                 className={inputCls(!!fieldErrors.date)} />
-            </Field>
-            <Field label="Venue" required error={fieldErrors.venue}>
+            </FormField>
+            <FormField label="Venue" required error={fieldErrors.venue}>
               <input type="text" value={form.venue}
                 onChange={(e) => set("venue", e.target.value)}
                 placeholder="e.g. Hall A, Block 3"
                 className={inputCls(!!fieldErrors.venue)} />
-            </Field>
+            </FormField>
           </div>
 
           {/* Description */}
-          <Field label="Description" required error={fieldErrors.description}>
+          <FormField label="Description" required error={fieldErrors.description}>
             <textarea value={form.description}
               onChange={(e) => set("description", e.target.value)}
               rows={4} maxLength={2000} placeholder="Describe the event…"
               className={`${inputCls(!!fieldErrors.description)} resize-none`} />
-          </Field>
+          </FormField>
 
           {/* Optional */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Max Attendees" hint="Optional">
+            <FormField label="Max Attendees" hint="Optional">
               <input type="number" value={form.maxAttendees}
                 onChange={(e) => set("maxAttendees", e.target.value)}
                 placeholder="Unlimited" min={1}
                 className={inputCls(false)} />
-            </Field>
-            <Field label="Image URL" hint="Optional">
+            </FormField>
+            <FormField label="Image URL" hint="Optional">
               <input type="url" value={form.image}
                 onChange={(e) => set("image", e.target.value)}
                 placeholder="https://…"
                 className={inputCls(false)} />
-            </Field>
+            </FormField>
           </div>
 
           {apiError && (

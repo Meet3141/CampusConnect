@@ -16,6 +16,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
   connectChatSocket,
   joinChatRoom,
@@ -28,6 +29,7 @@ export default function ChatRoom() {
   const { id: chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [chat, setChat]           = useState(null);
   const [messages, setMessages]   = useState([]);
@@ -36,6 +38,7 @@ export default function ChatRoom() {
   const [sending, setSending]     = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText]   = useState("");
+  const [socketState, setSocketState] = useState("connected");
 
   const messagesEndRef = useRef(null);
 
@@ -47,12 +50,13 @@ export default function ChatRoom() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [chatRes, msgRes] = await Promise.all([
+        const [chatRes, msgRes] = await Promise.allSettled([
           api.get(`/chats/${chatId}`),
           api.get(`/messages/chat/${chatId}`, { params: { limit: 100 } }),
         ]);
-        setChat(chatRes.data.data);
-        setMessages(msgRes.data.data || []);
+
+        setChat(chatRes.status === "fulfilled" ? chatRes.value.data.data : null);
+        setMessages(msgRes.status === "fulfilled" ? msgRes.value.data.data || [] : []);
       } catch (err) {
         console.error("Failed to load chat:", err);
       } finally {
@@ -65,8 +69,32 @@ export default function ChatRoom() {
   /* ── Socket.io for real-time messages (D: uses shared socket service) ── */
   useEffect(() => {
     // Connect via shared service (reuses existing connection if already open)
-    connectChatSocket();
+    const socket = connectChatSocket();
+    setSocketState(socket?.connected ? "connected" : "connecting");
     joinChatRoom(chatId);
+
+    const handleConnect = () => setSocketState("connected");
+    const handleDisconnect = () => setSocketState("disconnected");
+    const handleConnectError = () => {
+      setSocketState("error");
+      toast.error("Chat connection failed. Retrying in the background.");
+    };
+    const handleReconnectAttempt = () => setSocketState("reconnecting");
+    const handleReconnect = () => {
+      setSocketState("connected");
+      toast.success("Reconnected to chat.");
+    };
+    const handleReconnectFailed = () => {
+      setSocketState("error");
+      toast.error("Chat reconnection failed.");
+    };
+
+    socket?.on("connect", handleConnect);
+    socket?.on("disconnect", handleDisconnect);
+    socket?.on("connect_error", handleConnectError);
+    socket?.io?.on("reconnect_attempt", handleReconnectAttempt);
+    socket?.io?.on("reconnect", handleReconnect);
+    socket?.io?.on("reconnect_failed", handleReconnectFailed);
 
     const offNew = onChatEvent("message:new", (msg) => {
       setMessages((prev) => {
@@ -98,6 +126,12 @@ export default function ChatRoom() {
       offUpdated();
       offDeleted();
       offReacted();
+      socket?.off("connect", handleConnect);
+      socket?.off("disconnect", handleDisconnect);
+      socket?.off("connect_error", handleConnectError);
+      socket?.io?.off("reconnect_attempt", handleReconnectAttempt);
+      socket?.io?.off("reconnect", handleReconnect);
+      socket?.io?.off("reconnect_failed", handleReconnectFailed);
       leaveChatRoom(chatId);
     };
   }, [chatId, scrollToBottom]);
@@ -119,7 +153,7 @@ export default function ChatRoom() {
       await api.post(`/messages/chat/${chatId}`, { message: text });
       setInput("");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send.");
+      toast.error(err.response?.data?.message || "Failed to send.");
     } finally {
       setSending(false);
     }
@@ -134,7 +168,7 @@ export default function ChatRoom() {
       setEditingId(null);
       setEditText("");
     } catch (err) {
-      alert(err.response?.data?.message || "Edit failed.");
+      toast.error(err.response?.data?.message || "Edit failed.");
     }
   };
 
@@ -144,7 +178,7 @@ export default function ChatRoom() {
     try {
       await api.delete(`/messages/${msgId}`);
     } catch (err) {
-      alert(err.response?.data?.message || "Delete failed.");
+      toast.error(err.response?.data?.message || "Delete failed.");
     }
   };
 
@@ -152,7 +186,9 @@ export default function ChatRoom() {
   const handleReact = async (msgId, emoji) => {
     try {
       await api.post(`/messages/${msgId}/reactions`, { emoji });
-    } catch {}
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Reaction failed.");
+    }
   };
 
   /* ── Leave chat ── */
@@ -162,7 +198,7 @@ export default function ChatRoom() {
       await api.post(`/chats/${chatId}/leave`);
       navigate("/chats");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave chat.");
+      toast.error(err.response?.data?.message || "Failed to leave chat.");
     }
   };
 
@@ -176,6 +212,20 @@ export default function ChatRoom() {
 
   return (
     <div className="flex flex-col h-full text-white">
+      {socketState !== "connected" && (
+        <div className="px-5 py-2 text-xs text-amber-200 bg-amber-950/40 border-b border-amber-500/20 flex items-center justify-between gap-3">
+          <span>
+            {socketState === "reconnecting"
+              ? "Reconnecting to chat… messages will resume automatically."
+              : socketState === "error"
+                ? "Chat connection interrupted. Retrying in the background."
+                : "Connecting to chat…"}
+          </span>
+          <span className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-widest text-amber-200">
+            {socketState}
+          </span>
+        </div>
+      )}
 
       {/* Chat header */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.06] bg-[#0d0d18]/80 backdrop-blur-md shrink-0">

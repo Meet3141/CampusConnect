@@ -1,0 +1,33 @@
+:root {
+  /* Default (dark) theme: used when no data-theme is set or data-theme="dark" */
+  --cc-bg: #0a0a12;
+  --cc-surface: #0d0d18;
+  --cc-text: #f8fafc;
+  --cc-muted: #64748b;
+  --cc-border-soft: rgba(255, 255, 255, 0.08);
+  --cc-border-strong: rgba(255, 255, 255, 0.16);
+  --cc-brand: #4f46e5;
+  --cc-brand-hover: #6366f1;
+  --cc-surface-weak: rgba(255,255,255,0.02);
+  --cc-surface-hover: rgba(255,255,255,0.05);
+  --cc-surface-overlay: rgba(10,10,18,0.9);
+}
+
+:root[data-theme="light"] {
+  --cc-bg: #ffffff;
+  --cc-surface: #f6f7fb;
+  --cc-text: #0f172a;
+  --cc-muted: #6b7280;
+  --cc-border-soft: rgba(15,23,42,0.06);
+  --cc-border-strong: rgba(15,23,42,0.12);
+  --cc-brand: #2563eb; /* indigo-600 */
+  --cc-brand-hover: #1e40af;
+  --cc-surface-weak: rgba(15,23,42,0.02);
+  --cc-surface-hover: rgba(15,23,42,0.04);
+  --cc-surface-overlay: rgba(246,247,251,0.9);
+}
+
+body {
+  background-color: var(--cc-bg);
+  color: var(--cc-text);
+}

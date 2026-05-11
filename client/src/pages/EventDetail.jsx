@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const EVENT_CAT = {
   hackathon: { emoji: "💻", bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
@@ -37,6 +38,7 @@ export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [event, setEvent]       = useState(null);
   const [attendees, setAttendees] = useState([]);
@@ -100,7 +102,7 @@ export default function EventDetail() {
         { userId: { _id: user._id, name: user.name, email: user.email }, status: "registered", registeredAt: new Date() },
       ]);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to RSVP.");
+      toast.error(err.response?.data?.message || "Failed to RSVP.");
     } finally {
       setActionLoading(false);
     }
@@ -118,7 +120,7 @@ export default function EventDetail() {
         )
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to cancel.");
+      toast.error(err.response?.data?.message || "Failed to cancel.");
     } finally {
       setActionLoading(false);
     }
@@ -134,7 +136,7 @@ export default function EventDetail() {
         volunteers: [...(prev.volunteers || []), { userId: { _id: user._id }, skills: [] }],
       }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to volunteer.");
+      toast.error(err.response?.data?.message || "Failed to volunteer.");
     } finally {
       setActionLoading(false);
     }
@@ -150,7 +152,7 @@ export default function EventDetail() {
         setBookmarkId(res.data.data._id);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Bookmark failed.");
+      toast.error(err.response?.data?.message || "Bookmark failed.");
     }
   };
 
@@ -168,7 +170,7 @@ export default function EventDetail() {
         ),
       }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to review application.");
+      toast.error(err.response?.data?.message || "Failed to review application.");
     } finally {
       setActionLoading(false);
     }
@@ -186,7 +188,7 @@ export default function EventDetail() {
         ),
       }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove.");
+      toast.error(err.response?.data?.message || "Failed to remove.");
     } finally {
       setActionLoading(false);
     }
@@ -200,7 +202,7 @@ export default function EventDetail() {
       await api.delete(`/events/${id}`);
       navigate(-1);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete event.");
+      toast.error(err.response?.data?.message || "Failed to delete event.");
     } finally {
       setActionLoading(false);
     }

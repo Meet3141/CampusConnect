@@ -13,20 +13,15 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-
-const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "meeting"];
-const CAT_META = {
-  hackathon: { emoji: "💻", desc: "Code competitions" },
-  workshop:  { emoji: "🛠",  desc: "Hands-on learning" },
-  webinar:   { emoji: "🎙",  desc: "Online talks" },
-  cultural:  { emoji: "🎭", desc: "Culture & arts" },
-  sports:    { emoji: "⚡", desc: "Athletics events" },
-  meeting:   { emoji: "📋", desc: "General meetings" },
-};
+import FormField from "../components/FormField";
+import { inputCls } from "../utils/inputCls";
+import { useToast } from "../context/ToastContext";
+import { EVENT_CATEGORIES, EVENT_CATEGORY_META } from "../theme";
 
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const preClubId = searchParams.get("clubId") || "";
 
@@ -55,7 +50,9 @@ export default function CreateEvent() {
           (c) => String(c.adminId?._id || c.adminId) === String(user?._id)
         );
         setClubs(adminClubs);
-      } catch {}
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to load clubs.");
+      }
     };
     if (user) fetchClubs();
   }, [user]);
@@ -118,8 +115,8 @@ export default function CreateEvent() {
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
           <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm">Only club admins can create events.</p>
+          <h2 className="text-xl font-semibold text-cc mb-2">Access Restricted</h2>
+          <p className="text-cc-muted text-sm">Only club admins can create events.</p>
           <button onClick={() => navigate(-1)} className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
             Go Back
           </button>
@@ -129,9 +126,9 @@ export default function CreateEvent() {
   }
 
   return (
-    <div className="text-white">
+    <div className="text-cc">
       <div className="max-w-xl mx-auto px-5 py-8">
-        <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-8 transition-colors">
+        <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-cc-muted hover:text-cc text-sm mb-8 transition-colors">
           <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span> Back
         </button>
 
@@ -140,84 +137,84 @@ export default function CreateEvent() {
             Create an{" "}
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Event</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-2">Plan and schedule a new event for your club.</p>
+          <p className="text-cc-muted text-sm mt-2">Plan and schedule a new event for your club.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Club selector */}
-          <Field label="Club" required error={errors.clubId}>
+          <FormField label="Club" required error={errors.clubId}>
             <select value={form.clubId} onChange={(e) => set("clubId", e.target.value)}
               className={inputCls(!!errors.clubId) + " cursor-pointer"}>
-              <option value="" className="bg-[#0a0a12]">Select a club…</option>
+              <option value="" className="bg-cc-surface">Select a club…</option>
               {clubs.map((c) => (
-                <option key={c._id} value={c._id} className="bg-[#0a0a12]">{c.name}</option>
+                <option key={c._id} value={c._id} className="bg-cc-surface">{c.name}</option>
               ))}
             </select>
-          </Field>
+          </FormField>
 
           {/* Title */}
-          <Field label="Event Title" required error={errors.title}>
+          <FormField label="Event Title" required error={errors.title}>
             <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)}
               placeholder="e.g. Spring Hackathon 2026" maxLength={200} className={inputCls(!!errors.title)} />
-          </Field>
+          </FormField>
 
           {/* Category */}
-          <Field label="Category" required error={errors.category}>
+          <FormField label="Category" required error={errors.category}>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map((cat) => {
-                const m = CAT_META[cat];
+              {EVENT_CATEGORIES.map((cat) => {
+                const m = EVENT_CATEGORY_META[cat];
                 const sel = form.category === cat;
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15]"
+                        : "bg-cc-surface-weak border-cc-soft hover-border-cc-strong"
                     }`}>
                     <div className="text-xl mb-1">{m.emoji}</div>
-                    <div className="text-xs font-medium text-white capitalize">{cat}</div>
+                    <div className="text-xs font-medium text-cc capitalize">{cat}</div>
                   </button>
                 );
               })}
             </div>
-          </Field>
+          </FormField>
 
           {/* Date & Venue */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Date & Time" required error={errors.date}>
+            <FormField label="Date & Time" required error={errors.date}>
               <input type="datetime-local" value={form.date} onChange={(e) => set("date", e.target.value)}
                 className={inputCls(!!errors.date)} />
-            </Field>
-            <Field label="Venue" required error={errors.venue}>
+            </FormField>
+            <FormField label="Venue" required error={errors.venue}>
               <input type="text" value={form.venue} onChange={(e) => set("venue", e.target.value)}
                 placeholder="e.g. Hall A, Block 3" className={inputCls(!!errors.venue)} />
-            </Field>
+            </FormField>
           </div>
 
           {/* Description */}
-          <Field label="Description" required error={errors.description}>
+          <FormField label="Description" required error={errors.description}>
             <textarea value={form.description} onChange={(e) => set("description", e.target.value)}
               rows={4} maxLength={2000} placeholder="Describe the event…"
               className={inputCls(!!errors.description) + " resize-none"} />
-          </Field>
+          </FormField>
 
           {/* Optional: Max Attendees + Image */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Max Attendees" hint="Optional">
+            <FormField label="Max Attendees" hint="Optional">
               <input type="number" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)}
                 placeholder="Unlimited" min={1} className={inputCls(false)} />
-            </Field>
-            <Field label="Image URL" hint="Optional">
+            </FormField>
+            <FormField label="Image URL" hint="Optional">
               <input type="url" value={form.image} onChange={(e) => set("image", e.target.value)}
                 placeholder="https://..." className={inputCls(false)} />
-            </Field>
+            </FormField>
           </div>
 
           {/* ── Volunteer Programme ── */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 space-y-4">
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-white">🙋 Volunteer Opportunities</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-sm font-semibold text-cc">🙋 Volunteer Opportunities</p>
+                <p className="text-[11px] text-cc-muted mt-0.5">
                   List this event on the Volunteer Hub so students can apply to help out.
                 </p>
               </div>
@@ -226,7 +223,7 @@ export default function CreateEvent() {
                 type="button"
                 onClick={() => set("showOnVolunteerHub", !form.showOnVolunteerHub)}
                 className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${
-                  form.showOnVolunteerHub ? "bg-indigo-600" : "bg-white/[0.1]"
+                  form.showOnVolunteerHub ? "bg-indigo-600" : "bg-cc-surface"
                 }`}
               >
                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -236,9 +233,9 @@ export default function CreateEvent() {
             </div>
 
             {form.showOnVolunteerHub && (
-              <div className="space-y-4 pt-1 border-t border-white/[0.06]">
+              <div className="space-y-4 pt-1 border-t border-cc-soft">
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Volunteer Limit" required error={errors.volunteerLimit}>
+                  <FormField label="Volunteer Limit" required error={errors.volunteerLimit}>
                     <input
                       type="number"
                       value={form.volunteerLimit}
@@ -247,9 +244,9 @@ export default function CreateEvent() {
                       min={1}
                       className={inputCls(!!errors.volunteerLimit)}
                     />
-                  </Field>
+                  </FormField>
                 </div>
-                <Field label="Preferred Skills" hint="comma-separated, optional">
+                <FormField label="Preferred Skills" hint="comma-separated, optional">
                   <input
                     type="text"
                     value={form.volunteerSkillsNeeded}
@@ -260,7 +257,7 @@ export default function CreateEvent() {
                   <p className="text-[11px] text-slate-600 mt-1.5">
                     These are shown to applicants so they know what you're looking for.
                   </p>
-                </Field>
+                </FormField>
               </div>
             )}
           </div>
@@ -284,22 +281,4 @@ export default function CreateEvent() {
   );
 }
 
-const inputCls = (err) =>
-  `w-full bg-white/[0.04] border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-    err ? "border-red-800 focus:border-red-600" : "border-white/[0.08] focus:border-indigo-500/60 focus:bg-white/[0.06]"
-  }`;
-
-function Field({ label, required, hint, error, children }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
-          {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-        </label>
-        {hint && <span className="text-[11px] text-slate-700 font-mono">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-red-400 text-[11px] mt-1.5">{error}</p>}
-    </div>
-  );
-}
+// Using shared FormField and inputCls utilities from components and utils

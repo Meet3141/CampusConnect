@@ -40,15 +40,15 @@ const STAT_CARD_THEMES = [
 /* Simple inline bar chart — no external deps */
 function BarChart({ data, colorMap }) {
   if (!data || data.length === 0) return (
-    <p className="text-slate-600 text-sm py-4 text-center">No data</p>
+    <p className="text-cc-muted text-sm py-4 text-center">No data</p>
   );
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
     <div className="space-y-2.5">
       {data.map(({ key, count }) => (
         <div key={key} className="flex items-center gap-3">
-          <span className="text-[11px] text-slate-500 capitalize w-24 shrink-0 truncate">{key}</span>
-          <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+          <span className="text-[11px] text-cc-muted capitalize w-24 shrink-0 truncate">{key}</span>
+          <div className="flex-1 h-2 bg-cc-soft rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
@@ -57,7 +57,7 @@ function BarChart({ data, colorMap }) {
               }}
             />
           </div>
-          <span className="text-[11px] text-slate-400 tabular-nums w-8 text-right">{count}</span>
+          <span className="text-[11px] text-cc-muted tabular-nums w-8 text-right">{count}</span>
         </div>
       ))}
     </div>
@@ -71,7 +71,7 @@ function RingCard({ value, total, label, color }) {
   const circ   = 2 * Math.PI * radius;
   const dash   = (pct / 100) * circ;
   return (
-    <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+    <div className="flex items-center gap-4 p-4 rounded-2xl border border-cc-soft bg-cc-surface-weak">
       <svg width="72" height="72" viewBox="0 0 72 72" className="shrink-0">
         <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
         <circle cx="36" cy="36" r={radius} fill="none" stroke={color} strokeWidth="6"
@@ -81,8 +81,8 @@ function RingCard({ value, total, label, color }) {
         <text x="36" y="40" textAnchor="middle" fill="white" fontSize="14" fontWeight="600">{pct}%</text>
       </svg>
       <div>
-        <p className="text-xl font-semibold text-white tabular-nums">{value}</p>
-        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{label}</p>
+        <p className="text-xl font-semibold text-cc tabular-nums">{value}</p>
+        <p className="text-[11px] text-cc-muted mt-0.5 leading-snug">{label}</p>
       </div>
     </div>
   );
@@ -176,8 +176,8 @@ export default function AdminStats() {
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
           <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm">Analytics are available to club and org admins only.</p>
+          <h2 className="text-xl font-semibold text-cc mb-2">Access Restricted</h2>
+          <p className="text-cc-muted text-sm">Analytics are available to club and org admins only.</p>
           <button onClick={() => navigate("/dashboard")}
             className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
             Back to Dashboard
@@ -192,7 +192,7 @@ export default function AdminStats() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-4">
           <div className="w-9 h-9 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-          <p className="text-slate-600 text-xs tracking-widest uppercase font-mono">Crunching numbers…</p>
+          <p className="text-cc-muted text-xs tracking-widest uppercase font-mono">Crunching numbers…</p>
         </div>
       </div>
     );
@@ -204,15 +204,15 @@ export default function AdminStats() {
   };
 
   return (
-    <div className="text-white">
+    <div className="text-cc">
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]">
+      <div className="relative overflow-hidden border-b border-cc-soft">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 left-0 w-96 h-80 bg-violet-700/5 rounded-full blur-3xl" />
           <div className="absolute top-0 right-0 w-60 h-60 bg-indigo-700/5 rounded-full blur-3xl" />
         </div>
         <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-3">
+          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3">
             Admin / Analytics
           </p>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -239,13 +239,13 @@ export default function AdminStats() {
             { value: a.chatTotal,          ...STAT_CARD_THEMES[4], sub: "club + event chats" },
             { value: a.bookmarkTotal,      ...STAT_CARD_THEMES[5], sub: "saved by you" },
           ].map(({ value, label, icon, accent, ring, bg, sub }) => (
-            <div key={label} className={`rounded-2xl border border-white/[0.07] ${bg} p-5`}>
+            <div key={label} className={`rounded-2xl border border-cc-soft ${bg} p-5`}>
               <div className={`w-9 h-9 rounded-xl ${bg} ring-1 ${ring} flex items-center justify-center text-xl mb-3`}>
                 {icon}
               </div>
               <p className={`text-3xl font-bold tabular-nums ${accent}`}>{value}</p>
-              <p className="text-xs text-slate-500 mt-1">{label}</p>
-              <p className="text-[11px] text-slate-600 mt-0.5">{sub}</p>
+              <p className="text-xs text-cc-muted mt-1">{label}</p>
+              <p className="text-[11px] text-cc-muted mt-0.5">{sub}</p>
             </div>
           ))}
         </div>
@@ -254,24 +254,24 @@ export default function AdminStats() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* Clubs by category */}
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-            <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
+            <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
               Clubs by category
             </h3>
             <BarChart data={a.clubsByCategory} colorMap={CATEGORY_COLORS} />
           </div>
 
           {/* Events by category */}
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-            <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
+            <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
               Events by category
             </h3>
             <BarChart data={a.eventsByCategory} colorMap={CATEGORY_COLORS} />
           </div>
 
           {/* Events by status */}
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-            <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
+            <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
               Events by status
             </h3>
             <BarChart data={a.eventsByStatus} colorMap={STATUS_COLORS} />
@@ -302,8 +302,8 @@ export default function AdminStats() {
 
         {/* ── Quick actions ── */}
         {isOrgAdmin && (
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-            <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
+            <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
               Quick Actions
             </h3>
             <div className="flex flex-wrap gap-3">

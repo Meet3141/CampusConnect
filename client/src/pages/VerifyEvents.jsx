@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CAT_META = {
   hackathon:   { emoji: "💻", badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
@@ -39,6 +40,7 @@ function isValidDate(val) {
 export default function VerifyEvents() {
   const { user } = useAuth();
   const navigate  = useNavigate();
+  const toast = useToast();
 
   const canVerify =
     user?.roles?.includes("editor") || user?.roles?.includes("orgAdmin");
@@ -58,7 +60,9 @@ export default function VerifyEvents() {
       });
       setEvents(res.data.data || []);
       setMeta(res.data.meta || { total: 0, page: 1, limit: 15 });
-    } catch {}
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to load events.");
+    }
     setLoading(false);
   }, []);
 
@@ -75,7 +79,7 @@ export default function VerifyEvents() {
       setEvents((prev) => prev.filter((e) => e._id !== eventId));
       setMeta((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
     } catch (err) {
-      alert(err.response?.data?.message || "Verification failed.");
+      toast.error(err.response?.data?.message || "Verification failed.");
     } finally {
       setVerifyingId(null);
     }

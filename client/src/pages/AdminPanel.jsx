@@ -18,24 +18,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-
-const CATEGORY_BADGE = {
-  technical: "bg-cyan-950 text-cyan-300 border-cyan-800",
-  cultural:  "bg-purple-950 text-purple-300 border-purple-800",
-  sports:    "bg-emerald-950 text-emerald-300 border-emerald-800",
-  academic:  "bg-amber-950 text-amber-300 border-amber-800",
-  arts:      "bg-rose-950 text-rose-300 border-rose-800",
-  other:     "bg-slate-800 text-slate-300 border-slate-700",
-};
-
-const CAT_EMOJI = {
-  technical: "⚙️", cultural: "🎭", sports: "⚡",
-  academic: "📚", arts: "🎨", other: "🌐",
-};
+import { useToast } from "../context/ToastContext";
+import { CLUB_CATEGORY_META } from "../theme";
 
 export default function AdminPanel() {
   const { user } = useAuth();
   const navigate  = useNavigate();
+  const toast = useToast();
 
   const isOrgAdmin = user?.roles?.includes("orgAdmin");
 
@@ -56,7 +45,9 @@ export default function AdminPanel() {
       const res = await api.get("/clubs", { params: { page, limit: 20 } });
       setClubs(res.data.data || []);
       setMeta(res.data.meta || { total: 0, page: 1, limit: 20 });
-    } catch {}
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to load clubs.");
+    }
     setLoading(false);
   }, []);
 
@@ -95,7 +86,7 @@ export default function AdminPanel() {
       setClubs((prev) => prev.filter((c) => c._id !== clubId));
       setMeta((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete club.");
+      toast.error(err.response?.data?.message || "Failed to delete club.");
     } finally {
       setDeletingId(null);
     }
@@ -107,8 +98,8 @@ export default function AdminPanel() {
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
           <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Org Admin Only</h2>
-          <p className="text-slate-500 text-sm">This panel is restricted to Organisation Admins.</p>
+          <h2 className="text-xl font-semibold text-cc mb-2">Org Admin Only</h2>
+          <p className="text-cc-muted text-sm">This panel is restricted to Organisation Admins.</p>
           <button onClick={() => navigate("/dashboard")}
             className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
             Back to Dashboard
@@ -123,15 +114,15 @@ export default function AdminPanel() {
     .map(([id, v]) => ({ ...clubs.find((c) => c._id === id), pendingCount: v.count, pendingMembers: v.members.filter((m) => m.status === "pending") }));
 
   return (
-    <div className="text-white">
+    <div className="text-cc">
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]">
+      <div className="relative overflow-hidden border-b border-cc-soft">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 left-0 w-80 h-80 bg-amber-700/5 rounded-full blur-3xl" />
           <div className="absolute -top-16 right-0 w-60 h-60 bg-indigo-700/5 rounded-full blur-3xl" />
         </div>
         <div className="relative px-5 lg:px-6 pt-6 pb-0">
-          <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-3">
+          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3">
             Admin / Platform
           </p>
           <div className="flex items-end justify-between gap-4 mb-4">
@@ -142,7 +133,7 @@ export default function AdminPanel() {
                   Panel
                 </span>
               </h1>
-              <p className="text-slate-500 text-sm mt-1.5">
+              <p className="text-cc-muted text-sm mt-1.5">
                 {meta.total} club{meta.total !== 1 ? "s" : ""} on the platform
               </p>
             </div>
@@ -153,7 +144,7 @@ export default function AdminPanel() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-0 border-b border-white/[0.06] -mb-px">
+          <div className="flex gap-0 border-b border-cc-soft -mb-px">
             {[
               { key: "clubs",   label: "All Clubs",      count: meta.total },
               { key: "pending", label: "Pending Members", count: pendingClubs.length },
@@ -162,12 +153,12 @@ export default function AdminPanel() {
                 className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-all ${
                   tab === key
                     ? "border-amber-500 text-amber-300"
-                    : "border-transparent text-slate-500 hover:text-slate-300"
+                    : "border-transparent text-cc-muted hover:text-cc-muted"
                 }`}>
                 {label}
                 {count > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-                    tab === key ? "bg-amber-600/30 text-amber-300" : "bg-white/5 text-slate-600"
+                    tab === key ? "bg-amber-600/30 text-amber-300" : "bg-cc-surface-weak text-cc-muted"
                   }`}>{count}</span>
                 )}
               </button>
@@ -185,41 +176,42 @@ export default function AdminPanel() {
             {loading ? (
               <div className="space-y-2">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-16 rounded-xl bg-white/[0.04] animate-pulse" />
+                  <div key={i} className="h-16 rounded-xl bg-cc-surface-weak animate-pulse" />
                 ))}
               </div>
             ) : clubs.length === 0 ? (
               <div className="text-center py-16">
                 <div className="text-4xl mb-3">🏛️</div>
-                <p className="text-slate-500 text-sm">No clubs yet.</p>
+                <p className="text-cc-muted text-sm">No clubs yet.</p>
               </div>
             ) : (
               <>
-                <div className="rounded-2xl border border-white/[0.07] overflow-hidden">
+                <div className="rounded-2xl border border-cc-soft overflow-hidden">
                   {/* Table header */}
-                  <div className="grid grid-cols-[1fr_120px_80px_160px] gap-4 px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
-                    <span className="text-[11px] uppercase tracking-widest text-slate-600 font-medium">Club</span>
-                    <span className="text-[11px] uppercase tracking-widest text-slate-600 font-medium">Category</span>
-                    <span className="text-[11px] uppercase tracking-widest text-slate-600 font-medium text-right">Members</span>
-                    <span className="text-[11px] uppercase tracking-widest text-slate-600 font-medium text-right">Actions</span>
+                  <div className="grid grid-cols-[1fr_120px_80px_160px] gap-4 px-5 py-2.5 border-b border-cc-soft bg-cc-surface-weak">
+                    <span className="text-[11px] uppercase tracking-widest text-cc-muted font-medium">Club</span>
+                    <span className="text-[11px] uppercase tracking-widest text-cc-muted font-medium">Category</span>
+                    <span className="text-[11px] uppercase tracking-widest text-cc-muted font-medium text-right">Members</span>
+                    <span className="text-[11px] uppercase tracking-widest text-cc-muted font-medium text-right">Actions</span>
                   </div>
 
                   {clubs.map((club, i) => {
-                    const badge = CATEGORY_BADGE[club.category] || CATEGORY_BADGE.other;
-                    const emoji = CAT_EMOJI[club.category] || "🌐";
+                    const catMeta = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
+                    const badge = catMeta.badge;
+                    const emoji = catMeta.emoji;
                     const isLast = i === clubs.length - 1;
                     return (
                       <div key={club._id}
-                        className={`grid grid-cols-[1fr_120px_80px_160px] gap-4 items-center px-5 py-3.5 bg-white/[0.01] hover:bg-white/[0.04] transition-colors ${!isLast ? "border-b border-white/[0.05]" : ""}`}>
+                        className={`grid grid-cols-[1fr_120px_80px_160px] gap-4 items-center px-5 py-3.5 bg-cc-surface-weak hover:bg-cc-surface transition-colors ${!isLast ? "border-b border-cc-soft" : ""}`}>
 
                         {/* Club info */}
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-sm shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-cc-surface flex items-center justify-center text-sm shrink-0">
                             {emoji}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-white truncate">{club.name}</p>
-                            <p className="text-[11px] text-slate-600 truncate">{club.description?.slice(0, 50)}…</p>
+                            <p className="text-sm font-medium text-cc truncate">{club.name}</p>
+                            <p className="text-[11px] text-cc-muted truncate">{club.description?.slice(0, 50)}…</p>
                           </div>
                         </div>
 
@@ -229,7 +221,7 @@ export default function AdminPanel() {
                         </span>
 
                         {/* Members */}
-                        <span className="text-sm text-slate-400 text-right tabular-nums">
+                        <span className="text-sm text-cc-muted text-right tabular-nums">
                           {club.memberCount ?? 0}
                         </span>
 
@@ -237,7 +229,7 @@ export default function AdminPanel() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => navigate(`/clubs/${club._id}`)}
-                            className="px-3 py-1.5 text-xs text-slate-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-lg transition-colors">
+                            className="px-3 py-1.5 text-xs text-cc-muted hover:text-cc bg-cc-surface-weak hover:bg-cc-surface rounded-lg transition-colors">
                             View
                           </button>
                           <button
@@ -261,14 +253,14 @@ export default function AdminPanel() {
                 {meta.total > meta.limit && (
                   <div className="flex items-center justify-center gap-3 mt-6">
                     <button onClick={() => fetchClubs(meta.page - 1)} disabled={meta.page <= 1}
-                      className="px-4 py-2 rounded-xl border border-white/[0.08] text-slate-400 text-sm hover:border-white/[0.15] hover:text-white transition-all disabled:opacity-30">
+                      className="px-4 py-2 rounded-xl border border-cc-soft text-cc-muted text-sm hover:border-cc-strong hover:text-cc transition-all disabled:opacity-30">
                       ← Prev
                     </button>
-                    <span className="text-slate-600 text-sm">
+                    <span className="text-cc-muted text-sm">
                       {meta.page} / {Math.ceil(meta.total / meta.limit)}
                     </span>
                     <button onClick={() => fetchClubs(meta.page + 1)} disabled={meta.page >= Math.ceil(meta.total / meta.limit)}
-                      className="px-4 py-2 rounded-xl border border-white/[0.08] text-slate-400 text-sm hover:border-white/[0.15] hover:text-white transition-all disabled:opacity-30">
+                      className="px-4 py-2 rounded-xl border border-cc-soft text-cc-muted text-sm hover:border-cc-strong hover:text-cc transition-all disabled:opacity-30">
                       Next →
                     </button>
                   </div>
@@ -284,26 +276,26 @@ export default function AdminPanel() {
             {pendingLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-24 rounded-2xl bg-white/[0.04] animate-pulse" />
+                  <div key={i} className="h-24 rounded-2xl bg-cc-surface-weak animate-pulse" />
                 ))}
               </div>
             ) : pendingClubs.length === 0 ? (
               <div className="text-center py-16">
                 <div className="text-4xl mb-3">✅</div>
-                <p className="text-white font-semibold mb-1">All caught up</p>
-                <p className="text-slate-500 text-sm">No pending member requests across any club.</p>
+                <p className="text-cc font-semibold mb-1">All caught up</p>
+                <p className="text-cc-muted text-sm">No pending member requests across any club.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {pendingClubs.map((club) => (
-                  <div key={club._id} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+                  <div key={club._id} className="rounded-2xl border border-cc-soft bg-cc-surface-weak overflow-hidden">
                     {/* Club header */}
-                    <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+                    <div className="flex items-center justify-between px-5 py-3.5 border-b border-cc-soft">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{CAT_EMOJI[club.category] || "🌐"}</span>
+                        <span className="text-lg">{(CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other).emoji}</span>
                         <div>
-                          <p className="text-sm font-semibold text-white">{club.name}</p>
-                          <p className="text-[11px] text-slate-600">
+                          <p className="text-sm font-semibold text-cc">{club.name}</p>
+                          <p className="text-[11px] text-cc-muted">
                             {club.pendingCount} pending request{club.pendingCount !== 1 ? "s" : ""}
                           </p>
                         </div>
@@ -315,15 +307,15 @@ export default function AdminPanel() {
                     </div>
 
                     {/* Pending members list */}
-                    <div className="divide-y divide-white/[0.04]">
+                    <div className="divide-y divide-cc-soft">
                       {club.pendingMembers.map((m) => (
                         <div key={m._id} className="flex items-center gap-3 px-5 py-3">
                           <div className="w-7 h-7 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
                             {(m.userId?.name || "?")[0]?.toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-white truncate">{m.userId?.name || "Unknown"}</p>
-                            <p className="text-[11px] text-slate-600 truncate">{m.userId?.email}</p>
+                            <p className="text-sm text-cc truncate">{m.userId?.name || "Unknown"}</p>
+                            <p className="text-[11px] text-cc-muted truncate">{m.userId?.email}</p>
                           </div>
                           <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-yellow-950 text-yellow-300 border border-yellow-800 rounded-full font-semibold">
                             Pending

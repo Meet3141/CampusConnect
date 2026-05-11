@@ -22,15 +22,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-
-const CATEGORY_META = {
-  technical: { emoji: "⚙️", heroBg: "from-cyan-900/50 via-blue-900/30",    accent: "text-cyan-400",    ring: "ring-cyan-500/20",    tabActive: "border-cyan-500 text-cyan-400"    },
-  cultural:  { emoji: "🎭", heroBg: "from-purple-900/50 via-pink-900/30",   accent: "text-purple-400",  ring: "ring-purple-500/20",  tabActive: "border-purple-500 text-purple-400"  },
-  sports:    { emoji: "⚡", heroBg: "from-emerald-900/50 via-green-900/30", accent: "text-emerald-400", ring: "ring-emerald-500/20", tabActive: "border-emerald-500 text-emerald-400" },
-  academic:  { emoji: "📚", heroBg: "from-amber-900/50 via-orange-900/30",  accent: "text-amber-400",   ring: "ring-amber-500/20",   tabActive: "border-amber-500 text-amber-400"   },
-  arts:      { emoji: "🎨", heroBg: "from-rose-900/50 via-red-900/30",      accent: "text-rose-400",    ring: "ring-rose-500/20",    tabActive: "border-rose-500 text-rose-400"      },
-  other:     { emoji: "🌐", heroBg: "from-slate-800/50 via-slate-900/30",   accent: "text-slate-400",   ring: "ring-slate-500/20",   tabActive: "border-slate-400 text-slate-300"    },
-};
+import { useToast } from "../context/ToastContext";
+import { CLUB_CATEGORY_META } from "../theme";
 
 // Base tabs — Announcements is injected only for members/coordinators/admins
 const BASE_TABS = ["Overview", "Members", "Events"];
@@ -40,6 +33,7 @@ export default function ClubDetail() {
   const { id }  = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [club, setClub]             = useState(null);
   const [members, setMembers]       = useState([]);
@@ -117,7 +111,9 @@ export default function ClubDetail() {
       try {
         const res = await api.get(`/clubs/${id}/announcements`);
         setAnnouncements(res.data.data || []);
-      } catch { /* member-only, ignore if not member */ }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to load announcements.");
+      }
       finally { setAnnLoading(false); }
     };
     loadAnn();
@@ -143,14 +139,7 @@ export default function ClubDetail() {
       // Bump the displayed member count
       setClub((prev) => ({ ...prev, memberCount: (prev.memberCount || 0) }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to join.");
-      // Refresh members list to sync with backend (e.g., if already a member)
-      try {
-        const membersRes = await api.get(`/clubs/${id}/members`);
-        setMembers(membersRes.data.data || []);
-      } catch {
-        // Silently fail if refresh doesn't work
-      }
+      toast.error(err.response?.data?.message || "Failed to join.");
     } finally {
       setActionLoading(false);
     }
@@ -171,7 +160,7 @@ export default function ClubDetail() {
         memberCount: Math.max(0, (prev.memberCount || 1) - 1),
       }));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave.");
+      toast.error(err.response?.data?.message || "Failed to leave.");
     } finally {
       setActionLoading(false);
     }
@@ -193,7 +182,7 @@ export default function ClubDetail() {
       );
       setClub((prev) => ({ ...prev, memberCount: (prev.memberCount || 0) + 1 }));
     } catch (err) {
-      alert(err.response?.data?.message || "Approval failed.");
+      toast.error(err.response?.data?.message || "Approval failed.");
     } finally {
       setMemberActionId(null);
     }
@@ -213,7 +202,7 @@ export default function ClubDetail() {
         )
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Rejection failed.");
+      toast.error(err.response?.data?.message || "Rejection failed.");
     } finally {
       setMemberActionId(null);
     }
@@ -239,7 +228,7 @@ export default function ClubDetail() {
 
       navigate(`/chats/${chatId}`);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to open chat.");
+      toast.error(err.response?.data?.message || "Failed to open chat.");
     } finally {
       setChatLoading(false);
     }
@@ -265,7 +254,7 @@ export default function ClubDetail() {
       setCoordCategory("none");
       setCoordDropOpen(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to assign coordinator.");
+      toast.error(err.response?.data?.message || "Failed to assign coordinator.");
     } finally {
       setCoordActing(null);
     }
@@ -285,7 +274,7 @@ export default function ClubDetail() {
         )
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove coordinator.");
+      toast.error(err.response?.data?.message || "Failed to remove coordinator.");
     } finally {
       setCoordActing(null);
     }
@@ -297,7 +286,7 @@ export default function ClubDetail() {
       const res = await api.post(`/events/${eventId}/publish`);
       setEvents((prev) => prev.map((ev) => ev._id === eventId ? res.data.data : ev));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to publish event.");
+      toast.error(err.response?.data?.message || "Failed to publish event.");
     }
   };
 
@@ -312,7 +301,7 @@ export default function ClubDetail() {
       setAnnForm({ title: "", body: "", tag: "general" });
       setShowAnnForm(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to post announcement.");
+      toast.error(err.response?.data?.message || "Failed to post announcement.");
     } finally {
       setAnnPosting(false);
     }
@@ -325,7 +314,7 @@ export default function ClubDetail() {
       await api.delete(`/clubs/${id}/announcements/${annId}`);
       setAnnouncements((prev) => prev.filter((a) => a._id !== annId));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete.");
+      toast.error(err.response?.data?.message || "Failed to delete.");
     }
   };
 
@@ -338,13 +327,13 @@ export default function ClubDetail() {
       await api.delete(`/clubs/${id}`);
       navigate("/clubs");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete club.");
+      toast.error(err.response?.data?.message || "Failed to delete club.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  const meta           = CATEGORY_META[club?.category] || CATEGORY_META.other;
+  const meta           = CLUB_CATEGORY_META[club?.category] || CLUB_CATEGORY_META.other;
   const activeMembers  = members.filter((m) => m.status === "approved" || m.status === "active");
   const pendingMembers = members.filter((m) => m.status === "pending");
 
@@ -393,7 +382,7 @@ export default function ClubDetail() {
   }
 
   return (<>
-    <div className="text-white">
+    <div className="text-cc">
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden">
@@ -410,7 +399,7 @@ export default function ClubDetail() {
           {/* Back */}
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-8 transition-colors"
+            className="group flex items-center gap-2 text-cc-muted hover:text-cc text-sm mb-8 transition-colors"
           >
             <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
             Back
@@ -418,14 +407,14 @@ export default function ClubDetail() {
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
             {/* Avatar */}
-            <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/[0.07] ring-1 ${meta.ring} flex items-center justify-center text-3xl sm:text-4xl shrink-0`}>
+            <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-cc-surface-weak ring-1 ${meta.ring} flex items-center justify-center text-3xl sm:text-4xl shrink-0`}>
               {meta.emoji}
             </div>
 
             <div className="flex-1 min-w-0">
               {/* Category + status */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="text-[11px] uppercase tracking-widest text-slate-600 font-mono">
+                <span className="text-[11px] uppercase tracking-widest text-cc-muted font-mono">
                   {club.category}
                 </span>
                 {isApprovedMember && (
@@ -441,7 +430,7 @@ export default function ClubDetail() {
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{club.name}</h1>
-              <p className="text-slate-400 text-sm mt-2 leading-relaxed max-w-2xl">
+              <p className="text-cc-muted text-sm mt-2 leading-relaxed max-w-2xl">
                 {club.description}
               </p>
 
@@ -520,7 +509,7 @@ export default function ClubDetail() {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="sticky top-0 z-10 bg-[#0a0a12]/90 backdrop-blur-md border-b border-white/[0.06]">
+      <div className="sticky top-0 z-10 bg-cc-surface-overlay backdrop-blur-md border-b border-cc-soft">
         <div className="w-full px-5 lg:px-6 flex gap-0">
           {TABS.map((t) => (
             <button
@@ -529,7 +518,7 @@ export default function ClubDetail() {
               className={`relative px-5 py-3.5 text-sm font-medium border-b-2 transition-all ${
                 tab === t
                   ? meta.tabActive
-                  : "border-transparent text-slate-500 hover:text-slate-300"
+                  : "border-transparent text-cc-muted hover:text-cc"
               }`}
             >
               {t}
@@ -983,18 +972,18 @@ export default function ClubDetail() {
 function StatPill({ label, value, highlight }) {
   return (
     <div>
-      <p className={`text-2xl font-bold tabular-nums ${highlight ? "text-yellow-400" : "text-white"}`}>
+      <p className={`text-2xl font-bold tabular-nums ${highlight ? "text-yellow-400" : "text-cc"}`}>
         {value}
       </p>
-      <p className="text-[11px] text-slate-600 mt-0.5">{label}</p>
+      <p className="text-[11px] text-cc-muted mt-0.5">{label}</p>
     </div>
   );
 }
 
 function Panel({ title, children }) {
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-      <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
+    <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
+      <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
         {title}
       </h3>
       {children}
@@ -1005,15 +994,15 @@ function Panel({ title, children }) {
 function InfoRow({ label, value }) {
   return (
     <div className="flex justify-between items-baseline">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-white font-medium text-right max-w-[60%] truncate">{value}</dd>
+      <dt className="text-cc-muted">{label}</dt>
+      <dd className="text-cc font-medium text-right max-w-[60%] truncate">{value}</dd>
     </div>
   );
 }
 
 function SectionHeading({ label, count, countCls = "text-slate-500" }) {
   return (
-    <h2 className="flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-slate-500 mb-4">
+    <h2 className="flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-cc-muted mb-4">
       {label}
       <span className={`font-mono ${countCls}`}>{count}</span>
     </h2>

@@ -14,6 +14,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import useParticleCanvas from "../hooks/useParticleCanvas";
 
 /* ── Inject Google Font once ── */
 function useSyneFont() {
@@ -25,122 +26,6 @@ function useSyneFont() {
     link.href = "https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap";
     document.head.appendChild(link);
   }, []);
-}
-
-/* ── Canvas: floating neural-network constellation ── */
-function useParticleCanvas(canvasRef) {
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let animId;
-    const mouse = { x: null, y: null };
-
-    const resize = () => {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resize();
-
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-
-    canvas.addEventListener("mousemove", (e) => {
-      const r = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - r.left;
-      mouse.y = e.clientY - r.top;
-    });
-    canvas.addEventListener("mouseleave", () => {
-      mouse.x = null;
-      mouse.y = null;
-    });
-
-    /* Spawn particles */
-    const N = 55;
-    const pts = Array.from({ length: N }, () => ({
-      x:     Math.random() * canvas.width,
-      y:     Math.random() * canvas.height,
-      vx:    (Math.random() - 0.5) * 0.35,
-      vy:    (Math.random() - 0.5) * 0.35,
-      r:     Math.random() * 1.8 + 1.2,
-      phase: Math.random() * Math.PI * 2,
-    }));
-
-    const LINK_DIST = 140;
-
-    const tick = (t) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      pts.forEach((p, i) => {
-        /* move */
-        p.x += p.vx;
-        p.y += p.vy;
-
-        /* wrap */
-        if (p.x < -10)             p.x = canvas.width  + 10;
-        if (p.x > canvas.width +10) p.x = -10;
-        if (p.y < -10)             p.y = canvas.height + 10;
-        if (p.y > canvas.height+10) p.y = -10;
-
-        /* mouse repulsion */
-        if (mouse.x !== null) {
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
-          const d  = Math.hypot(dx, dy);
-          if (d < 110) {
-            const f = ((110 - d) / 110) * 0.025;
-            p.x += dx * f;
-            p.y += dy * f;
-          }
-        }
-
-        /* pulsing glow */
-        const pulse = p.r + Math.sin(t * 0.0009 + p.phase) * 0.7;
-        const glow  = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, pulse * 4);
-        glow.addColorStop(0,   "rgba(139,92,246,0.85)");
-        glow.addColorStop(0.4, "rgba(99,102,241,0.4)");
-        glow.addColorStop(1,   "rgba(99,102,241,0)");
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, pulse * 4, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
-        ctx.fill();
-
-        /* hard core */
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, pulse, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(167,139,250,0.9)";
-        ctx.fill();
-
-        /* connections */
-        for (let j = i + 1; j < pts.length; j++) {
-          const q  = pts[j];
-          const dx = p.x - q.x;
-          const dy = p.y - q.y;
-          const d  = Math.hypot(dx, dy);
-          if (d < LINK_DIST) {
-            const a = (1 - d / LINK_DIST) * 0.28;
-            const grad = ctx.createLinearGradient(p.x, p.y, q.x, q.y);
-            grad.addColorStop(0, `rgba(139,92,246,${a})`);
-            grad.addColorStop(1, `rgba(99,102,241,${a * 0.5})`);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = grad;
-            ctx.lineWidth   = 0.7;
-            ctx.stroke();
-          }
-        }
-      });
-
-      animId = requestAnimationFrame(tick);
-    };
-
-    animId = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(animId);
-      ro.disconnect();
-    };
-  }, [canvasRef]);
 }
 
 /* ══════════════════════════════════════════════

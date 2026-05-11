@@ -29,12 +29,16 @@ import AdminRoute         from "./routes/AdminRoute";
 import RoleRoute          from "./routes/RoleRoute";
 import AppLayout          from "./components/AppLayout";
 import { AuthProvider }   from "./context/AuthContext";
+import { ToastProvider }  from "./context/ToastContext";
+import ToastViewport       from "./components/ToastViewport";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <ToastViewport />
+          <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -57,7 +61,14 @@ export default function App() {
                 </RoleRoute>
               }
             />
-            <Route path="/clubs/:id/edit" element={<EditClub />} />
+            <Route
+              path="/clubs/:id/edit"
+              element={
+                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                  <EditClub />
+                </RoleRoute>
+              }
+            />
             <Route path="/clubs/:id"      element={<ClubDetail />} />
 
             {/* S7.C2 — event creation locked to clubAdmin / orgAdmin */}
@@ -70,7 +81,14 @@ export default function App() {
               }
             />
             <Route path="/events"          element={<Events />} />
-            <Route path="/events/:id/edit" element={<EditEvent />} />
+            <Route
+              path="/events/:id/edit"
+              element={
+                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                  <EditEvent />
+                </RoleRoute>
+              }
+            />
             <Route path="/events/:id"      element={<EventDetail />} />
 
             {/* /edit must come before /:id */}
@@ -117,8 +135,9 @@ export default function App() {
           </Route>
 
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
