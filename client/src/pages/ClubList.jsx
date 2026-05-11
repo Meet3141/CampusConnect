@@ -89,6 +89,12 @@ export default function ClubList() {
       );
     } catch (err) {
       alert(err.response?.data?.message || "Failed to send join request.");
+      // Refresh clubs list to sync with backend (e.g., if already a member)
+      try {
+        await fetchClubs(meta.page);
+      } catch {
+        // Silently fail if refresh doesn't work
+      }
     } finally {
       setJoiningId(null);
     }

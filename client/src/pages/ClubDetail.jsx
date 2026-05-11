@@ -144,6 +144,13 @@ export default function ClubDetail() {
       setClub((prev) => ({ ...prev, memberCount: (prev.memberCount || 0) }));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to join.");
+      // Refresh members list to sync with backend (e.g., if already a member)
+      try {
+        const membersRes = await api.get(`/clubs/${id}/members`);
+        setMembers(membersRes.data.data || []);
+      } catch {
+        // Silently fail if refresh doesn't work
+      }
     } finally {
       setActionLoading(false);
     }
