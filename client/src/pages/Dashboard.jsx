@@ -85,31 +85,56 @@ export default function Dashboard() {
     const fetchAll = async () => {
       setLoading(true);
 
-      const [myClubsRes, eventsRes, chatsRes, bookmarksRes] = await Promise.allSettled([
-        api.get("/clubs/mine"),
-        api.get("/events",    { params: { limit: 5   } }),
+      // First, fetch user's clubs
+      let userClubs = [];
+      try {
+        const clubsRes = await api.get("/clubs/mine");
+        userClubs = (clubsRes.data.data || []).filter(
+          (c) => c.myStatus === "active" || c.myStatus === "admin" || c.myStatus === "approved"
+        );
+        setMyClubs(userClubs);
+      } catch (err) {
+        console.error("Failed to fetch my clubs:", err);
+      }
+
+      // Then fetch events for each club
+      let allEvents = [];
+      if (userClubs.length > 0) {
+        try {
+          const eventResults = await Promise.allSettled(
+            userClubs.map((c) =>
+              api.get("/events", { params: { clubId: c._id, limit: 50 } })
+            )
+          );
+          allEvents = eventResults
+            .filter((r) => r.status === "fulfilled")
+            .flatMap((r) => r.value.data.data || []);
+        } catch (err) {
+          console.error("Failed to fetch events:", err);
+        }
+      }
+
+      // Filter for upcoming events only
+      const now = new Date();
+      const upcoming = allEvents.filter((e) => new Date(e.date) > now);
+      setEvents(upcoming.slice(0, 5));
+
+      // Fetch chats and bookmarks in parallel
+      const [chatsRes, bookmarksRes] = await Promise.allSettled([
         api.get("/chats"),
         api.get("/bookmarks"),
       ]);
 
-      if (myClubsRes.status === "fulfilled") {
-        setMyClubs(myClubsRes.value.data.data || []);
-      }
-
-      if (eventsRes.status === "fulfilled") {
-        const now = new Date();
-        const upcoming = (eventsRes.value.data.data || []).filter(
-          (e) => new Date(e.date) > now
-        );
-        setEvents(upcoming.slice(0, 5));
-      }
-
       if (chatsRes.status === "fulfilled") {
         setChats(chatsRes.value.data.data || []);
+      } else if (chatsRes.status === "rejected") {
+        console.error("Failed to fetch chats:", chatsRes.reason);
       }
 
       if (bookmarksRes.status === "fulfilled") {
         setBookmarks(bookmarksRes.value.data.data || []);
+      } else if (bookmarksRes.status === "rejected") {
+        console.error("Failed to fetch bookmarks:", bookmarksRes.reason);
       }
 
       setLoading(false);
@@ -120,7 +145,7 @@ export default function Dashboard() {
 
   /* ── Derived stats ── */
   const stats = useMemo(() => {
-    const activeClubs  = myClubs.filter((c) => c.myStatus === "active").length;
+    const activeClubs  = myClubs.filter((c) => c.myStatus === "active" || c.myStatus === "admin").length;
     const pendingClubs = myClubs.filter((c) => c.myStatus === "pending").length;
     const unreadChats  = chats.filter((c) => c.lastMessage).length;
     const totalBk      = bookmarks.length;
