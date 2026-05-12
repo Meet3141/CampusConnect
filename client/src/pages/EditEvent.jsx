@@ -5,12 +5,12 @@
  * API:
  *   GET /api/events/:id  → { success, data: Event }  (event.createdBy = raw ObjectId)
  *   PUT /api/events/:id  body: { title?, description?, date?, venue?, maxAttendees?,
- *                                image?, status?, category? }
+ *                                image?, category?, volunteer fields? }
  *                        → { success, data: Event }
  *
  * Access: event.createdBy === user._id  OR  roles includes "orgAdmin"
  *
- * Status can be changed by admin: upcoming | ongoing | completed | cancelled
+ * Status is derived by backend lifecycle/date sync and not manually edited here.
  */
 
 import { useState, useEffect } from "react";
@@ -22,8 +22,6 @@ import { inputCls } from "../utils/inputCls";
 import {
   EVENT_CATEGORIES,
   EVENT_CATEGORY_META,
-  EVENT_STATUSES,
-  EVENT_STATUS_CLASS,
 } from "../theme";
 
 
@@ -46,7 +44,7 @@ export default function EditEvent() {
 
   const [form, setForm] = useState({
     title: "", description: "", category: "", date: "",
-    venue: "", maxAttendees: "", image: "", status: "upcoming",
+    venue: "", maxAttendees: "", image: "",
     showOnVolunteerHub: false, volunteerLimit: "", volunteerSkillsNeeded: "",
   });
   const [fieldErrors, setFieldErrors] = useState({});
@@ -69,7 +67,6 @@ export default function EditEvent() {
           venue:       ev.venue       || "",
           maxAttendees: ev.maxAttendees ? String(ev.maxAttendees) : "",
           image:       ev.image       || "",
-          status:      ev.status      || "upcoming",
           showOnVolunteerHub: ev.showOnVolunteerHub || false,
           volunteerLimit: ev.volunteerLimit ? String(ev.volunteerLimit) : "",
           volunteerSkillsNeeded: (ev.volunteerSkillsNeeded || []).join(", "),
@@ -122,7 +119,6 @@ export default function EditEvent() {
         category:    form.category,
         date:        form.date,
         venue:       form.venue.trim(),
-        status:      form.status,
         showOnVolunteerHub: form.showOnVolunteerHub,
       };
       if (form.maxAttendees) body.maxAttendees = Number(form.maxAttendees);
@@ -216,25 +212,6 @@ export default function EditEvent() {
       {/* Form */}
       <div className="px-5 lg:px-6 py-6">
         <form onSubmit={handleSubmit} className="max-w-xl space-y-5">
-
-          {/* Status — admin control at top */}
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
-            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-3">
-              Event Status
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {EVENT_STATUSES.map((s) => (
-                <button key={s} type="button" onClick={() => set("status", s)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all capitalize ${
-                    form.status === s
-                      ? EVENT_STATUS_CLASS[s]
-                      : "bg-white/[0.03] border-white/[0.07] text-slate-500 hover:text-white hover:border-white/[0.15]"
-                  }`}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Title */}
           <FormField label="Event Title" required error={fieldErrors.title}>
