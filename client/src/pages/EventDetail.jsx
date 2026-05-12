@@ -305,10 +305,18 @@ export default function EventDetail() {
                 </>
               )}
               {user && (
-                <button onClick={toggleBookmark}
-                  className="px-5 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-sm transition-all whitespace-nowrap">
-                  {bookmarkId ? "🔖 Bookmarked" : "🔖 Bookmark"}
-                </button>
+                <>
+                  {(isEventCreator || isClubAdminOfEvent || isOrgAdmin) && (
+                    <button onClick={() => navigate(`/events/${id}/edit`)}
+                      className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap">
+                      ⚙️ Manage
+                    </button>
+                  )}
+                  <button onClick={toggleBookmark}
+                    className="px-5 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-sm transition-all whitespace-nowrap">
+                    {bookmarkId ? "🔖 Bookmarked" : "🔖 Bookmark"}
+                  </button>
+                </>
               )}
               {canDeleteEvent && (
                 <button onClick={handleDeleteEvent} disabled={actionLoading}

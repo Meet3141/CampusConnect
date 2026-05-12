@@ -97,7 +97,9 @@ export const getMyClubs = async (req, res) => {
 };
 
 export const getClubById = async (req, res) => {
-	const club = await Club.findById(req.params.id).lean();
+	const club = await Club.findById(req.params.id)
+		.populate("adminId", "name email")
+		.lean();
 
 	if (!club) {
 		return res.status(404).json({ success: false, message: "Club not found" });
