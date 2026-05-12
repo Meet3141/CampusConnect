@@ -47,6 +47,7 @@ export default function EditEvent() {
   const [form, setForm] = useState({
     title: "", description: "", category: "", date: "",
     venue: "", maxAttendees: "", image: "", status: "upcoming",
+    showOnVolunteerHub: false, volunteerLimit: "", volunteerSkillsNeeded: "",
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiError, setApiError]       = useState("");
@@ -69,6 +70,9 @@ export default function EditEvent() {
           maxAttendees: ev.maxAttendees ? String(ev.maxAttendees) : "",
           image:       ev.image       || "",
           status:      ev.status      || "upcoming",
+          showOnVolunteerHub: ev.showOnVolunteerHub || false,
+          volunteerLimit: ev.volunteerLimit ? String(ev.volunteerLimit) : "",
+          volunteerSkillsNeeded: (ev.volunteerSkillsNeeded || []).join(", "),
         });
       } catch (err) {
         setFetchErr(err.response?.data?.message || "Failed to load event.");
@@ -119,9 +123,17 @@ export default function EditEvent() {
         date:        form.date,
         venue:       form.venue.trim(),
         status:      form.status,
+        showOnVolunteerHub: form.showOnVolunteerHub,
       };
       if (form.maxAttendees) body.maxAttendees = Number(form.maxAttendees);
       if (form.image.trim()) body.image = form.image.trim();
+      if (form.volunteerLimit) body.volunteerLimit = Number(form.volunteerLimit);
+      if (form.volunteerSkillsNeeded.trim()) {
+        body.volunteerSkillsNeeded = form.volunteerSkillsNeeded
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s);
+      }
 
       await api.put(`/events/${id}`, body);
       setSaved(true);
@@ -290,6 +302,42 @@ export default function EditEvent() {
                 placeholder="https://…"
                 className={inputCls(false)} />
             </FormField>
+          </div>
+
+          {/* Volunteer Settings */}
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-4">
+            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">
+              Volunteer Settings
+            </p>
+            
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.showOnVolunteerHub}
+                  onChange={(e) => set("showOnVolunteerHub", e.target.checked)}
+                  className="w-5 h-5 rounded border-white/[0.2] bg-white/[0.05] accent-indigo-500" />
+                <span className="text-sm font-medium text-slate-300">Show on Volunteer Hub</span>
+              </label>
+              <p className="text-xs text-slate-500 mt-1.5 ml-8">
+                Allow users to apply as volunteers for this event
+              </p>
+            </div>
+
+            {form.showOnVolunteerHub && (
+              <>
+                <FormField label="Volunteer Spots Needed" hint="Optional">
+                  <input type="number" value={form.volunteerLimit}
+                    onChange={(e) => set("volunteerLimit", e.target.value)}
+                    placeholder="Unlimited" min={1}
+                    className={inputCls(false)} />
+                </FormField>
+                <FormField label="Skills Needed" hint="Comma-separated (e.g. Photography, MC, Setup)">
+                  <input type="text" value={form.volunteerSkillsNeeded}
+                    onChange={(e) => set("volunteerSkillsNeeded", e.target.value)}
+                    placeholder="e.g. Photography, Stage Setup, MCing"
+                    className={inputCls(false)} />
+                </FormField>
+              </>
+            )}
           </div>
 
           {apiError && (
