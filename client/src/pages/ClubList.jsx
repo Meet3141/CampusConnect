@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -30,6 +30,14 @@ export default function ClubList() {
   const [category, setCategory] = useState("");
   const [joiningId, setJoiningId] = useState(null);
   const [myClubStatus, setMyClubStatus] = useState({});
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const initialQ = searchParams.get("q") || "";
+    setSearchInput(initialQ);
+    setQ(initialQ);
+  }, [searchParams]);
 
   /* ── Debounce search input ── */
   useEffect(() => {

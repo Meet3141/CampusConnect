@@ -45,6 +45,12 @@ html[data-theme="light"] [class*="bg-white/"] {
   background-color: var(--cc-surface) !important;
 }
 
+/* Placeholder helper to keep placeholder color consistent with theme tokens */
+.placeholder-cc-muted::-webkit-input-placeholder { color: var(--cc-muted) !important; }
+.placeholder-cc-muted::-moz-placeholder { color: var(--cc-muted) !important; opacity: 1; }
+.placeholder-cc-muted:-ms-input-placeholder { color: var(--cc-muted) !important; }
+.placeholder-cc-muted::placeholder { color: var(--cc-muted) !important; }
+
 html[data-theme="light"] [class*="border-white/"] {
   border-color: var(--cc-border-soft) !important;
 }

@@ -1,27 +1,50 @@
 :root {
-  /* Default (dark) theme: used when no data-theme is set or data-theme="dark" */
-  --cc-bg: #0a0a12;
-  --cc-surface: #0d0d18;
-  --cc-text: #f8fafc;
-  --cc-muted: #64748b;
+  /* Palette tokens */
+  --steel-azure: #2563EB;
+  --sky-surge: #06B6D4;
+  --violet-royal: #7C3AED;
+  --indigo-600: #4F46E5;
+  --slate-900: #0A0A12;
+  --slate-800: #0D0D18;
+  --text-light: #F8FAFC;
+  --muted-light: #94A3B8;
+
+  /* Semantic tokens (dark/default) */
+  --cc-bg: var(--slate-900);
+  --cc-surface: var(--slate-800);
+  --cc-text: var(--text-light);
+  --cc-muted: var(--muted-light);
   --cc-border-soft: rgba(255, 255, 255, 0.08);
   --cc-border-strong: rgba(255, 255, 255, 0.16);
-  --cc-brand: #4f46e5;
-  --cc-brand-hover: #6366f1;
+  --cc-brand: var(--steel-azure);
+  --cc-brand-hover: var(--indigo-600);
+  --cc-accent: var(--sky-surge);
   --cc-surface-weak: rgba(255,255,255,0.02);
   --cc-surface-hover: rgba(255,255,255,0.05);
   --cc-surface-overlay: rgba(10,10,18,0.9);
 }
 
 :root[data-theme="light"] {
-  --cc-bg: #f7f9fc;
-  --cc-surface: #ffffff;
-  --cc-text: #0f172a;
-  --cc-muted: #475569;
+  /* Palette tokens (light context may reuse same palette vars) */
+  --steel-azure: #2563EB;
+  --sky-surge: #06B6D4;
+  --violet-royal: #7C3AED;
+  --indigo-600: #4F46E5;
+  --slate-50: #F7F9FC;
+  --slate-0: #FFFFFF;
+  --text-dark: #0F172A;
+  --muted-dark: #475569;
+
+  /* Semantic tokens (light theme) */
+  --cc-bg: var(--slate-50);
+  --cc-surface: var(--slate-0);
+  --cc-text: var(--text-dark);
+  --cc-muted: var(--muted-dark);
   --cc-border-soft: rgba(15,23,42,0.08);
   --cc-border-strong: rgba(15,23,42,0.16);
-  --cc-brand: #2563eb; /* indigo-600 */
-  --cc-brand-hover: #1e40af;
+  --cc-brand: var(--steel-azure);
+  --cc-brand-hover: var(--indigo-600);
+  --cc-accent: var(--sky-surge);
   --cc-surface-weak: rgba(15,23,42,0.035);
   --cc-surface-hover: rgba(15,23,42,0.06);
   --cc-surface-overlay: rgba(247,249,252,0.92);

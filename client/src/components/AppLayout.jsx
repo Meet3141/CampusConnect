@@ -49,6 +49,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [topSearch, setTopSearch] = useState("");
 
   const isAdmin = user?.roles?.includes("orgAdmin");
   const isEditor = user?.roles?.includes("editor");
@@ -145,14 +146,25 @@ export default function AppLayout() {
             </button>
           </div>
 
-          <button
-            onClick={() => navigate("/clubs")}
-            className="hidden sm:flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-slate-500 hover:text-white hover:border-white/[0.15] transition-all"
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = topSearch.trim();
+              if (q) navigate(`/clubs?q=${encodeURIComponent(q)}`);
+              else navigate("/clubs");
+            }}
+            className="hidden sm:flex items-center gap-2"
           >
             <IconSearch size={14} />
-            Search clubs, events…
+            <input
+              type="search"
+              value={topSearch}
+              onChange={(e) => setTopSearch(e.target.value)}
+              placeholder="Search clubs, events…"
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-slate-500 placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.06] transition-all w-64"
+            />
             <span className="text-[11px] px-1.5 py-px bg-white/[0.06] rounded-md text-slate-600">/</span>
-          </button>
+          </form>
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
