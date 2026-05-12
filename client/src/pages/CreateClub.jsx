@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import FormField from "../components/FormField";
 import { inputCls } from "../utils/inputCls";
 import { CLUB_CATEGORIES, CLUB_CATEGORY_META } from "../theme";
 

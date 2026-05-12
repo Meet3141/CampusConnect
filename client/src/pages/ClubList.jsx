@@ -29,6 +29,7 @@ export default function ClubList() {
   const [q, setQ]               = useState(""); // debounced search value
   const [category, setCategory] = useState("");
   const [joiningId, setJoiningId] = useState(null);
+  const [myClubStatus, setMyClubStatus] = useState({});
 
   /* ── Debounce search input ── */
   useEffect(() => {
@@ -56,6 +57,30 @@ export default function ClubList() {
   }, [q, category]);
 
   useEffect(() => { fetchClubs(1); }, [fetchClubs]);
+
+  /* ── Fetch user's club memberships (for hiding Join) ── */
+  useEffect(() => {
+    if (!user?._id) {
+      setMyClubStatus({});
+      return;
+    }
+
+    const fetchMyClubs = async () => {
+      try {
+        const res = await api.get("/clubs/mine");
+        const map = {};
+        (res.data.data || []).forEach((club) => {
+          map[club._id] = club.myStatus || "active";
+        });
+        setMyClubStatus(map);
+      } catch (err) {
+        // If this fails, default to showing Join; no user-blocking error
+        setMyClubStatus({});
+      }
+    };
+
+    fetchMyClubs();
+  }, [user]);
 
   /* ── Join request ── */
   const handleJoin = async (e, clubId) => {
@@ -88,11 +113,7 @@ export default function ClubList() {
 
   /* ── Derive membership status for current user from club.members[] ──
      In the list endpoint, members[].userId is a raw ObjectId string     */
-  const myStatusFor = (club) => {
-    if (!user?._id) return null;
-    const m = club.members?.find((m) => String(m.userId) === String(user._id));
-    return m?.status ?? null;
-  };
+  const myStatusFor = (club) => myClubStatus[club._id] || null;
 
   const canCreateClub =
     user?.roles?.includes("clubAdmin") || user?.roles?.includes("orgAdmin");
