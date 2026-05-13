@@ -1,6 +1,8 @@
 import Event from "../models/Event.js";
 import Club from "../models/Club.js";
 import Membership from "../models/Membership.js";
+import RSVP from "../models/RSVP.js";
+import VolunteerApplication from "../models/VolunteerApplication.js";
 
 const syncExpiredUpcomingEvents = async () => {
   await Event.updateMany(
@@ -12,6 +14,37 @@ const syncExpiredUpcomingEvents = async () => {
       $set: { status: "completed" },
     }
   );
+};
+
+const loadEventAttendees = async (eventId) => {
+  const attendees = await RSVP.find({ eventId })
+    .populate("userId", "name email roles")
+    .sort({ registeredAt: 1 })
+    .lean();
+
+  return attendees;
+};
+
+const loadEventVolunteers = async (eventId) => {
+  const volunteers = await VolunteerApplication.find({ eventId })
+    .populate("userId", "name email bio interests profilePicture")
+    .sort({ appliedAt: 1 })
+    .lean();
+
+  return volunteers;
+};
+
+const attachEventRelations = async (event) => {
+  const [attendees, volunteers] = await Promise.all([
+    loadEventAttendees(event._id),
+    loadEventVolunteers(event._id),
+  ]);
+
+  return {
+    ...event,
+    attendees,
+    volunteers,
+  };
 };
 
 // Create internal event (clubAdmin or approved coordinator)
@@ -87,10 +120,11 @@ export const getEventById = async (req, res) => {
 
   const event = await Event.findById(req.params.id)
     .populate("clubId", "name adminId")
-    .populate("volunteers.userId", "name email profilePicture")
     .lean();
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
-  res.json({ success: true, data: event });
+
+  const hydrated = await attachEventRelations(event);
+  res.json({ success: true, data: hydrated });
 };
 
 // Update event — creator (own draft/non-published), coordinator (own draft), or admin
@@ -144,6 +178,8 @@ export const deleteEvent = async (req, res) => {
   }
 
   await Event.findByIdAndDelete(req.params.id);
+  await RSVP.deleteMany({ eventId: req.params.id });
+  await VolunteerApplication.deleteMany({ eventId: req.params.id });
   res.json({ success: true, message: "Event deleted" });
 };
 
@@ -151,11 +187,6 @@ export const deleteEvent = async (req, res) => {
 export const rsvpEvent = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
-
-  // Backward compatibility for legacy documents created before attendees existed.
-  if (!Array.isArray(event.attendees)) {
-    event.attendees = [];
-  }
 
   // A2: Block RSVP on non-upcoming or past events
   if (event.status === "cancelled" || event.status === "completed") {
@@ -165,9 +196,6 @@ export const rsvpEvent = async (req, res) => {
     return res.status(400).json({ success: false, message: "Cannot RSVP: event has already passed" });
   }
 
-  const existing = event.attendees.find((a) => a.userId.toString() === req.user.id);
-  if (existing && existing.status === "registered") return res.status(400).json({ success: false, message: "Already registered" });
-
   // OrgAdmin and clubAdmin are auto-approved (no limit checks)
   const userRoles = req.user.roles || [];
   const isOrgAdmin = userRoles.includes("orgAdmin");
@@ -175,19 +203,30 @@ export const rsvpEvent = async (req, res) => {
   const isClubAdmin = club && club.adminId.toString() === req.user.id;
   const isHandler = isOrgAdmin || isClubAdmin;
 
+  const existing = await RSVP.findOne({ eventId: event._id, userId: req.user.id });
+  if (existing?.status === "registered") {
+    return res.status(400).json({ success: false, message: "Already registered" });
+  }
+
   // Only enforce capacity limits for regular attendees
-  if (!isHandler && event.maxAttendees && event.attendees.filter((a) => a.status === "registered").length >= event.maxAttendees) {
+  const registeredCount = await RSVP.countDocuments({ eventId: event._id, status: "registered" });
+  if (!isHandler && event.maxAttendees && registeredCount >= event.maxAttendees) {
     return res.status(400).json({ success: false, message: "Event is full" });
   }
 
   if (existing) {
     existing.status = "registered";
-    existing.registeredAt = Date.now();
+    existing.registeredAt = new Date();
+    await existing.save();
   } else {
-    event.attendees.push({ userId: req.user.id, status: "registered" });
+    await RSVP.create({
+      eventId: event._id,
+      userId: req.user.id,
+      status: "registered",
+      registeredAt: new Date(),
+    });
   }
 
-  await event.save();
   res.json({ success: true, message: "Registered for event" });
 };
 
@@ -196,23 +235,21 @@ export const cancelRsvp = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-  if (!Array.isArray(event.attendees)) {
-    event.attendees = [];
-  }
-
-  const attendee = event.attendees.find((a) => a.userId.toString() === req.user.id);
+  const attendee = await RSVP.findOne({ eventId: event._id, userId: req.user.id });
   if (!attendee || attendee.status !== "registered") return res.status(400).json({ success: false, message: "Not registered" });
 
   attendee.status = "cancelled";
-  await event.save();
+  await attendee.save();
   res.json({ success: true, message: "Registration cancelled" });
 };
 
 // Get attendees
 export const getAttendees = async (req, res) => {
-  const event = await Event.findById(req.params.id).populate("attendees.userId", "name email roles");
+  const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
-  res.json({ success: true, data: Array.isArray(event.attendees) ? event.attendees : [] });
+
+  const attendees = await loadEventAttendees(event._id);
+  res.json({ success: true, data: attendees });
 };
 
 // Apply to volunteer for an event (creates a PENDING application)
@@ -250,13 +287,13 @@ export const volunteerForEvent = async (req, res) => {
   }
 
   // Check if accepted slots are already full
-  const acceptedCount = event.volunteers.filter((v) => v.status === "accepted").length;
+  const acceptedCount = await VolunteerApplication.countDocuments({ eventId: event._id, status: "accepted" });
   if (event.volunteerLimit && acceptedCount >= event.volunteerLimit) {
     return res.status(400).json({ success: false, message: "Volunteer slots are full" });
   }
 
   // Prevent duplicate applications
-  const existing = event.volunteers.find((v) => v.userId.toString() === req.user.id);
+  const existing = await VolunteerApplication.findOne({ eventId: event._id, userId: req.user.id });
   if (existing) {
     return res.status(400).json({ success: false, message: `You have already applied (status: ${existing.status})` });
   }
@@ -265,8 +302,13 @@ export const volunteerForEvent = async (req, res) => {
     ? req.body.skills.map((s) => String(s).trim()).filter(Boolean).slice(0, 10)
     : [];
 
-  event.volunteers.push({ userId: req.user.id, skills, status: "pending" });
-  await event.save();
+  await VolunteerApplication.create({
+    eventId: event._id,
+    userId: req.user.id,
+    skills,
+    status: "pending",
+    appliedAt: new Date(),
+  });
   res.json({ success: true, message: "Application submitted — awaiting admin review" });
 };
 
@@ -295,12 +337,16 @@ export const reviewVolunteer = async (req, res) => {
     if (!membership) return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
-  const volunteer = event.volunteers.find((v) => v.userId.toString() === userId);
+  const volunteer = await VolunteerApplication.findOne({ eventId: event._id, userId });
   if (!volunteer) return res.status(404).json({ success: false, message: "Application not found" });
 
   // If accepting, check limit
   if (action === "accept" && event.volunteerLimit) {
-    const acceptedCount = event.volunteers.filter((v) => v.status === "accepted" && v.userId.toString() !== userId).length;
+    const acceptedCount = await VolunteerApplication.countDocuments({
+      eventId: event._id,
+      status: "accepted",
+      userId: { $ne: userId },
+    });
     if (acceptedCount >= event.volunteerLimit) {
       return res.status(400).json({ success: false, message: "Volunteer limit already reached" });
     }
@@ -308,7 +354,7 @@ export const reviewVolunteer = async (req, res) => {
 
   volunteer.status     = action === "accept" ? "accepted" : "rejected";
   volunteer.reviewedAt = new Date();
-  await event.save();
+  await volunteer.save();
 
   res.json({ success: true, message: `Volunteer ${action}ed`, data: volunteer });
 };
@@ -334,11 +380,9 @@ export const removeVolunteer = async (req, res) => {
     }
   }
 
-  const idx = event.volunteers.findIndex((v) => v.userId.toString() === targetUserId);
-  if (idx === -1) return res.status(404).json({ success: false, message: "Volunteer not found" });
+  const removed = await VolunteerApplication.findOneAndDelete({ eventId: event._id, userId: targetUserId });
+  if (!removed) return res.status(404).json({ success: false, message: "Volunteer not found" });
 
-  event.volunteers.splice(idx, 1);
-  await event.save();
   res.json({ success: true, message: "Volunteer removed" });
 };
 
@@ -352,16 +396,34 @@ export const getVolunteerEvents = async (req, res) => {
     volunteerLimit: { $gt: 0 },
   })
     .populate("clubId", "name category adminId")
-    .populate("volunteers.userId", "name email")
     .sort({ date: 1 })
     .limit(Number(limit))
     .lean();
 
+  const eventIds = events.map((e) => e._id);
+  const applications = eventIds.length
+    ? await VolunteerApplication.find({ eventId: { $in: eventIds } })
+        .populate("userId", "name email")
+        .sort({ appliedAt: 1 })
+        .lean()
+    : [];
+
+  const applicationsByEvent = new Map();
+  for (const application of applications) {
+    const key = String(application.eventId);
+    if (!applicationsByEvent.has(key)) {
+      applicationsByEvent.set(key, []);
+    }
+    applicationsByEvent.get(key).push(application);
+  }
+
   // Only return events that still have open accepted slots
-  const open = events.filter((e) => {
-    const accepted = e.volunteers.filter((v) => v.status === "accepted").length;
-    return accepted < e.volunteerLimit;
-  });
+  const open = events
+    .map((e) => ({ ...e, volunteers: applicationsByEvent.get(String(e._id)) || [] }))
+    .filter((e) => {
+      const accepted = e.volunteers.filter((v) => v.status === "accepted").length;
+      return accepted < e.volunteerLimit;
+    });
 
   res.json({ success: true, data: open });
 };
@@ -369,9 +431,7 @@ export const getVolunteerEvents = async (req, res) => {
 
 // Get volunteers list (event creator or orgAdmin only)
 export const getVolunteers = async (req, res) => {
-  const event = await Event.findById(req.params.id)
-    .populate("volunteers.userId", "name email bio interests profilePicture")
-    .lean();
+  const event = await Event.findById(req.params.id).lean();
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
   const userRoles = req.user.roles || [];
@@ -380,7 +440,8 @@ export const getVolunteers = async (req, res) => {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
-  res.json({ success: true, data: event.volunteers });
+  const volunteers = await loadEventVolunteers(event._id);
+  res.json({ success: true, data: volunteers });
 };
 
 // ── Publish event (clubAdmin or orgAdmin ONLY) ─────────────────────────────────
@@ -413,10 +474,6 @@ export const markAttendance = async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-  if (!Array.isArray(event.attendees)) {
-    event.attendees = [];
-  }
-
   const userRoles = req.user.roles || [];
   const isOrgAdmin = userRoles.includes("orgAdmin");
   const club = await Club.findById(event.clubId).lean();
@@ -441,14 +498,17 @@ export const markAttendance = async (req, res) => {
   }
 
   const idSet = new Set(attendeeIds.map(String));
-  let updatedCount = 0;
-  event.attendees.forEach((a) => {
-    if (idSet.has(a.userId.toString()) && a.status === "registered") {
-      a.status = "attended";
-      updatedCount++;
+  const result = await RSVP.updateMany(
+    {
+      eventId: event._id,
+      userId: { $in: [...idSet] },
+      status: "registered",
+    },
+    {
+      $set: { status: "attended" },
     }
-  });
+  );
 
-  await event.save();
-  res.json({ success: true, message: `${updatedCount} attendance(s) marked`, data: event.attendees });
+  const attendees = await loadEventAttendees(event._id);
+  res.json({ success: true, message: `${result.modifiedCount} attendance(s) marked`, data: attendees });
 };

@@ -50,7 +50,7 @@ const eventSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null,
+      required: true,
     },
 
 
@@ -58,25 +58,6 @@ const eventSchema = new mongoose.Schema(
       type: Number,
       default: null,
     },
-
-    attendees: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        status: {
-          type: String,
-          enum: ["registered", "attended", "cancelled"],
-          default: "registered",
-        },
-        registeredAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
 
     // ── Volunteer Programme ────────────────────────────────────────────────
     // Set by admin/coordinator when creating/editing the event.
@@ -98,37 +79,8 @@ const eventSchema = new mongoose.Schema(
       default: [],         // e.g. ["Photography", "Stage Setup", "MCing"]
     },
 
-    // Application-based volunteer list
-    volunteers: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        skills: {
-          type: [String],
-          default: [],
-        },
-        // pending → waiting for admin review
-        // accepted → confirmed volunteer
-        // rejected → declined
-        status: {
-          type: String,
-          enum: ["pending", "accepted", "rejected"],
-          default: "pending",
-        },
-        appliedAt: {
-          type: Date,
-          default: Date.now,
-        },
-        reviewedAt: {
-          type: Date,
-          default: null,
-        },
-      },
-    ],
-    // ── End Volunteer Programme ────────────────────────────────────────────
+    // RSVP and volunteer applications are stored in separate collections
+    // to avoid unbounded array growth on the event document.
 
     image: {
       type: String,
@@ -146,15 +98,6 @@ const eventSchema = new mongoose.Schema(
     },
 
 
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );
@@ -164,7 +107,6 @@ eventSchema.index({ clubId: 1 });
 eventSchema.index({ date: 1 });
 eventSchema.index({ category: 1 });
 eventSchema.index({ createdBy: 1 });
-eventSchema.index({ "attendees.userId": 1 });
 eventSchema.index({ date: 1, clubId: 1 });
 eventSchema.index({ showOnVolunteerHub: 1, status: 1 });
 
