@@ -1,12 +1,13 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/User.js";
+import Membership from "../models/Membership.js";
 import RefreshToken from "../models/RefreshToken.js";
 
 // @desc    Get current user's profile
 // @route   GET /api/users/profile
 // @access  Private
 export const getProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).populate("joinedClubs", "name category coverImage");
+  const user = await User.findById(req.user.id);
 
   if (!user) {
     const error = new Error("User not found");
@@ -14,9 +15,20 @@ export const getProfile = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  const memberships = await Membership.find({ userId: req.user.id, status: "approved" })
+    .populate("clubId", "name category coverImage")
+    .lean();
+
+  const joinedClubs = memberships
+    .map((membership) => membership.clubId)
+    .filter(Boolean);
+
   res.status(200).json({
     success: true,
-    user: user.toJSON(),
+    user: {
+      ...user.toJSON(),
+      joinedClubs,
+    },
   });
 });
 
@@ -88,7 +100,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
     req.user.id,
     { $set: updateFields },
     { new: true, runValidators: true }
-  ).populate("joinedClubs", "name category coverImage");
+  );
 
   if (!updatedUser) {
     const error = new Error("User not found");
@@ -99,7 +111,12 @@ export const updateProfile = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    user: updatedUser.toJSON(),
+    user: {
+      ...updatedUser.toJSON(),
+      joinedClubs: await Membership.find({ userId: req.user.id, status: "approved" })
+        .populate("clubId", "name category coverImage")
+        .then((rows) => rows.map((membership) => membership.clubId).filter(Boolean)),
+    },
   });
 });
 

@@ -43,11 +43,6 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
-    joinedClubs: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Club" }],
-      default: [],
-    },
-
     profilePicture: {
       type: String,
       default: null,

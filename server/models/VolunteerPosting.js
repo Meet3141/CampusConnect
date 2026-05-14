@@ -77,35 +77,6 @@ const volunteerPostingSchema = new mongoose.Schema(
       enum: ["open", "filled", "closed"],
       default: "open",
     },
-
-    // Applications
-    applications: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        message: {
-          type: String,
-          default: "",
-          maxlength: 500,
-        },
-        status: {
-          type: String,
-          enum: ["pending", "accepted", "rejected"],
-          default: "pending",
-        },
-        appliedAt: {
-          type: Date,
-          default: Date.now,
-        },
-        reviewedAt: {
-          type: Date,
-          default: null,
-        },
-      },
-    ],
   },
   { timestamps: true }
 );
@@ -115,6 +86,5 @@ volunteerPostingSchema.index({ status: 1, date: 1 });
 volunteerPostingSchema.index({ postedBy: 1 });
 volunteerPostingSchema.index({ clubId: 1 });
 volunteerPostingSchema.index({ category: 1 });
-volunteerPostingSchema.index({ "applications.userId": 1 });
 
 export default mongoose.model("VolunteerPosting", volunteerPostingSchema);

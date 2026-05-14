@@ -1,4 +1,41 @@
 import VolunteerPosting from "../models/VolunteerPosting.js";
+import VolunteerPostingApplication from "../models/VolunteerPostingApplication.js";
+
+const hydratePostingApplications = async (posting) => {
+  const applications = await VolunteerPostingApplication.find({ postingId: posting._id })
+    .populate("userId", "name email")
+    .sort({ appliedAt: 1 })
+    .lean();
+
+  const legacyApplications = Array.isArray(posting.applications)
+    ? posting.applications.map((app) => ({
+        ...app,
+        userId: app.userId,
+      }))
+    : [];
+
+  return {
+    ...posting,
+    applications: applications.length > 0 ? applications : legacyApplications,
+  };
+};
+
+const syncPostingStatus = async (posting) => {
+  if (posting.slots === null) return posting;
+
+  const accepted = await VolunteerPostingApplication.countDocuments({
+    postingId: posting._id,
+    status: "accepted",
+  });
+
+  const nextStatus = accepted >= posting.slots ? "filled" : "open";
+  if (posting.status !== "closed") {
+    posting.status = nextStatus;
+    await posting.save();
+  }
+
+  return posting;
+};
 
 // ─── List postings (public / filterable) ──────────────────────────────────────
 export const getPostings = async (req, res) => {
@@ -22,9 +59,11 @@ export const getPostings = async (req, res) => {
     VolunteerPosting.countDocuments(filter),
   ]);
 
+  const hydrated = await Promise.all(postings.map((posting) => hydratePostingApplications(posting)));
+
   res.json({
     success: true,
-    data: postings,
+    data: hydrated,
     meta: { total, page: Number(page), limit: Number(limit) },
   });
 };
@@ -35,7 +74,6 @@ export const getPostingById = async (req, res) => {
     .populate("postedBy", "name email")
     .populate("clubId", "name")
     .populate("eventId", "title date venue")
-    .populate("applications.userId", "name email")
     .lean();
 
   if (!posting) {
@@ -44,7 +82,7 @@ export const getPostingById = async (req, res) => {
     throw err;
   }
 
-  res.json({ success: true, data: posting });
+  res.json({ success: true, data: await hydratePostingApplications(posting) });
 };
 
 // ─── Create posting (clubAdmin / orgAdmin) ─────────────────────────────────────
@@ -115,6 +153,7 @@ export const deletePosting = async (req, res) => {
   }
 
   await posting.deleteOne();
+  await VolunteerPostingApplication.deleteMany({ postingId: posting._id });
   res.json({ success: true, message: "Posting deleted" });
 };
 
@@ -129,26 +168,20 @@ export const applyToPosting = async (req, res) => {
     err.statusCode = 400; throw err;
   }
 
-  const already = posting.applications.find(
-    (a) => String(a.userId) === req.user.id
-  );
+  const already = await VolunteerPostingApplication.findOne({ postingId: posting._id, userId: req.user.id });
   if (already) {
     const err = new Error("You have already applied"); err.statusCode = 400; throw err;
   }
 
-  posting.applications.push({
+  await VolunteerPostingApplication.create({
+    postingId: posting._id,
     userId: req.user.id,
     message: req.body.message || "",
     status: "pending",
   });
 
   // Auto-fill: if slots are now all taken, mark posting as filled
-  if (posting.slots !== null) {
-    const accepted = posting.applications.filter((a) => a.status === "accepted").length;
-    if (accepted >= posting.slots) posting.status = "filled";
-  }
-
-  await posting.save();
+  await syncPostingStatus(posting);
   res.status(201).json({ success: true, message: "Application submitted" });
 };
 
@@ -159,15 +192,13 @@ export const withdrawApplication = async (req, res) => {
     const err = new Error("Posting not found"); err.statusCode = 404; throw err;
   }
 
-  const idx = posting.applications.findIndex(
-    (a) => String(a.userId) === req.user.id
-  );
-  if (idx === -1) {
+  const app = await VolunteerPostingApplication.findOne({ postingId: posting._id, userId: req.user.id });
+  if (!app) {
     const err = new Error("No application found"); err.statusCode = 404; throw err;
   }
 
-  posting.applications.splice(idx, 1);
-  await posting.save();
+  await app.deleteOne();
+  await syncPostingStatus(posting);
   res.json({ success: true, message: "Application withdrawn" });
 };
 
@@ -191,21 +222,17 @@ export const reviewApplication = async (req, res) => {
     const err = new Error("Forbidden"); err.statusCode = 403; throw err;
   }
 
-  const app = posting.applications.id(applicationId);
+  const app = await VolunteerPostingApplication.findOne({ _id: applicationId, postingId: posting._id });
   if (!app) {
     const err = new Error("Application not found"); err.statusCode = 404; throw err;
   }
 
   app.status = status;
   app.reviewedAt = new Date();
+  await app.save();
 
   // Auto-fill check
-  if (posting.slots !== null) {
-    const accepted = posting.applications.filter((a) => a.status === "accepted").length;
-    if (accepted >= posting.slots) posting.status = "filled";
-  }
-
-  await posting.save();
+  await syncPostingStatus(posting);
   res.json({ success: true, message: `Application ${status}` });
 };
 
@@ -221,21 +248,30 @@ export const getMyPostings = async (req, res) => {
 
 // ─── Get postings where I have applied ────────────────────────────────────────
 export const getMyApplications = async (req, res) => {
-  const postings = await VolunteerPosting.find({
-    "applications.userId": req.user.id,
-  })
-    .sort({ date: 1 })
-    .populate("postedBy", "name")
-    .populate("clubId", "name")
+  const applications = await VolunteerPostingApplication.find({ userId: req.user.id })
+    .sort({ appliedAt: -1 })
+    .populate({
+      path: "postingId",
+      populate: [
+        { path: "postedBy", select: "name" },
+        { path: "clubId", select: "name" },
+      ],
+    })
     .lean();
 
-  // Attach my application status to each result
-  const result = postings.map((p) => {
-    const myApp = p.applications.find(
-      (a) => String(a.userId) === req.user.id
-    );
-    return { ...p, myApplication: myApp };
-  });
+  const result = applications
+    .filter((app) => app.postingId)
+    .map((app) => ({
+      ...app.postingId,
+      myApplication: {
+        _id: app._id,
+        userId: app.userId,
+        message: app.message,
+        status: app.status,
+        appliedAt: app.appliedAt,
+        reviewedAt: app.reviewedAt,
+      },
+    }));
 
   res.json({ success: true, data: result });
 };
