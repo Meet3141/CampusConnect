@@ -19,8 +19,8 @@
  * coordinator.assign        → orgAdmin | this club's admin ONLY
  */
 
-import Membership from "../models/Membership.js";
-import Club from "../models/Club.js";
+import Membership from "../modules/clubs/membership.model.js";
+import Club from "../modules/clubs/club.model.js";
 
 // Permissions that coordinators are allowed to perform
 const COORDINATOR_PERMISSIONS = new Set([
