@@ -30,11 +30,14 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Only handle 401 responses; skip auth endpoints themselves
+    // Only handle 401 responses; skip credential endpoints to avoid loops.
+    // /auth/verify IS allowed to retry — it's the session-check call.
+    const SKIP_REFRESH_URLS = ["/auth/login", "/auth/register", "/auth/logout", "/auth/refresh-token"];
+    const isSkipped = SKIP_REFRESH_URLS.some((u) => originalRequest.url?.includes(u));
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/")
+      !isSkipped
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
