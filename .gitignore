@@ -5,3 +5,8 @@ dist/
 .env.*.local
 .DS_Store
 *.log
+
+# Ignore our cleanup backups and explicit env files
+_orphan_backup/
+server/.env.development
+server/.env.production
