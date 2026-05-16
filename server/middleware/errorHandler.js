@@ -1,6 +1,7 @@
+import logger from "./logger.js";
+
 const errorHandler = (err, req, res, next) => {
-  console.error("[ErrorHandler]", err.name, err.message);
-  console.error(err.stack);
+  logger.error(`[ErrorHandler] ${err.name}: ${err.message}`, { stack: err.stack });
 
   // If headers already sent, delegate to Express default handler
   if (res.headersSent) {

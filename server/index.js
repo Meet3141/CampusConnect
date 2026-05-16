@@ -3,20 +3,24 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoSanitize from "express-mongo-sanitize";
+import compression from "compression";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import http from "http";
 import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import connectDB from "./config/db.js";
-import authRoutes from "./routes/auth.js";
-import clubRoutes from "./routes/clubs.js";
-import eventRoutes from "./routes/events.js";
-import chatRoutes from "./routes/chats.js";
-import messageRoutes from "./routes/messages.js";
-import externalEventRoutes from "./routes/externalEvents.js";
-import bookmarkRoutes from "./routes/bookmarks.js";
-import userRoutes from "./routes/users.js";
-import volunteerRoutes from "./routes/volunteers.js";
+import authRoutes from "./modules/auth/auth.routes.js";
+import clubRoutes from "./modules/clubs/club.routes.js";
+import eventRoutes from "./modules/events/event.routes.js";
+import { chatRouter as chatRoutes, messageRouter as messageRoutes } from "./modules/chat/chat.routes.js";
+import externalEventRoutes from "./modules/external-events/external-event.routes.js";
+import bookmarkRoutes from "./modules/bookmarks/bookmark.routes.js";
+import userRoutes from "./modules/users/user.routes.js";
+import volunteerRoutes from "./modules/volunteers/volunteer.routes.js";
 import errorHandler from "./middleware/errorHandler.js";
+import logger from "./middleware/logger.js";
+import { startScheduler } from "./jobs/scheduler.js";
 
 // ── Must run before anything that depends on env vars ──
 dotenv.config();
@@ -40,6 +44,9 @@ const io = new Server(server, {
 
 app.set("io", io);
 
+// ── Compression (gzip all responses ≥ 1KB) ──
+app.use(compression());
+
 // ── Security & Parsing Middlewares ──
 app.use(
   cors({
@@ -58,21 +65,55 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── Request Logging (morgan → winston) ──
+const morganFormat = process.env.NODE_ENV === "production" ? "combined" : "dev";
+app.use(
+  morgan(morganFormat, {
+    stream: { write: (msg) => logger.info(msg.trim()) },
+    skip: (req) => req.url === "/",   // skip health-check noise
+  })
+);
+
+// ── Rate Limiters ────────────────────────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,   // 1 minute
+  max: 10,               // max 10 auth requests/min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many auth requests — try again in a minute." },
+});
+
+const eventsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,               // 60 event requests/min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests — slow down." },
+});
+
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,               // 30 chat requests/min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many chat requests — slow down." },
+});
+
 // ── Health check ──
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
 // ── API Routes ──
-app.use("/api/auth",            authRoutes);
-app.use("/api/clubs",           clubRoutes);
-app.use("/api/events",          eventRoutes);
-app.use("/api/chats",           chatRoutes);
-app.use("/api/messages",        messageRoutes);
-app.use("/api/external-events", externalEventRoutes);
-app.use("/api/bookmarks",       bookmarkRoutes);
-app.use("/api/users",           userRoutes);
-app.use("/api/volunteers",      volunteerRoutes);
+app.use("/api/auth",            authLimiter,   authRoutes);
+app.use("/api/clubs",                          clubRoutes);
+app.use("/api/events",          eventsLimiter, eventRoutes);
+app.use("/api/chats",           chatLimiter,   chatRoutes);
+app.use("/api/messages",        chatLimiter,   messageRoutes);
+app.use("/api/external-events",                externalEventRoutes);
+app.use("/api/bookmarks",                      bookmarkRoutes);
+app.use("/api/users",                          userRoutes);
+app.use("/api/volunteers",                     volunteerRoutes);
 
 // ── Socket.IO: Auth via cookie or Bearer header ──
 io.use((socket, next) => {
@@ -120,7 +161,10 @@ io.on("connection", (socket) => {
 // Error handler (MUST BE LAST)
 app.use(errorHandler);
 
+// ── Background Jobs ──
+startScheduler();
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`);
 });
