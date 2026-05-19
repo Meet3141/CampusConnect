@@ -95,6 +95,26 @@ export const publishEvent = async (req, res) => {
   res.json({ success: true, message: "Event published", data: event });
 };
 
+export const startEvent = async (req, res) => {
+  const event = await eventService.startEvent({ id: req.params.id, user: req.user });
+  res.json({ success: true, message: "Event started", data: event });
+};
+
+export const restartEvent = async (req, res) => {
+  const event = await eventService.restartEvent({ id: req.params.id, user: req.user });
+  res.json({ success: true, message: "Event restarted", data: event });
+};
+
+export const endEvent = async (req, res) => {
+  const result = await eventService.endEvent({ id: req.params.id, user: req.user });
+  res.json({
+    success: true,
+    message: "Event ended",
+    data: result.event,
+    meta: result.noShowSummary,
+  });
+};
+
 export const markAttendance = async (req, res) => {
   const { modifiedCount, attendees } = await eventService.markAttendance({
     id: req.params.id,

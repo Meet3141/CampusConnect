@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import { useToast } from "../../../context/ToastContext";
 
 export default function AttendanceManagement() {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   
   const [event, setEvent] = useState(null);
@@ -12,12 +13,9 @@ export default function AttendanceManagement() {
   const [selectedAttendees, setSelectedAttendees] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const isOngoing = event?.status === "ongoing";
 
-  useEffect(() => {
-    fetchEventAndAttendees();
-  }, [eventId]);
-
-  const fetchEventAndAttendees = async () => {
+  const fetchEventAndAttendees = useCallback(async () => {
     try {
       setLoading(true);
       const [eventRes, attendeesRes] = await Promise.all([
@@ -32,7 +30,11 @@ export default function AttendanceManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, showToast]);
+
+  useEffect(() => {
+    fetchEventAndAttendees();
+  }, [fetchEventAndAttendees]);
 
   const toggleAttendee = (attendeeId) => {
     const newSelected = new Set(selectedAttendees);
@@ -45,6 +47,7 @@ export default function AttendanceManagement() {
   };
 
   const toggleAll = () => {
+    if (!isOngoing) return;
     if (selectedAttendees.size === attendees.length) {
       setSelectedAttendees(new Set());
     } else {
@@ -53,6 +56,10 @@ export default function AttendanceManagement() {
   };
 
   const handleMarkAttendance = async () => {
+    if (!isOngoing) {
+      showToast("Attendance can only be marked while the event is ongoing.", "warning");
+      return;
+    }
     if (selectedAttendees.size === 0) {
       showToast("Please select at least one attendee", "warning");
       return;
@@ -94,6 +101,13 @@ export default function AttendanceManagement() {
     <div className="max-w-4xl mx-auto p-4">
       {/* Header */}
       <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+        >
+          <span aria-hidden="true">←</span>
+          Back
+        </button>
         <h1 className="text-3xl font-bold text-gray-900">{event.title}</h1>
         <p className="text-gray-600 mt-2">
           Venue: <span className="font-semibold">{event.venue}</span>
@@ -128,8 +142,9 @@ export default function AttendanceManagement() {
                 <th className="px-4 py-3 text-left">
                   <input
                     type="checkbox"
-                    checked={selectedAttendees.size === attendees.length && attendees.length > 0}
+                    checked={isOngoing && selectedAttendees.size === attendees.length && attendees.length > 0}
                     onChange={toggleAll}
+                    disabled={!isOngoing}
                     className="w-4 h-4"
                   />
                 </th>
@@ -161,8 +176,8 @@ export default function AttendanceManagement() {
                         <input
                           type="checkbox"
                           checked={isSelected || alreadyAttended}
-                          onChange={() => !alreadyAttended && toggleAttendee(attendee.userId._id)}
-                          disabled={alreadyAttended}
+                          onChange={() => !alreadyAttended && isOngoing && toggleAttendee(attendee.userId._id)}
+                          disabled={alreadyAttended || !isOngoing}
                           className="w-4 h-4"
                         />
                       </td>
@@ -194,19 +209,27 @@ export default function AttendanceManagement() {
       <div className="mt-6 flex gap-4">
         <button
           onClick={handleMarkAttendance}
-          disabled={submitting || selectedAttendees.size === 0}
+          disabled={submitting || selectedAttendees.size === 0 || !isOngoing}
           className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 transition"
         >
-          {submitting ? "Marking..." : `Mark ${selectedAttendees.size} Present`}
+          {submitting ? "Marking..." : isOngoing ? `Mark ${selectedAttendees.size} Present` : "Attendance Locked"}
         </button>
         <button
           onClick={() => setSelectedAttendees(new Set())}
-          disabled={submitting}
+          disabled={submitting || !isOngoing}
           className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
         >
           Clear Selection
         </button>
       </div>
+
+      {!isOngoing && (
+        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800">
+            Attendance is locked because this event is {event.status}. Use this page for analytics only.
+          </p>
+        </div>
+      )}
 
       {/* Info */}
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

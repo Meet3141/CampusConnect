@@ -17,6 +17,9 @@ import {
   getVolunteers,
   getVolunteerEvents,
   publishEvent,
+  startEvent,
+  restartEvent,
+  endEvent,
   markAttendance,
 } from "./event.controller.js";
 
@@ -40,6 +43,9 @@ router.delete("/:id/volunteer/:userId", auth, asyncHandler(removeVolunteer));
 router.get("/:id/volunteers", auth, asyncHandler(getVolunteers));
 
 router.post("/:id/publish", auth, asyncHandler(publishEvent));
+router.post("/:id/start", auth, asyncHandler(startEvent));
+router.post("/:id/restart", auth, asyncHandler(restartEvent));
+router.post("/:id/end", auth, asyncHandler(endEvent));
 router.post("/:id/attendance", auth, asyncHandler(markAttendance));
 
 export default router;

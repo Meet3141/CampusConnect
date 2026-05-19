@@ -5,6 +5,7 @@ import RSVP from "./rsvp.model.js";
 import VolunteerApplication from "./volunteer-application.model.js";
 import { createHttpError } from "../../utils/httpError.js";
 import { getOrSet, invalidate } from "../../utils/cache.js";
+import { processNoShows } from "../../utils/processNoShows.js";
 
 const EVENT_CACHE_TTL = 60; // seconds
 
@@ -70,6 +71,15 @@ const attachEventRelations = async (event) => {
     attendees,
     volunteers,
   };
+};
+
+const canManageEvent = async (event, user) => {
+  const userRoles = user.roles || [];
+  if (userRoles.includes("orgAdmin")) return true;
+  if (event.createdBy.toString() === user.id) return true;
+
+  const club = await Club.findById(event.clubId).lean();
+  return Boolean(club && club.adminId.toString() === user.id);
 };
 
 export const createEvent = async ({ body, user }) => {
@@ -568,12 +578,7 @@ export const publishEvent = async ({ id, user }) => {
   const event = await Event.findById(id);
   if (!event) throw createHttpError(404, "Event not found");
 
-  const userRoles = user.roles || [];
-  const isOrgAdmin = userRoles.includes("orgAdmin");
-  const club = await Club.findById(event.clubId).lean();
-  const isClubAdmin = club && club.adminId.toString() === user.id;
-
-  if (!isOrgAdmin && !isClubAdmin) {
+  if (!(await canManageEvent(event, user))) {
     throw createHttpError(403, "Only the club admin can publish events");
   }
 
@@ -587,9 +592,72 @@ export const publishEvent = async ({ id, user }) => {
   return event;
 };
 
+export const startEvent = async ({ id, user }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  if (!(await canManageEvent(event, user))) {
+    throw createHttpError(403, "Forbidden");
+  }
+
+  if (event.status !== "upcoming") {
+    throw createHttpError(400, `Cannot start event while status is '${event.status}'`);
+  }
+
+  event.status = "ongoing";
+  await event.save();
+  invalidate(`event:${id}`);
+  return event;
+};
+
+export const restartEvent = async ({ id, user }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  if (!(await canManageEvent(event, user))) {
+    throw createHttpError(403, "Forbidden");
+  }
+
+  if (event.status !== "completed") {
+    throw createHttpError(400, `Cannot restart event while status is '${event.status}'`);
+  }
+
+  event.status = "ongoing";
+  await event.save();
+  invalidate(`event:${id}`);
+  return event;
+};
+
+export const endEvent = async ({ id, user }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  if (!(await canManageEvent(event, user))) {
+    throw createHttpError(403, "Forbidden");
+  }
+
+  if (event.status !== "ongoing") {
+    throw createHttpError(400, `Cannot end event while status is '${event.status}'`);
+  }
+
+  const noShowSummary = await processNoShows(event._id);
+  event.status = "completed";
+  await event.save();
+  invalidate(`event:${id}`);
+
+  return {
+    event,
+    noShowSummary,
+  };
+};
+
 export const markAttendance = async ({ id, body, user }) => {
   const event = await Event.findById(id);
   if (!event) throw createHttpError(404, "Event not found");
+
+  if (event.status !== "ongoing") {
+    throw createHttpError(400, "Attendance can only be marked while the event is ongoing");
+  }
 
   const userRoles = user.roles || [];
   const isOrgAdmin = userRoles.includes("orgAdmin");

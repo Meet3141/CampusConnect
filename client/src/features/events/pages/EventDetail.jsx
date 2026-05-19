@@ -23,6 +23,9 @@ import {
   reviewVolunteer,
   removeVolunteer,
   deleteEvent,
+  startEvent,
+  restartEvent,
+  endEvent,
   createBookmark,
   deleteBookmark,
 } from "../api";
@@ -79,6 +82,10 @@ export default function EventDetail() {
     String(event?.clubId?.adminId?._id || event?.clubId?.adminId) === String(user?._id);
   const canDeleteEvent = isOrgAdmin || isEventCreator;
   const canReviewVolunteers = isOrgAdmin || isEventCreator || isClubAdminOfEvent;
+  const canManageLifecycle = isOrgAdmin || isEventCreator || isClubAdminOfEvent;
+  const isUpcoming = event?.status === "upcoming";
+  const isOngoing = event?.status === "ongoing";
+  const isCompleted = event?.status === "completed";
   const canApplyForVolunteer =
     !!user &&
     event?.status === "upcoming" &&
@@ -226,6 +233,47 @@ export default function EventDetail() {
     }
   };
 
+  const handleStartEvent = async () => {
+    setActionLoading(true);
+    try {
+      const res = await startEvent(id);
+      setEvent((prev) => ({ ...prev, ...res.data.data }));
+      toast.success("Event started.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to start event.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEndEvent = async () => {
+    if (!window.confirm("End this event now? No-shows will be processed immediately.")) return;
+    setActionLoading(true);
+    try {
+      const res = await endEvent(id);
+      setEvent((prev) => ({ ...prev, ...res.data.data }));
+      toast.success("Event ended and no-shows processed.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to end event.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRestartEvent = async () => {
+    if (!window.confirm("Reopen this event? This will change the status back to ongoing.")) return;
+    setActionLoading(true);
+    try {
+      const res = await restartEvent(id);
+      setEvent((prev) => ({ ...prev, ...res.data.data }));
+      toast.success("Event restarted.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to restart event.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -313,7 +361,7 @@ export default function EventDetail() {
             {/* Actions */}
             <div className="flex flex-col gap-2 shrink-0">
               {/* Hide RSVP for orgAdmin and clubAdmin (they are handlers, not attendees) */}
-              {user && event.status === "upcoming" && !isOrgAdmin && !isClubAdminOfEvent && (
+              {user && isUpcoming && !isOrgAdmin && !isClubAdminOfEvent && (
                 <>
                   {!isRegistered && !isFull && (
                     <button onClick={handleRsvp} disabled={actionLoading}
@@ -330,6 +378,30 @@ export default function EventDetail() {
                   {isFull && !isRegistered && (
                     <span className="px-5 py-2.5 bg-slate-800/60 text-slate-500 rounded-xl text-sm text-center">Event Full</span>
                   )}
+                </>
+              )}
+              {user && canManageLifecycle && isUpcoming && (
+                <button onClick={handleStartEvent} disabled={actionLoading}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                  {actionLoading ? "…" : "▶ Start Event"}
+                </button>
+              )}
+              {user && canManageLifecycle && isOngoing && (
+                <button onClick={handleEndEvent} disabled={actionLoading}
+                  className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                  {actionLoading ? "…" : "■ End Event"}
+                </button>
+              )}
+              {user && canManageLifecycle && isCompleted && (
+                <>
+                  <button onClick={handleRestartEvent} disabled={actionLoading}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                    {actionLoading ? "…" : "↺ Restart Event"}
+                  </button>
+                  <button onClick={() => navigate(`/events/${id}/attendance`)}
+                    className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap">
+                    📊 View Analytics
+                  </button>
                 </>
               )}
               {canApplyForVolunteer && (
@@ -399,6 +471,32 @@ export default function EventDetail() {
                 {event.maxAttendees && <InfoRow label="Capacity" value={`${registeredCount} / ${event.maxAttendees}`} />}
               </dl>
             </div>
+
+            {(isOngoing || isCompleted) && (
+              <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
+                <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">Attendance</h3>
+                <div className="grid grid-cols-3 gap-3 text-center text-xs mb-4">
+                  <div className="rounded-xl bg-white/4 p-3">
+                    <div className="text-slate-500">Registered</div>
+                    <div className="mt-1 text-white font-semibold">{registeredCount}</div>
+                  </div>
+                  <div className="rounded-xl bg-white/4 p-3">
+                    <div className="text-slate-500">Attended</div>
+                    <div className="mt-1 text-emerald-300 font-semibold">{event.attendedCount || 0}</div>
+                  </div>
+                  <div className="rounded-xl bg-white/4 p-3">
+                    <div className="text-slate-500">No-shows</div>
+                    <div className="mt-1 text-amber-300 font-semibold">{event.noShowCount || 0}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate(`/events/${id}/attendance`)}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                >
+                  {isCompleted ? "View Analytics" : "Open Attendance Panel"}
+                </button>
+              </div>
+            )}
 
             {/* Attendees preview */}
             {attendees.filter((a) => a.status === "registered").length > 0 && (

@@ -22,6 +22,15 @@ export const updateEvent = (eventId, payload) =>
 export const deleteEvent = (eventId) =>
   api.delete(`/events/${eventId}`);
 
+export const startEvent = (eventId) =>
+  api.post(`/events/${eventId}/start`);
+
+export const restartEvent = (eventId) =>
+  api.post(`/events/${eventId}/restart`);
+
+export const endEvent = (eventId) =>
+  api.post(`/events/${eventId}/end`);
+
 export const fetchEventAttendees = (eventId) =>
   api.get(`/events/${eventId}/attendees`);
 
