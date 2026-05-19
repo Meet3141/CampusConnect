@@ -473,7 +473,7 @@ export default function ClubDetail() {
             {/* Action buttons */}
             <div className="flex flex-col gap-2 shrink-0">
               {/* A5: Not a member AND not the club admin (admin is not in members array) */}
-              {!myStatus && user && !isClubAdmin && !isBlocked && (
+              {( (!myStatus) || myStatus === "rejected") && user && !isClubAdmin && !isBlocked && (
                 <button
                   onClick={handleJoin}
                   disabled={actionLoading}

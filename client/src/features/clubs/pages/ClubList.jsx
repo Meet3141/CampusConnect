@@ -93,6 +93,15 @@ export default function ClubList() {
             : c
         )
       );
+      // Also update the myClubStatus map so the Join button hides without a reload
+      setMyClubStatus((prev) => ({
+        ...prev,
+        [clubId]: {
+          status: "pending",
+          blockedUntil: null,
+          rejectCount: prev?.[clubId]?.rejectCount || 0,
+        },
+      }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send join request.");
     } finally {
@@ -373,8 +382,8 @@ export default function ClubList() {
           </span>
 
           <div className="flex items-center gap-2">
-            {/* Show Join only if user has no membership status and is not blocked */}
-            {!statusStr && !myStatus?.blockedUntil && (
+            {/* Show Join if user has no membership status or was previously rejected (and is not blocked) */}
+            {((!statusStr) || statusStr === "rejected") && !myStatus?.blockedUntil && (
               <button
                 onClick={onJoin}
                 disabled={joining}
