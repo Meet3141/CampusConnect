@@ -264,6 +264,11 @@ export const rsvpEvent = async ({ id, user }) => {
   const event = await Event.findById(id);
   if (!event) throw createHttpError(404, "Event not found");
 
+  // CHECK IF USER IS BLOCKED
+  if (user.isBlocked && user.blockedUntil && new Date(user.blockedUntil) > new Date()) {
+    throw createHttpError(403, `You are blocked from registering until ${user.blockedUntil}`);
+  }
+
   if (event.status === "cancelled" || event.status === "completed") {
     throw createHttpError(400, `Cannot RSVP: event is ${event.status}`);
   }
@@ -292,7 +297,10 @@ export const rsvpEvent = async ({ id, user }) => {
     existing.status = "registered";
     existing.registeredAt = new Date();
     await existing.save();
-    await Event.findByIdAndUpdate(event._id, { $inc: { rsvpCount: 1 } });
+    // Increment both rsvpCount and registeredCount
+    await Event.findByIdAndUpdate(event._id, {
+      $inc: { rsvpCount: 1, registeredCount: 1 },
+    });
   } else {
     await RSVP.create({
       eventId: event._id,
@@ -300,8 +308,10 @@ export const rsvpEvent = async ({ id, user }) => {
       status: "registered",
       registeredAt: new Date(),
     });
-    // Increment denormalized counter atomically
-    await Event.findByIdAndUpdate(event._id, { $inc: { rsvpCount: 1 } });
+    // Increment denormalized counters atomically
+    await Event.findByIdAndUpdate(event._id, {
+      $inc: { rsvpCount: 1, registeredCount: 1 },
+    });
   }
 };
 
@@ -602,6 +612,9 @@ export const markAttendance = async ({ id, body, user }) => {
   }
 
   const idSet = new Set(attendeeIds.map(String));
+  const now = new Date();
+
+  // Update RSVP records with attendance tracking
   const result = await RSVP.updateMany(
     {
       eventId: event._id,
@@ -609,9 +622,21 @@ export const markAttendance = async ({ id, body, user }) => {
       status: "registered",
     },
     {
-      $set: { status: "attended" },
+      $set: {
+        status: "attended",
+        "attendance.attended": true,
+        "attendance.attendanceMethod": "manual",
+        "attendance.entryTime": now,
+      },
     }
   );
+
+  // Increment attendedCount on event
+  if (result.modifiedCount > 0) {
+    await Event.findByIdAndUpdate(event._id, {
+      $inc: { attendedCount: result.modifiedCount },
+    });
+  }
 
   const attendees = await loadEventAttendees(event._id);
 

@@ -63,6 +63,34 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // Attendance tracking fields
+    missedEvents: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Event",
+      default: [],
+    },
+
+    warningCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    graceUsed: {
+      type: Boolean,
+      default: false,
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    blockedUntil: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -88,5 +116,6 @@ userSchema.methods.toJSON = function () {
 
 
 userSchema.index({ createdAt: -1 });
+userSchema.index({ isBlocked: 1 });
 
 export default mongoose.model("User", userSchema);

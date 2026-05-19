@@ -15,6 +15,7 @@ import ExternalEvents     from "./features/events/pages/ExternalEvents";
 import CreateExternalEvent from "./features/events/pages/CreateExternalEvent";
 import ExternalEventDetail from "./features/events/pages/ExternalEventDetail";
 import Bookmarks          from "./features/events/pages/Bookmarks";
+import AttendanceManagement from "./features/events/pages/AttendanceManagement";
 import ChatList           from "./features/chat/pages/ChatList";
 import ChatRoom           from "./features/chat/pages/ChatRoom";
 import Profile            from "./features/users/pages/Profile";
@@ -86,6 +87,14 @@ export default function App() {
               element={
                 <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
                   <EditEvent />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/events/:eventId/attendance"
+              element={
+                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                  <AttendanceManagement />
                 </RoleRoute>
               }
             />

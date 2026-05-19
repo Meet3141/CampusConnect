@@ -6,6 +6,36 @@ const rsvpSchema = new mongoose.Schema(
     userId:       { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     status:       { type: String, enum: ["registered", "attended", "cancelled"], default: "registered", required: true },
     registeredAt: { type: Date, default: Date.now },
+
+    // Attendance tracking object
+    attendance: {
+      type: {
+        attended: { type: Boolean, default: false },
+        attendanceType: {
+          type: String,
+          enum: ["rsvp", "onSpot"],
+          default: "rsvp",
+        },
+        attendanceMethod: {
+          type: String,
+          enum: ["qr", "manual", "api"],
+          default: null,
+        },
+        manualOverride: {
+          type: Boolean,
+          default: false,
+        },
+        entryTime: { type: Date, default: null },
+        exitTime: { type: Date, default: null },
+        attendancePercentage: {
+          type: Number,
+          default: null,
+          min: 0,
+          max: 100,
+        },
+      },
+      default: {},
+    },
   },
   { timestamps: true }
 );

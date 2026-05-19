@@ -92,6 +92,43 @@ const eventSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+
+    // Attendance tracking counters
+    registeredCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    attendedCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    noShowCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    onSpotCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // Attendance policy configuration
+    attendancePolicy: {
+      type: {
+        requiresQR: { type: Boolean, default: false },
+        manualCheckIn: { type: Boolean, default: true },
+        gracePeriodMinutes: { type: Number, default: 15 },
+        noShowThreshold: { type: Number, default: 2 },
+        warningLimit: { type: Number, default: 3 },
+      },
+      default: {},
+    },
   },
   { timestamps: true }
 );
