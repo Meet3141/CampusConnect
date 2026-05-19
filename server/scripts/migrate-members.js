@@ -103,6 +103,17 @@ async function run() {
   console.log("   Run the following in mongosh to clean it up after verifying:");
   console.log("   db.clubs.updateMany({}, { $unset: { members: '' } })");
 
+  // Initialize new fields for existing Membership documents (rejectCount, lastRejectedAt, blockedUntil)
+  try {
+    const initRes = await Membership.updateMany(
+      { rejectCount: { $exists: false } },
+      { $set: { rejectCount: 0, lastRejectedAt: null, blockedUntil: null } }
+    );
+    console.log(`✓ Initialized membership fields for ${initRes.matchedCount} documents.`);
+  } catch (err) {
+    console.warn("Could not initialize membership fields:", err.message);
+  }
+
   await mongoose.disconnect();
   console.log("✓ Disconnected.");
 }

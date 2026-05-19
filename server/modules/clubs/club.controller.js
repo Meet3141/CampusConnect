@@ -23,6 +23,10 @@ const parsePagination = (query, defaultLimit = 10, maxLimit = 50) => {
   return { page, limit, skip: (page - 1) * limit };
 };
 
+// Retry/block policy
+const REJECT_THRESHOLD = 3; // number of rejections before temporary block
+const BLOCK_DAYS = 30; // block duration in days
+
 const isOrgAdmin   = (req) => (req.user?.roles || []).includes("orgAdmin");
 const canManageClub = (req, club) => !(!club || !req.user) && (isOrgAdmin(req) || String(club.adminId) === String(req.user.id));
 
@@ -53,8 +57,13 @@ export const getMyClubs = async (req, res) => {
   for (const club of memberClubs) {
     const m = membershipByClubId.get(String(club._id));
     clubsById.set(String(club._id), {
-      ...club, myStatus: m?.status === "approved" ? "active" : (m?.status || "pending"),
-      myClubRole: m?.clubRole || "member", joinedAt: m?.joinedAt || null,
+      ...club,
+      myStatus: m?.status === "approved" ? "active" : (m?.status || "pending"),
+      myClubRole: m?.clubRole || "member",
+      joinedAt: m?.joinedAt || null,
+      // expose reject/block metadata for client-side UI
+      myRejectCount: m?.rejectCount || 0,
+      myBlockedUntil: m?.blockedUntil || null,
     });
   }
   for (const club of ownedClubs) {
@@ -119,6 +128,11 @@ export const joinClub = async (req, res) => {
   const existing = await Membership.findOne({ userId: req.user.id, clubId: club._id });
   const roles = req.user?.roles || [];
 
+  // If the user has an existing membership and is currently blocked, refuse new join attempts
+  if (existing && existing.blockedUntil && existing.blockedUntil > new Date()) {
+    return res.status(403).json({ success: false, message: `You are temporarily blocked from requesting to join this club until ${new Date(existing.blockedUntil).toLocaleDateString()}` });
+  }
+
   if (roles.includes("orgAdmin") || roles.includes("editor")) {
     const autoApprovedRole = roles.includes("orgAdmin") ? "org admin" : "editor";
     if (existing?.status === "approved") return res.status(400).json({ success: false, message: "Already a member" });
@@ -139,6 +153,7 @@ export const joinClub = async (req, res) => {
 
   if (existing?.status === "approved") return res.status(400).json({ success: false, message: "Already a member" });
   if (existing) {
+    // reset status to pending to allow retry (unless blocked above)
     Object.assign(existing, { status: "pending", clubRole: "member", coordinatorCategory: "none", updatedAt: new Date() });
     await existing.save();
   } else {
@@ -190,6 +205,10 @@ export const approveMember = async (req, res) => {
   if (!membership) return res.status(404).json({ success: false, message: "Membership not found" });
   const wasApproved = membership.status === "approved";
   Object.assign(membership, { status: "approved", approvedBy: req.user.id, approvedAt: new Date(), updatedAt: new Date() });
+  // reset rejection counters / blocks on successful approval
+  membership.rejectCount = 0;
+  membership.lastRejectedAt = null;
+  membership.blockedUntil = null;
   await membership.save();
   if (!wasApproved) { await Club.findByIdAndUpdate(club._id, { $inc: { memberCount: 1 } }); invalidate(`club:${club._id}`); }
   res.json({ success: true, data: membership, message: "Member approved" });
@@ -203,7 +222,21 @@ export const rejectMember = async (req, res) => {
   const membership = await Membership.findOne({ userId: targetUserId, clubId: club._id });
   if (!membership) return res.status(404).json({ success: false, message: "Membership not found" });
   const wasApproved = membership.status === "approved";
-  Object.assign(membership, { status: "rejected", clubRole: "member", coordinatorCategory: "none", updatedAt: new Date() });
+  // increment reject counters and set block if threshold reached
+  const prevRejects = membership.rejectCount || 0;
+  const nextRejects = prevRejects + 1;
+  membership.rejectCount = nextRejects;
+  membership.lastRejectedAt = new Date();
+  membership.status = "rejected";
+  membership.clubRole = "member";
+  membership.coordinatorCategory = "none";
+  membership.updatedAt = new Date();
+
+  if (nextRejects >= REJECT_THRESHOLD) {
+    const blockedUntil = new Date(Date.now() + BLOCK_DAYS * 24 * 60 * 60 * 1000);
+    membership.blockedUntil = blockedUntil;
+  }
+
   await membership.save();
   if (wasApproved) {
     await Club.findByIdAndUpdate(club._id,
@@ -212,7 +245,9 @@ export const rejectMember = async (req, res) => {
     );
     invalidate(`club:${club._id}`);
   }
-  res.json({ success: true, data: membership, message: "Member rejected" });
+  const resp = { success: true, data: membership, message: "Member rejected" };
+  if (membership.blockedUntil) resp.message = `Member rejected. User is blocked from reapplying until ${new Date(membership.blockedUntil).toLocaleDateString()}`;
+  res.json(resp);
 };
 
 export const assignCoordinator = async (req, res) => {

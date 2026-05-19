@@ -10,8 +10,12 @@ const membershipSchema = new mongoose.Schema(
     approvedAt: Date,
     clubRole:   { type: String, enum: ["member", "coordinator"], default: "member" },
     coordinatorCategory: { type: String, enum: ["event", "content", "technical", "none"], default: "none" },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
+      // Rejection / blocking fields
+      rejectCount: { type: Number, default: 0 },
+      lastRejectedAt: Date,
+      blockedUntil: Date,
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

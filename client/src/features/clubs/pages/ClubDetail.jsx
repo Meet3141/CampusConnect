@@ -100,6 +100,8 @@ export default function ClubDetail() {
   );
   const myStatus = myMembership?.status;
   const isApprovedMember = myStatus === "approved" || myStatus === "active";
+  const isBlocked = myMembership?.blockedUntil && new Date(myMembership.blockedUntil) > new Date();
+  const blockedUntilStr = isBlocked ? new Date(myMembership.blockedUntil).toLocaleDateString() : null;
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -471,13 +473,22 @@ export default function ClubDetail() {
             {/* Action buttons */}
             <div className="flex flex-col gap-2 shrink-0">
               {/* A5: Not a member AND not the club admin (admin is not in members array) */}
-              {!myStatus && user && !isClubAdmin && (
+              {!myStatus && user && !isClubAdmin && !isBlocked && (
                 <button
                   onClick={handleJoin}
                   disabled={actionLoading}
                   className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
                   {actionLoading ? "Requesting…" : "Request to Join"}
+                </button>
+              )}
+              {isBlocked && (
+                <button
+                  disabled
+                  className="px-5 py-2.5 bg-red-900/20 border border-red-800 text-red-300 rounded-xl text-sm transition-colors whitespace-nowrap cursor-not-allowed"
+                  title={`Blocked until ${blockedUntilStr}`}
+                >
+                  Blocked until {blockedUntilStr}
                 </button>
               )}
               {!user && (

@@ -55,7 +55,11 @@ export default function ClubList() {
         const res = await listMyClubs();
         const map = {};
         (res.data.data || []).forEach((club) => {
-          map[club._id] = club.myStatus || "active";
+          map[club._id] = {
+            status: club.myStatus || "active",
+            blockedUntil: club.myBlockedUntil || null,
+            rejectCount: club.myRejectCount || 0,
+          };
         });
         setMyClubStatus(map);
       } catch (err) {
@@ -309,17 +313,17 @@ export default function ClubList() {
 /* ─────────────────────────────────────────────
    Club Card
 ───────────────────────────────────────────── */
-function ClubCard({ club, index, myStatus, joining, onOpen, onJoin, isOrgAdmin }) {
+  function ClubCard({ club, index, myStatus, joining, onOpen, onJoin, isOrgAdmin }) {
   const meta = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
-
   // If the current viewer is an org admin, show an Org Admin badge instead of Member
+  const statusStr = myStatus?.status || myStatus || null;
   const statusBadge = isOrgAdmin
     ? { label: "Org Admin", cls: "bg-red-950 text-red-300 border-red-800" }
     : {
         active:   { label: "Member",  cls: "bg-emerald-950 text-emerald-300 border-emerald-700" },
         pending:  { label: "Pending", cls: "bg-yellow-950 text-yellow-300 border-yellow-700"   },
         rejected: { label: "Rejected",cls: "bg-red-950 text-red-400 border-red-800"            },
-      }[myStatus];
+      }[statusStr];
 
   return (
     <div
@@ -369,14 +373,23 @@ function ClubCard({ club, index, myStatus, joining, onOpen, onJoin, isOrgAdmin }
           </span>
 
           <div className="flex items-center gap-2">
-            {/* Show Join only if user has no membership status */}
-            {!myStatus && (
+            {/* Show Join only if user has no membership status and is not blocked */}
+            {!statusStr && !myStatus?.blockedUntil && (
               <button
                 onClick={onJoin}
                 disabled={joining}
                 className="text-[11px] px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 hover:border-indigo-500 text-indigo-300 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed font-medium"
               >
                 {joining ? "…" : "Join"}
+              </button>
+            )}
+            {myStatus?.blockedUntil && new Date(myStatus.blockedUntil) > new Date() && (
+              <button
+                disabled
+                title={`Blocked until ${new Date(myStatus.blockedUntil).toLocaleDateString()}`}
+                className="text-[11px] px-3 py-1.5 rounded-lg bg-red-900/20 border border-red-800 text-red-300 font-medium cursor-not-allowed"
+              >
+                Blocked until {new Date(myStatus.blockedUntil).toLocaleDateString()}
               </button>
             )}
             <button
