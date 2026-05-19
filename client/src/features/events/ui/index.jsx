@@ -22,13 +22,18 @@ export function InfoRow({ label, value }) {
 
 export function EventCard({ ev, onClick }) {
   const accent = CATEGORY_ACCENT[ev._clubCategory] || CATEGORY_ACCENT.other;
-  const dateStr = ev.date
-    ? new Date(ev.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-    : "—";
-  const timeStr = ev.date
-    ? new Date(ev.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+  // Robust date handling: prefer `ev.date`, fallback to `ev.createdAt`, otherwise show placeholder
+  const dateObj = ev.date ? new Date(ev.date) : ev.createdAt ? new Date(ev.createdAt) : null;
+  const endObj = ev.endDate ? new Date(ev.endDate) : null;
+  const isValidDate = (d) => d instanceof Date && !Number.isNaN(d.getTime());
+
+  const dateStr = isValidDate(dateObj)
+    ? dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+    : "Date not set";
+  const timeStr = isValidDate(dateObj)
+    ? dateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
     : "";
-  const durationMs = ev.date && ev.endDate ? new Date(ev.endDate).getTime() - new Date(ev.date).getTime() : 0;
+  const durationMs = isValidDate(dateObj) && isValidDate(endObj) ? endObj.getTime() - dateObj.getTime() : 0;
   const durationLabel = durationMs > 0
     ? `${Math.floor(durationMs / 3600000)}h ${Math.round((durationMs % 3600000) / 60000)}m`.replace(/^0h\s/, "")
     : "";
@@ -52,7 +57,11 @@ export function EventCard({ ev, onClick }) {
       <div className="space-y-1">
         <p className="text-slate-500 text-[11px] flex items-center gap-1.5">
           <span>📅</span>
-          <span>{dateStr}{timeStr ? ` · ${timeStr}` : ""}{durationLabel ? ` · ${durationLabel}` : ""}</span>
+          <span>
+            {ev.status === "completed" && isValidDate(endObj)
+              ? `Completed on ${endObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}${endObj ? ` · ${endObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}` : ""}${durationLabel ? ` · ${durationLabel}` : ""}`
+              : `${dateStr}${timeStr ? ` · ${timeStr}` : ""}${durationLabel ? ` · ${durationLabel}` : ""}`}
+          </span>
         </p>
         {ev.venue && (
           <p className="text-slate-500 text-[11px] flex items-center gap-1.5">

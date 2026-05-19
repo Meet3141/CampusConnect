@@ -248,13 +248,18 @@ export default function EventDetail() {
   }
 
   const cat = catOf(event.category);
-  const d = new Date(event.date);
-  const end = event.endDate ? new Date(event.endDate) : null;
-  const dateStr = d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-  const timeStr = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const parseDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+  const d = parseDate(event.date) || parseDate(event.createdAt);
+  const end = parseDate(event.endDate);
+  const dateStr = d ? d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "Date not set";
+  const timeStr = d ? d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "";
   const endDateStr = end ? end.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "";
   const endTimeStr = end ? end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "";
-  const durationMs = end ? end.getTime() - d.getTime() : 0;
+  const durationMs = (d && end) ? Math.max(0, end.getTime() - d.getTime()) : 0;
 
   return (
     <div className="text-white">

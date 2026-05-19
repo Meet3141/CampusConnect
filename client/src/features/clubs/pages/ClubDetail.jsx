@@ -51,6 +51,13 @@ const formatDuration = (ms) => {
   return `${minutes}m`;
 };
 
+// Return true only when value can be parsed into a valid Date
+function isValidDate(val) {
+  if (!val) return false;
+  const d = new Date(val);
+  return !Number.isNaN(d.getTime());
+}
+
 // Base tabs — Announcements is injected only for members/coordinators/admins
 const BASE_TABS = ["Overview", "Members", "Events"];
 
@@ -582,29 +589,33 @@ export default function ClubDetail() {
               {events.length > 0 && (
                 <Panel title="Upcoming Events">
                   <div className="space-y-2">
-                    {events.slice(0, 4).map((ev) => (
-                      <div
-                        key={ev._id}
-                        onClick={() => navigate(`/events/${ev._id}`)}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-white">{ev.title}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            📅{" "}
-                            {new Date(ev.date).toLocaleDateString("en-US", {
-                              month: "short", day: "numeric", year: "numeric",
-                            })}
-                            {"  "}·{"  "}🕐 {new Date(ev.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                            {ev.endDate && new Date(ev.endDate) > new Date(ev.date) && (
-                              <> {"  "}·{"  "}⏳ {formatDuration(new Date(ev.endDate) - new Date(ev.date))}</>
-                            )}
-                            {"  "}·{"  "}📍 {ev.venue}
-                          </p>
+                    {events.slice(0, 4).map((ev) => {
+                      const dateObj = isValidDate(ev.date) ? new Date(ev.date) : isValidDate(ev.createdAt) ? new Date(ev.createdAt) : null;
+                      const endObj = isValidDate(ev.endDate) ? new Date(ev.endDate) : null;
+                      return (
+                        <div
+                          key={ev._id}
+                          onClick={() => navigate(`/events/${ev._id}`)}
+                          className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-white">{ev.title}</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              📅{' '}
+                              {dateObj
+                                ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                : 'Date not set'}
+                              {'  '}·{'  '}🕐 {dateObj ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                              {endObj && dateObj && endObj > dateObj && (
+                                <> {'  '}·{'  '}⏳ {formatDuration(endObj - dateObj)}</>
+                              )}
+                              {'  '}·{'  '}📍 {ev.venue}
+                            </p>
+                          </div>
+                          <span className="text-slate-600 text-sm">→</span>
                         </div>
-                        <span className="text-slate-600 text-sm">→</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {events.length > 4 && (
                       <button
                         onClick={() => setTab("Events")}
@@ -770,9 +781,16 @@ export default function ClubDetail() {
                     <h3 className="font-semibold text-white text-sm group-hover:text-indigo-300 transition-colors line-clamp-2">
                       {ev.title}
                     </h3>
-                    <p className="text-slate-500 text-[11px] mt-2">
-                      📅 {new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                    </p>
+                    {
+                      (() => {
+                        const dateObj = isValidDate(ev.date) ? new Date(ev.date) : isValidDate(ev.createdAt) ? new Date(ev.createdAt) : null;
+                        return (
+                          <p className="text-slate-500 text-[11px] mt-2">
+                            📅 {dateObj ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'Date not set'}
+                          </p>
+                        );
+                      })()
+                    }
                     <p className="text-slate-500 text-[11px] mt-0.5">📍 {ev.venue}</p>
                     {/* Publish button for admin on draft events */}
                     {isClubAdmin && ["draft", "pending_approval"].includes(ev.status) && (

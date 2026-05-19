@@ -155,9 +155,13 @@ export default function Bookmarks() {
             {filtered.map((bk) => {
               const ev  = bk.event;
               const cat = catOf(ev?.category);
-              const dateLabel = ev?.date
-                ? new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                : "";
+              const parseDate = (val) => {
+                if (!val) return null;
+                const d = new Date(val);
+                return Number.isNaN(d.getTime()) ? null : d;
+              };
+              const dateObj = parseDate(ev?.date) || parseDate(ev?.createdAt);
+              const dateLabel = dateObj ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 
               return (
                 <div key={bk._id}

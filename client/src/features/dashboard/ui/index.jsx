@@ -112,9 +112,15 @@ export function ClubMiniCard({ club, onClick }) {
 }
 
 export function EventRow({ event, last, onClick }) {
-  const d   = new Date(event.date);
-  const day = d.getDate();
-  const mon = d.toLocaleDateString("en-US", { month: "short" });
+  const parseDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+
+  const d = parseDate(event.date) || parseDate(event.createdAt);
+  const day = d ? d.getDate() : "—";
+  const mon = d ? d.toLocaleDateString("en-US", { month: "short" }) : "";
   const cat = event?.category || {};
 
   return (
@@ -181,9 +187,13 @@ export function BookmarkRow({ bookmark, last }) {
   const title = ev?.title || "Untitled";
   const cat   = ev?.category || {};
   const isExt = bookmark.eventType === "external";
-  const dateLabel = ev?.date
-    ? new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    : "";
+  const parseDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+  const dateObj = parseDate(ev?.date) || parseDate(ev?.createdAt);
+  const dateLabel = dateObj ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
 
   return (
     <div className={`${styles.bookmarkRow} ${!last ? "border-b border-cc-soft" : ""}`}>
