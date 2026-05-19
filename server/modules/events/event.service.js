@@ -85,6 +85,7 @@ export const createEvent = async ({ body, user }) => {
     showOnVolunteerHub,
     volunteerLimit,
     volunteerSkillsNeeded,
+    endDate,
   } = body;
 
   const club = await Club.findById(clubId);
@@ -109,12 +110,17 @@ export const createEvent = async ({ body, user }) => {
 
   const initialStatus = isOrgAdmin || isClubAdmin ? "upcoming" : "draft";
 
+  if (endDate && new Date(endDate) <= new Date(date)) {
+    throw createHttpError(400, "End time must be after start time");
+  }
+
   const event = await Event.create({
     title,
     description,
     clubId,
     category,
     date,
+    endDate: endDate || null,
     venue,
     maxAttendees: maxAttendees || null,
     image: image || null,
@@ -201,6 +207,7 @@ export const updateEvent = async ({ id, body, user }) => {
     "title",
     "description",
     "date",
+    "endDate",
     "venue",
     "maxAttendees",
     "image",
@@ -218,6 +225,14 @@ export const updateEvent = async ({ id, body, user }) => {
 
   if (!isAdminLevel && body.submitForApproval) {
     event.status = "pending_approval";
+  }
+
+  if (body.endDate !== undefined) {
+    const nextEndDate = body.endDate ? new Date(body.endDate) : null;
+    if (nextEndDate && new Date(event.date) >= nextEndDate) {
+      throw createHttpError(400, "End time must be after start time");
+    }
+    event.endDate = nextEndDate;
   }
 
   event.updatedAt = Date.now();

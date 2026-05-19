@@ -4,7 +4,7 @@
 *
  * API:
 *   GET /api/events/:id  → { success, data: Event }  (event.createdBy = raw ObjectId)
-*   PUT /api/events/:id  body: { title?, description?, date?, venue?, maxAttendees?,
+*   PUT /api/events/:id  body: { title?, description?, date?, endDate?, venue?, maxAttendees?,
 *                                image?, category?, volunteer fields? }
 *                        → { success, data: Event }
 *
@@ -33,6 +33,15 @@ const toDatetimeLocal = (iso) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const formatDuration = (ms) => {
+  if (!ms || ms <= 0) return "0m";
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
 export default function EditEvent() {
   const { id }   = useParams();
   const { user } = useAuth();
@@ -43,7 +52,7 @@ export default function EditEvent() {
   const [fetchErr, setFetchErr] = useState("");
 
   const [form, setForm] = useState({
-    title: "", description: "", category: "", date: "",
+    title: "", description: "", category: "", date: "", endDate: "",
     venue: "", maxAttendees: "", image: "",
     showOnVolunteerHub: false, volunteerLimit: "", volunteerSkillsNeeded: "",
   });
@@ -64,6 +73,7 @@ export default function EditEvent() {
           description: ev.description || "",
           category:    ev.category    || "",
           date:        toDatetimeLocal(ev.date),
+          endDate:     toDatetimeLocal(ev.endDate),
           venue:       ev.venue       || "",
           maxAttendees: ev.maxAttendees ? String(ev.maxAttendees) : "",
           image:       ev.image       || "",
@@ -101,6 +111,7 @@ export default function EditEvent() {
       e.description = "Description must be at least 10 characters.";
     if (!form.category) e.category = "Please select a category.";
     if (!form.date)     e.date = "Please select a date.";
+    if (form.endDate && new Date(form.endDate) <= new Date(form.date)) e.endDate = "End time must be after start time.";
     if (!form.venue.trim()) e.venue = "Venue is required.";
     return e;
   };
@@ -118,6 +129,7 @@ export default function EditEvent() {
         description: form.description.trim(),
         category:    form.category,
         date:        form.date,
+        endDate:     form.endDate || null,
         venue:       form.venue.trim(),
         showOnVolunteerHub: form.showOnVolunteerHub,
       };
@@ -181,7 +193,7 @@ export default function EditEvent() {
   return (
     <div className="text-white">
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]">
+      <div className="relative overflow-hidden border-b border-white/6">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-32 right-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
         </div>
@@ -193,7 +205,7 @@ export default function EditEvent() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 Edit{" "}
-                <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
                   Event
                 </span>
               </h1>
@@ -202,7 +214,7 @@ export default function EditEvent() {
               </p>
             </div>
             <button onClick={() => navigate(`/events/${id}`)}
-              className="shrink-0 px-4 py-2 border border-white/[0.08] hover:border-white/[0.15] text-slate-400 hover:text-white rounded-xl text-sm transition-all">
+              className="shrink-0 px-4 py-2 border border-white/8 hover:border-white/15 text-slate-400 hover:text-white rounded-xl text-sm transition-all">
               ← Back to Event
             </button>
           </div>
@@ -232,7 +244,7 @@ export default function EditEvent() {
                     className={`p-3 rounded-xl border text-left transition-all ${
                       sel
                         ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15]"
+                        : "bg-white/2 border-white/7 hover:border-white/15"
                     }`}>
                     <div className="text-xl mb-1">{m.emoji}</div>
                     <div className="text-xs font-medium text-white capitalize">{cat}</div>
@@ -255,6 +267,24 @@ export default function EditEvent() {
                 placeholder="e.g. Hall A, Block 3"
                 className={inputCls(!!fieldErrors.venue)} />
             </FormField>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="End Date & Time" error={fieldErrors.endDate}>
+              <input
+                type="datetime-local"
+                value={form.endDate}
+                onChange={(e) => set("endDate", e.target.value)}
+                className={inputCls(!!fieldErrors.endDate)}
+              />
+            </FormField>
+            <div className="flex items-end">
+              {form.date && form.endDate && new Date(form.endDate) > new Date(form.date) && (
+                <div className="rounded-xl border border-white/7 bg-white/2 px-4 py-3 text-sm text-slate-300 w-full">
+                  Duration: <span className="text-white font-medium">{formatDuration(new Date(form.endDate) - new Date(form.date))}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -282,7 +312,7 @@ export default function EditEvent() {
           </div>
 
           {/* Volunteer Settings */}
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-4">
+          <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
             <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">
               Volunteer Settings
             </p>
@@ -291,7 +321,7 @@ export default function EditEvent() {
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={form.showOnVolunteerHub}
                   onChange={(e) => set("showOnVolunteerHub", e.target.checked)}
-                  className="w-5 h-5 rounded border-white/[0.2] bg-white/[0.05] accent-indigo-500" />
+                  className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
                 <span className="text-sm font-medium text-slate-300">Show on Volunteer Hub</span>
               </label>
               <p className="text-xs text-slate-500 mt-1.5 ml-8">
@@ -330,7 +360,7 @@ export default function EditEvent() {
 
           <div className="flex gap-3">
             <button type="button" onClick={() => navigate(`/events/${id}`)}
-              className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-sm transition-all">
+              className="flex-1 py-3 border border-white/10 hover:border-white/18 text-slate-400 hover:text-white rounded-xl text-sm transition-all">
               Cancel
             </button>
             <button type="submit" disabled={saving || saved}

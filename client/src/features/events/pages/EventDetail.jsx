@@ -45,6 +45,15 @@ const STATUS_BADGE = {
   cancelled: "bg-red-950 text-red-400 border-red-900",
 };
 
+const formatDuration = (ms) => {
+  if (!ms || ms <= 0) return "0m";
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
 export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -78,7 +87,10 @@ export default function EventDetail() {
     !isEditor &&
     !isEventCreator &&
     !isClubAdminOfEvent &&
-    !isVolunteer;
+    !isVolunteer &&
+    // do not show direct apply button to regular members; they should use Volunteer Hub
+    !user?.roles?.includes("member");
+
 
   const handleRsvp = async () => {
     setActionLoading(true);
@@ -237,14 +249,18 @@ export default function EventDetail() {
 
   const cat = catOf(event.category);
   const d = new Date(event.date);
+  const end = event.endDate ? new Date(event.endDate) : null;
   const dateStr = d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
   const timeStr = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const endDateStr = end ? end.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "";
+  const endTimeStr = end ? end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "";
+  const durationMs = end ? end.getTime() - d.getTime() : 0;
 
   return (
     <div className="text-white">
       {/* Hero */}
       <div className="relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-b ${cat.bg} to-transparent`} />
+        <div className={`absolute inset-0 bg-linear-to-b ${cat.bg} to-transparent`} />
         {event.image && (
           <img src={event.image} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-[0.08]" />
         )}
@@ -255,7 +271,7 @@ export default function EventDetail() {
           </button>
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/[0.07] ring-1 ring-white/[0.1] flex items-center justify-center text-3xl sm:text-4xl shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/7 ring-1 ring-white/10 flex items-center justify-center text-3xl sm:text-4xl shrink-0">
               {cat.emoji}
             </div>
 
@@ -283,6 +299,7 @@ export default function EventDetail() {
               <div className="flex flex-wrap gap-6 mt-4 text-sm text-slate-400">
                 <span>📅 {dateStr}</span>
                 <span>🕐 {timeStr}</span>
+                {end && durationMs > 0 && <span>⏳ {formatDuration(durationMs)}</span>}
                 <span>📍 {event.venue}</span>
                 {event.maxAttendees && <span>👥 {registeredCount}/{event.maxAttendees} spots</span>}
               </div>
@@ -330,7 +347,7 @@ export default function EventDetail() {
                     </button>
                   )}
                   <button onClick={toggleBookmark}
-                    className="px-5 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-sm transition-all whitespace-nowrap">
+                    className="px-5 py-2.5 bg-white/4 border border-white/8 hover:border-white/15 rounded-xl text-sm transition-all whitespace-nowrap">
                     {bookmarkId ? "🔖 Bookmarked" : "🔖 Bookmark"}
                   </button>
                 </>
@@ -351,7 +368,7 @@ export default function EventDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Description */}
           <div className="lg:col-span-2">
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+            <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
               <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">About this event</h3>
               <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
             </div>
@@ -359,11 +376,18 @@ export default function EventDetail() {
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+            <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
               <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">Details</h3>
               <dl className="space-y-3 text-sm">
                 <InfoRow label="Date" value={dateStr} />
                 <InfoRow label="Time" value={timeStr} />
+                {end && (
+                  <>
+                    <InfoRow label="End Date" value={endDateStr} />
+                    <InfoRow label="End Time" value={endTimeStr} />
+                    {durationMs > 0 && <InfoRow label="Duration" value={formatDuration(durationMs)} />}
+                  </>
+                )}
                 <InfoRow label="Venue" value={event.venue} />
                 <InfoRow label="Category" value={event.category?.charAt(0).toUpperCase() + event.category?.slice(1)} />
                 <InfoRow label="Status" value={event.status?.charAt(0).toUpperCase() + event.status?.slice(1)} />
@@ -373,7 +397,7 @@ export default function EventDetail() {
 
             {/* Attendees preview */}
             {attendees.filter((a) => a.status === "registered").length > 0 && (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+              <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
                 <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
                   Attendees ({registeredCount})
                 </h3>
@@ -385,7 +409,7 @@ export default function EventDetail() {
                     </div>
                   ))}
                   {registeredCount > 12 && (
-                    <div className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-slate-500">
+                    <div className="w-8 h-8 rounded-full bg-white/6 flex items-center justify-center text-[10px] text-slate-500">
                       +{registeredCount - 12}
                     </div>
                   )}

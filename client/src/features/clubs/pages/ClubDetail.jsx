@@ -42,6 +42,15 @@ import {
   removeCoordinator,
 } from "../api";
 
+const formatDuration = (ms) => {
+  if (!ms || ms <= 0) return "";
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
 // Base tabs — Announcements is injected only for members/coordinators/admins
 const BASE_TABS = ["Overview", "Members", "Events"];
 
@@ -134,7 +143,7 @@ export default function ClubDetail() {
       finally { setAnnLoading(false); }
     };
     loadAnn();
-  }, [tab, id, user]);
+  }, [tab, id, user, toast]);
 
   /* ── Join ── */
   const handleJoin = async () => {
@@ -401,7 +410,7 @@ export default function ClubDetail() {
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-b ${meta.heroBg} to-transparent`} />
+        <div className={`absolute inset-0 bg-linear-to-b ${meta.heroBg} to-transparent`} />
         {club.coverImage && (
           <img
             src={club.coverImage}
@@ -493,7 +502,7 @@ export default function ClubDetail() {
               {isClubAdmin && (
                 <button
                   onClick={() => navigate(`/clubs/${id}/edit`)}
-                  className="px-5 py-2.5 bg-white/[0.07] hover:bg-white/[0.12] rounded-xl text-sm text-white transition-colors whitespace-nowrap"
+                  className="px-5 py-2.5 bg-white/7 hover:bg-white/12 rounded-xl text-sm text-white transition-colors whitespace-nowrap"
                 >
                   ⚙ Manage
                 </button>
@@ -566,7 +575,7 @@ export default function ClubDetail() {
                       <div
                         key={ev._id}
                         onClick={() => navigate(`/events/${ev._id}`)}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] cursor-pointer transition-colors"
+                        className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
                       >
                         <div>
                           <p className="text-sm font-medium text-white">{ev.title}</p>
@@ -575,6 +584,10 @@ export default function ClubDetail() {
                             {new Date(ev.date).toLocaleDateString("en-US", {
                               month: "short", day: "numeric", year: "numeric",
                             })}
+                            {"  "}·{"  "}🕐 {new Date(ev.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                            {ev.endDate && new Date(ev.endDate) > new Date(ev.date) && (
+                              <> {"  "}·{"  "}⏳ {formatDuration(new Date(ev.endDate) - new Date(ev.date))}</>
+                            )}
                             {"  "}·{"  "}📍 {ev.venue}
                           </p>
                         </div>
@@ -626,7 +639,7 @@ export default function ClubDetail() {
                       </div>
                     ))}
                     {activeMembers.length > 9 && (
-                      <div className="w-8 h-8 rounded-full bg-white/[0.06] ring-1 ring-white/[0.08] flex items-center justify-center text-[10px] text-slate-500">
+                      <div className="w-8 h-8 rounded-full bg-white/6 ring-1 ring-white/8 flex items-center justify-center text-[10px] text-slate-500">
                         +{activeMembers.length - 9}
                       </div>
                     )}
@@ -729,7 +742,7 @@ export default function ClubDetail() {
                   <div
                     key={ev._id}
                     onClick={() => navigate(`/events/${ev._id}`)}
-                    className="group rounded-2xl border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] p-5 cursor-pointer transition-all"
+                    className="group rounded-2xl border border-white/7 bg-white/2 hover:bg-white/5 hover:border-white/14 p-5 cursor-pointer transition-all"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border font-medium ${
@@ -737,7 +750,7 @@ export default function ClubDetail() {
                         : ev.status === "draft"         ? "bg-slate-900 text-slate-400 border-slate-700"
                         : ev.status === "pending_approval" ? "bg-yellow-950 text-yellow-400 border-yellow-800"
                         : ev.status === "ongoing"       ? "bg-emerald-950 text-emerald-300 border-emerald-800"
-                        : ev.status === "completed"     ? "bg-white/[0.04] text-slate-500 border-white/[0.06]"
+                        : ev.status === "completed"     ? "bg-white/4 text-slate-500 border-white/6"
                         : "bg-red-950 text-red-400 border-red-900"
                       }`}>
                         {ev.status === "pending_approval" ? "Pending Approval" : ev.status}
@@ -785,14 +798,14 @@ export default function ClubDetail() {
 
             {/* Compose form */}
             {showAnnForm && (
-              <form onSubmit={handlePostAnnouncement} className="rounded-2xl border border-white/[0.1] bg-white/[0.03] p-5 space-y-3">
+              <form onSubmit={handlePostAnnouncement} className="rounded-2xl border border-white/10 bg-white/3 p-5 space-y-3">
                 <input
                   required
                   maxLength={120}
                   placeholder="Title…"
                   value={annForm.title}
                   onChange={(e) => setAnnForm((f) => ({ ...f, title: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-600/50"
+                  className="w-full px-4 py-2.5 text-sm bg-white/4 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-600/50"
                 />
                 <textarea
                   required
@@ -801,13 +814,13 @@ export default function ClubDetail() {
                   placeholder="Write your announcement…"
                   value={annForm.body}
                   onChange={(e) => setAnnForm((f) => ({ ...f, body: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-600/50"
+                  className="w-full px-4 py-2.5 text-sm bg-white/4 border border-white/10 rounded-xl text-white placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-600/50"
                 />
                 <div className="flex items-center gap-3">
                   <select
                     value={annForm.tag}
                     onChange={(e) => setAnnForm((f) => ({ ...f, tag: e.target.value }))}
-                    className="px-3 py-2 text-xs bg-white/[0.04] border border-white/[0.08] rounded-xl text-slate-400 focus:outline-none"
+                    className="px-3 py-2 text-xs bg-white/4 border border-white/8 rounded-xl text-slate-400 focus:outline-none"
                   >
                     <option value="general">📌 General</option>
                     <option value="event">📅 Event</option>
@@ -853,7 +866,7 @@ export default function ClubDetail() {
                       className={`rounded-2xl border p-5 ${
                         ann.pinned
                           ? "border-amber-700/50 bg-amber-950/20"
-                          : "border-white/[0.07] bg-white/[0.02]"
+                          : "border-white/7 bg-white/2"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
@@ -892,7 +905,7 @@ export default function ClubDetail() {
     {/* ── COORDINATOR PROMOTE MODAL ── */}
     {promotingMember && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div className="w-full max-w-sm bg-[#111] border border-white/[0.1] rounded-2xl shadow-2xl">
+        <div className="w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07]">
             <h2 className="text-sm font-bold text-white">Assign Coordinator</h2>
             <button onClick={() => setPromotingMember(null)} className="text-slate-600 hover:text-white text-xl leading-none">×</button>
@@ -908,7 +921,7 @@ export default function ClubDetail() {
               <button
                 type="button"
                 onClick={() => setCoordDropOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-sm bg-[#1a1a2a] border border-white/[0.12] rounded-xl text-white hover:border-indigo-600/50 transition-colors focus:outline-none focus:border-indigo-600/50"
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm bg-[#1a1a2a] border border-white/12 rounded-xl text-white hover:border-indigo-600/50 transition-colors focus:outline-none focus:border-indigo-600/50"
               >
                 <span>
                   {coordCategory === "none"      && "None (general)"}
@@ -923,7 +936,7 @@ export default function ClubDetail() {
 
               {/* Dropdown options */}
               {coordDropOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-10 rounded-xl border border-white/[0.12] bg-[#1a1a2a] shadow-2xl overflow-hidden">
+                <div className="absolute left-0 right-0 top-full mt-1 z-10 rounded-xl border border-white/12 bg-[#1a1a2a] shadow-2xl overflow-hidden">
                   {[
                     { value: "none",      label: "None (general)",        icon: "🌐" },
                     { value: "event",     label: "Event Coordinator",     icon: "📅" },
@@ -937,7 +950,7 @@ export default function ClubDetail() {
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
                         coordCategory === opt.value
                           ? "bg-indigo-600/20 text-indigo-300"
-                          : "text-slate-300 hover:bg-white/[0.05]"
+                          : "text-slate-300 hover:bg-white/5"
                       }`}
                     >
                       <span className="text-base">{opt.icon}</span>
@@ -952,7 +965,7 @@ export default function ClubDetail() {
                 </div>
               )}
             </div>
-            <div className="text-[11px] text-slate-600 bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 space-y-1">
+            <div className="text-[11px] text-slate-600 bg-white/3 border border-white/6 rounded-lg px-4 py-3 space-y-1">
               <p>✓ Can create draft events, edit details, manage registrations</p>
               <p>✓ Can mark attendance and post announcements</p>
               <p>✗ Cannot publish events or remove members</p>
@@ -960,7 +973,7 @@ export default function ClubDetail() {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setPromotingMember(null)}
-                className="flex-1 py-2.5 border border-white/[0.1] text-slate-400 rounded-xl text-sm hover:border-white/[0.2] transition-colors"
+                className="flex-1 py-2.5 border border-white/10 text-slate-400 rounded-xl text-sm hover:border-white/20 transition-colors"
               >
                 Cancel
               </button>
@@ -1039,7 +1052,7 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
   };
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.10] transition-colors group">
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/10 transition-colors group">
       {/* Left — clickable profile area */}
       <button
         onClick={onViewProfile}

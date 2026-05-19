@@ -38,6 +38,11 @@ const eventSchema = new mongoose.Schema(
       },
     },
 
+    endDate: {
+      type: Date,
+      default: null,
+    },
+
     venue: {
       type: String,
       required: [true, "Event venue is required"],

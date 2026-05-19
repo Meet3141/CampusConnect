@@ -19,6 +19,16 @@ import { useToast } from "../../../context/ToastContext";
 import { EVENT_CATEGORIES, EVENT_CATEGORY_META } from "../../../theme";
 import { createEvent as createEventApi } from "../api";
 
+// Helper: format duration in ms to human readable string
+const formatDuration = (ms) => {
+  if (!ms || ms <= 0) return "0m";
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -31,7 +41,7 @@ export default function CreateEvent() {
   const [clubs, setClubs] = useState([]);
   const [form, setForm] = useState({
     title: "", description: "", clubId: preClubId, category: "",
-    date: "", venue: "", maxAttendees: "", image: "",
+    date: "", endDate: "", venue: "", maxAttendees: "", image: "",
     // Volunteer programme
     showOnVolunteerHub: false,
     volunteerLimit: "",
@@ -71,6 +81,8 @@ export default function CreateEvent() {
     if (!form.clubId) e.clubId = "Please select a club.";
     if (!form.category) e.category = "Please select a category.";
     if (!form.date) e.date = "Please select a date.";
+    if (form.endDate && !form.date) e.endDate = "Set start date before end date.";
+    if (form.endDate && new Date(form.endDate) <= new Date(form.date)) e.endDate = "End time must be after start time.";
     if (form.date && new Date(form.date) <= new Date()) e.date = "Date must be in the future.";
     if (!form.venue.trim()) e.venue = "Venue is required.";
     if (form.showOnVolunteerHub && !form.volunteerLimit) e.volunteerLimit = "Set a volunteer limit when listing on Volunteer Hub.";
@@ -91,6 +103,7 @@ export default function CreateEvent() {
         clubId:      form.clubId,
         category:    form.category,
         date:        form.date,
+        endDate:     form.endDate || null,
         venue:       form.venue.trim(),
         showOnVolunteerHub: form.showOnVolunteerHub,
       };
@@ -136,7 +149,7 @@ export default function CreateEvent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">
             Create an{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Event</span>
+            <span className="bg-linear-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Event</span>
           </h1>
           <p className="text-cc-muted text-sm mt-2">Plan and schedule a new event for your club.</p>
         </div>
@@ -189,6 +202,21 @@ export default function CreateEvent() {
               <input type="text" value={form.venue} onChange={(e) => set("venue", e.target.value)}
                 placeholder="e.g. Hall A, Block 3" className={inputCls(!!errors.venue)} />
             </FormField>
+          </div>
+
+          {/* End time + duration display */}
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="End Date & Time" error={errors.endDate}>
+              <input type="datetime-local" value={form.endDate} onChange={(e) => set("endDate", e.target.value)}
+                className={inputCls(!!errors.endDate)} />
+            </FormField>
+            <div className="flex items-center">
+              {form.date && form.endDate && new Date(form.endDate) > new Date(form.date) && (
+                <div className="text-sm text-cc-muted">
+                  Duration: {formatDuration(new Date(form.endDate) - new Date(form.date))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Description */}

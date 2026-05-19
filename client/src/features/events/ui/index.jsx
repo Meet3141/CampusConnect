@@ -1,22 +1,5 @@
 import React from "react";
-
-export const STATUS_STYLE = {
-  upcoming:         "bg-indigo-950 text-indigo-300 border-indigo-800",
-  ongoing:          "bg-emerald-950 text-emerald-300 border-emerald-800",
-  completed:        "bg-white/[0.04] text-slate-500 border-white/[0.06]",
-  cancelled:        "bg-red-950 text-red-400 border-red-900",
-  draft:            "bg-slate-900 text-slate-400 border-slate-700",
-  pending_approval: "bg-yellow-950 text-yellow-400 border-yellow-800",
-};
-
-export const CATEGORY_ACCENT = {
-  technical: "border-l-cyan-500",
-  cultural:  "border-l-purple-500",
-  sports:    "border-l-emerald-500",
-  academic:  "border-l-amber-500",
-  arts:      "border-l-rose-500",
-  other:     "border-l-slate-500",
-};
+import { STATUS_STYLE, CATEGORY_ACCENT } from "./eventStyles";
 
 export function StatusPill({ status }) {
   const cls = STATUS_STYLE[status] || STATUS_STYLE.completed;
@@ -45,11 +28,15 @@ export function EventCard({ ev, onClick }) {
   const timeStr = ev.date
     ? new Date(ev.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
     : "";
+  const durationMs = ev.date && ev.endDate ? new Date(ev.endDate).getTime() - new Date(ev.date).getTime() : 0;
+  const durationLabel = durationMs > 0
+    ? `${Math.floor(durationMs / 3600000)}h ${Math.round((durationMs % 3600000) / 60000)}m`.replace(/^0h\s/, "")
+    : "";
 
   return (
     <div
       onClick={() => onClick && onClick(ev)}
-      className={`group rounded-2xl border border-white/[0.07] border-l-2 ${accent} bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] p-5 cursor-pointer transition-all`}
+      className={`group rounded-2xl border border-white/7 border-l-2 ${accent} bg-white/2 hover:bg-white/5 hover:border-white/14 p-5 cursor-pointer transition-all`}
     >
       <div className="flex items-center justify-between mb-3 gap-2">
         <StatusPill status={ev.status} />
@@ -65,7 +52,7 @@ export function EventCard({ ev, onClick }) {
       <div className="space-y-1">
         <p className="text-slate-500 text-[11px] flex items-center gap-1.5">
           <span>📅</span>
-          <span>{dateStr}{timeStr ? ` · ${timeStr}` : ""}</span>
+          <span>{dateStr}{timeStr ? ` · ${timeStr}` : ""}{durationLabel ? ` · ${durationLabel}` : ""}</span>
         </p>
         {ev.venue && (
           <p className="text-slate-500 text-[11px] flex items-center gap-1.5">
@@ -83,9 +70,6 @@ export function EventCard({ ev, onClick }) {
     </div>
   );
 }
-
-
-
 import VolunteerPanel from "./VolunteerPanel";
 import VolunteerRow from "./VolunteerRow";
 
@@ -97,6 +81,4 @@ export default {
   EventCard,
   VolunteerPanel,
   VolunteerRow,
-  STATUS_STYLE,
-  CATEGORY_ACCENT,
 };
