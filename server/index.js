@@ -29,6 +29,10 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// Trust proxy when deployed behind a reverse proxy (set TRUST_PROXY=1)
+if (process.env.TRUST_PROXY === "1" || process.env.TRUST_PROXY === "true") {
+  app.set("trust proxy", 1);
+}
 const ALLOWED_ORIGIN =
   process.env.CORS_ORIGIN ||
   process.env.ALLOWED_ORIGIN ||
@@ -75,9 +79,22 @@ app.use(
 );
 
 // ── Rate Limiters ────────────────────────────────────────────────────────────
+// Optional: whitelist IPs (comma-separated) to skip rate limiting for dev machines.
+// Example: RATE_LIMIT_WHITELIST=127.0.0.1,::1,192.0.2.5
+const RATE_LIMIT_WHITELIST = (process.env.RATE_LIMIT_WHITELIST || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const isWhitelisted = (req) => {
+  const ip = req.ip || req.headers["x-forwarded-for"]?.split(",")[0]?.trim();
+  return RATE_LIMIT_WHITELIST.includes(ip);
+};
 const authLimiter = rateLimit({
   windowMs: 60 * 1000,   // 1 minute
   max: 10,               // max 10 auth requests/min
+  // Skip rate limiting for whitelisted IPs (dev machines)
+  skip: isWhitelisted,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many auth requests — try again in a minute." },
@@ -86,6 +103,7 @@ const authLimiter = rateLimit({
 const eventsLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,               // 60 event requests/min
+  skip: isWhitelisted,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many requests — slow down." },
@@ -94,6 +112,7 @@ const eventsLimiter = rateLimit({
 const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,               // 30 chat requests/min
+  skip: isWhitelisted,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many chat requests — slow down." },
