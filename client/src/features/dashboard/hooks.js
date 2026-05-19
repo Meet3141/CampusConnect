@@ -47,12 +47,19 @@ export const useDashboardData = (user) => {
       let allEvents = [];
       if (userClubs.length > 0) {
         try {
-          const results = await Promise.allSettled(
-            userClubs.map((c) => fetchClubEvents(c._id, 50))
-          );
-          allEvents = results
-            .filter((r) => r.status === "fulfilled")
-            .flatMap((r) => r.value.data.data || []);
+          // Avoid firing many parallel requests (trips server rate limits).
+          // Fetch club events sequentially to reduce burst traffic.
+          const collected = [];
+          for (const club of userClubs) {
+            try {
+              const res = await fetchClubEvents(club._id, 50);
+              collected.push(...(res.data.data || []));
+            } catch (err) {
+              // Log but continue — don't fail the whole dashboard
+              console.warn(`Dashboard: failed to fetch events for club ${club._id}:`, err?.message || err);
+            }
+          }
+          allEvents = collected;
         } catch (err) {
           console.error("Dashboard: failed to fetch events:", err);
         }

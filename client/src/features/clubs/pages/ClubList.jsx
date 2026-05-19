@@ -272,6 +272,7 @@ export default function ClubList() {
                   joining={joiningId === club._id}
                   onOpen={() => navigate(`/clubs/${club._id}`)}
                   onJoin={(e) => handleJoin(e, club._id)}
+                  isOrgAdmin={user?.roles?.includes("orgAdmin")}
                 />
               ))}
             </div>
@@ -308,14 +309,17 @@ export default function ClubList() {
 /* ─────────────────────────────────────────────
    Club Card
 ───────────────────────────────────────────── */
-function ClubCard({ club, index, myStatus, joining, onOpen, onJoin }) {
+function ClubCard({ club, index, myStatus, joining, onOpen, onJoin, isOrgAdmin }) {
   const meta = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
 
-  const statusBadge = {
-    active:   { label: "Member",  cls: "bg-emerald-950 text-emerald-300 border-emerald-700" },
-    pending:  { label: "Pending", cls: "bg-yellow-950 text-yellow-300 border-yellow-700"   },
-    rejected: { label: "Rejected",cls: "bg-red-950 text-red-400 border-red-800"            },
-  }[myStatus];
+  // If the current viewer is an org admin, show an Org Admin badge instead of Member
+  const statusBadge = isOrgAdmin
+    ? { label: "Org Admin", cls: "bg-red-950 text-red-300 border-red-800" }
+    : {
+        active:   { label: "Member",  cls: "bg-emerald-950 text-emerald-300 border-emerald-700" },
+        pending:  { label: "Pending", cls: "bg-yellow-950 text-yellow-300 border-yellow-700"   },
+        rejected: { label: "Rejected",cls: "bg-red-950 text-red-400 border-red-800"            },
+      }[myStatus];
 
   return (
     <div

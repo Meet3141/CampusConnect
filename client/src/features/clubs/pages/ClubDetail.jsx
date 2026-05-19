@@ -344,8 +344,13 @@ export default function ClubDetail() {
   };
 
   const meta           = CLUB_CATEGORY_META[club?.category] || CLUB_CATEGORY_META.other;
-  const activeMembers  = members.filter((m) => m.status === "approved" || m.status === "active");
-  const pendingMembers = members.filter((m) => m.status === "pending");
+  // Exclude orgAdmin users from member lists/counts — org admins have elevated privileges
+  // and may be auto-approved into clubs; treat them as admins, not regular members.
+  const activeMembersAll  = members.filter((m) => m.status === "approved" || m.status === "active");
+  const pendingMembersAll = members.filter((m) => m.status === "pending");
+
+  const activeMembers = activeMembersAll.filter((m) => !(m.userId?.roles || []).includes("orgAdmin"));
+  const pendingMembers = pendingMembersAll.filter((m) => !(m.userId?.roles || []).includes("orgAdmin"));
 
   // Is the current user a coordinator of THIS club?
   const isCoordinator = !isClubAdmin && members.some(
@@ -446,7 +451,7 @@ export default function ClubDetail() {
 
               {/* Stats */}
               <div className="flex flex-wrap gap-6 mt-5">
-                <StatPill label="Members" value={club.memberCount ?? 0} />
+                <StatPill label="Members" value={activeMembers.length} />
                 <StatPill label="Events"  value={events.length} />
                 {isClubAdmin && pendingMembers.length > 0 && (
                   <StatPill label="Awaiting" value={pendingMembers.length} highlight />
@@ -594,7 +599,7 @@ export default function ClubDetail() {
               <Panel title="Info">
                 <dl className="space-y-3 text-sm">
                   <InfoRow label="Category" value={club.category.charAt(0).toUpperCase() + club.category.slice(1)} />
-                  <InfoRow label="Members"  value={club.memberCount ?? 0} />
+                  <InfoRow label="Members"  value={activeMembers.length} />
                   <InfoRow
                     label="Admin"
                     value={club.adminId?.name || "—"}    // adminId is populated in detail

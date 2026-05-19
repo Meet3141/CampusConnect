@@ -57,27 +57,49 @@ export default function EventDetail() {
   /* ── Derived state ── */
   const myRsvp = attendees.find((a) => String(a.userId?._id || a.userId) === String(user?._id));
   const isRegistered = myRsvp?.status === "registered";
-  // H: volunteers is now an array of { userId, skills, volunteeredAt } subdocuments
-  const isVolunteer = event?.volunteers?.some(
+  const myVolunteerApplication = event?.volunteers?.find(
     (v) => String(v.userId?._id || v.userId) === String(user?._id)
   );
+  const isVolunteer = Boolean(myVolunteerApplication);
   const registeredCount = attendees.filter((a) => a.status === "registered").length;
   const isFull = event?.maxAttendees && registeredCount >= event.maxAttendees;
   const isOrgAdmin = user?.roles?.includes("orgAdmin");
+  const isEditor = user?.roles?.includes("editor");
   const isEventCreator = String(event?.createdBy?._id || event?.createdBy) === String(user?._id);
   const isClubAdminOfEvent =
     String(event?.clubId?.adminId?._id || event?.clubId?.adminId) === String(user?._id);
   const canDeleteEvent = isOrgAdmin || isEventCreator;
   const canReviewVolunteers = isOrgAdmin || isEventCreator || isClubAdminOfEvent;
+  const canApplyForVolunteer =
+    !!user &&
+    event?.status === "upcoming" &&
+    event?.showOnVolunteerHub &&
+    !isOrgAdmin &&
+    !isEditor &&
+    !isEventCreator &&
+    !isClubAdminOfEvent &&
+    !isVolunteer;
 
   const handleRsvp = async () => {
     setActionLoading(true);
     try {
       await rsvpEvent(id);
-      setAttendees((prev) => [
-        ...prev,
-        { userId: { _id: user._id, name: user.name, email: user.email }, status: "registered", registeredAt: new Date() },
-      ]);
+      setAttendees((prev) => {
+        const nextAttendee = {
+          userId: { _id: user._id, name: user.name, email: user.email },
+          status: "registered",
+          registeredAt: new Date(),
+        };
+
+        const index = prev.findIndex((a) => String(a.userId?._id || a.userId) === String(user._id));
+        if (index === -1) {
+          return [...prev, nextAttendee];
+        }
+
+        const updated = [...prev];
+        updated[index] = { ...updated[index], ...nextAttendee };
+        return updated;
+      });
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to RSVP.");
     } finally {
@@ -107,10 +129,17 @@ export default function EventDetail() {
     setActionLoading(true);
     try {
       await volunteerForEvent(id);
-      // H: optimistic update — add subdocument shape to local state
       setEvent((prev) => ({
         ...prev,
-        volunteers: [...(prev.volunteers || []), { userId: { _id: user._id }, skills: [] }],
+        volunteers: [
+          ...(prev.volunteers || []),
+          {
+            userId: { _id: user._id, name: user.name, email: user.email },
+            skills: [],
+            status: "pending",
+            appliedAt: new Date(),
+          },
+        ],
       }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to volunteer.");
@@ -280,6 +309,17 @@ export default function EventDetail() {
                     <span className="px-5 py-2.5 bg-slate-800/60 text-slate-500 rounded-xl text-sm text-center">Event Full</span>
                   )}
                 </>
+              )}
+              {canApplyForVolunteer && (
+                <button onClick={handleVolunteer} disabled={actionLoading}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                  {actionLoading ? "…" : "Volunteer"}
+                </button>
+              )}
+              {isVolunteer && event?.showOnVolunteerHub && (
+                <span className="px-5 py-2.5 border border-emerald-900/60 bg-emerald-950/20 text-emerald-300 rounded-xl text-sm text-center whitespace-nowrap">
+                  Volunteer Applied
+                </span>
               )}
               {user && (
                 <>

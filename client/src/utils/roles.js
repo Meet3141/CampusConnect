@@ -21,4 +21,6 @@ export const hasRole = (user, ...roles) =>
 export const isOrgAdmin  = (user) => hasRole(user, "orgAdmin");
 export const isClubAdmin = (user) => hasRole(user, "clubAdmin", "orgAdmin");
 export const isEditor    = (user) => hasRole(user, "editor", "orgAdmin");
-export const isMember    = (user) => hasRole(user, "member", "clubAdmin", "editor", "orgAdmin");
+// Org admins are higher authority and should not be counted as regular members
+// (they retain admin privileges but are excluded from member-only counts/views).
+export const isMember    = (user) => hasRole(user, "member", "clubAdmin", "editor");
