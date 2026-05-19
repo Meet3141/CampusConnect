@@ -388,6 +388,32 @@ export default function ClubDetail() {
     ? [...BASE_TABS, "Announcements"]
     : BASE_TABS;
 
+  const getEventDate = (ev) => {
+    if (isValidDate(ev.date)) return new Date(ev.date);
+    if (isValidDate(ev.createdAt)) return new Date(ev.createdAt);
+    return null;
+  };
+
+  const upcomingOverviewEvents = events
+    .filter((ev) => ev.status === "upcoming" || ev.status === "ongoing")
+    .slice()
+    .sort((a, b) => {
+      const aDate = getEventDate(a)?.getTime() ?? 0;
+      const bDate = getEventDate(b)?.getTime() ?? 0;
+      return aDate - bDate;
+    })
+    .slice(0, 4);
+
+  const completedOverviewEvents = events
+    .filter((ev) => ev.status === "completed")
+    .slice()
+    .sort((a, b) => {
+      const aDate = getEventDate(a)?.getTime() ?? 0;
+      const bDate = getEventDate(b)?.getTime() ?? 0;
+      return bDate - aDate;
+    })
+    .slice(0, 4);
+
   /* ── Loading ── */
   if (loading) {
     return (
@@ -586,46 +612,88 @@ export default function ClubDetail() {
                 <p className="text-slate-300 text-sm leading-relaxed">{club.description}</p>
               </Panel>
 
-              {events.length > 0 && (
-                <Panel title="Upcoming Events">
-                  <div className="space-y-2">
-                    {events.slice(0, 4).map((ev) => {
-                      const dateObj = isValidDate(ev.date) ? new Date(ev.date) : isValidDate(ev.createdAt) ? new Date(ev.createdAt) : null;
-                      const endObj = isValidDate(ev.endDate) ? new Date(ev.endDate) : null;
-                      return (
-                        <div
-                          key={ev._id}
-                          onClick={() => navigate(`/events/${ev._id}`)}
-                          className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-white">{ev.title}</p>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              📅{' '}
-                              {dateObj
-                                ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                                : 'Date not set'}
-                              {'  '}·{'  '}🕐 {dateObj ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}
-                              {endObj && dateObj && endObj > dateObj && (
-                                <> {'  '}·{'  '}⏳ {formatDuration(endObj - dateObj)}</>
-                              )}
-                              {'  '}·{'  '}📍 {ev.venue}
-                            </p>
-                          </div>
-                          <span className="text-slate-600 text-sm">→</span>
-                        </div>
-                      );
-                    })}
-                    {events.length > 4 && (
-                      <button
-                        onClick={() => setTab("Events")}
-                        className={`text-xs mt-1 ${meta.accent} hover:underline`}
-                      >
-                        See all {events.length} events →
-                      </button>
+              {(upcomingOverviewEvents.length > 0 || completedOverviewEvents.length > 0) && (
+                <div className="space-y-5">
+                  <Panel title="Upcoming Events">
+                    {upcomingOverviewEvents.length === 0 ? (
+                      <p className="text-slate-500 text-sm">No upcoming events right now.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {upcomingOverviewEvents.map((ev) => {
+                          const dateObj = getEventDate(ev);
+                          const endObj = isValidDate(ev.endDate) ? new Date(ev.endDate) : null;
+                          return (
+                            <div
+                              key={ev._id}
+                              onClick={() => navigate(`/events/${ev._id}`)}
+                              className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-white">{ev.title}</p>
+                                <p className="text-[11px] text-slate-500 mt-0.5">
+                                  📅{' '}
+                                  {dateObj
+                                    ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                    : 'Date not set'}
+                                  {'  '}·{'  '}🕐 {dateObj ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                                  {endObj && dateObj && endObj > dateObj && (
+                                    <> {'  '}·{'  '}⏳ {formatDuration(endObj - dateObj)}</>
+                                  )}
+                                  {'  '}·{'  '}📍 {ev.venue}
+                                </p>
+                              </div>
+                              <span className="text-slate-600 text-sm">→</span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
-                  </div>
-                </Panel>
+                  </Panel>
+
+                  <Panel title="Completed Events">
+                    {completedOverviewEvents.length === 0 ? (
+                      <p className="text-slate-500 text-sm">No completed events yet.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {completedOverviewEvents.map((ev) => {
+                          const dateObj = getEventDate(ev);
+                          const endObj = isValidDate(ev.endDate) ? new Date(ev.endDate) : null;
+                          return (
+                            <div
+                              key={ev._id}
+                              onClick={() => navigate(`/events/${ev._id}`)}
+                              className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-white">{ev.title}</p>
+                                <p className="text-[11px] text-slate-500 mt-0.5">
+                                  📅{' '}
+                                  {dateObj
+                                    ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                    : 'Date not set'}
+                                  {endObj && dateObj && endObj > dateObj && (
+                                    <> {'  '}·{'  '}✅ Completed on {endObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>
+                                  )}
+                                  {'  '}·{'  '}📍 {ev.venue}
+                                </p>
+                              </div>
+                              <span className="text-slate-600 text-sm">→</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Panel>
+
+                  {(events.length > 4) && (
+                    <button
+                      onClick={() => setTab("Events")}
+                      className={`text-xs mt-1 ${meta.accent} hover:underline`}
+                    >
+                      See all {events.length} events →
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
