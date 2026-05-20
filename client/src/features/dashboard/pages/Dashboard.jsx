@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import Button from "../../../components/ui/Button";
 import { useDashboardData } from "../hooks";
+import { styles } from "../ui/styles";
 import {
   Section,
   StatCard,
@@ -18,7 +19,6 @@ import {
   BookmarkRow,
   EmptyState,
   DashboardSkeleton,
-  styles,
 } from "../ui";
 
 /* ─── Category cosmetics ─── */
