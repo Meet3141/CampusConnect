@@ -13,6 +13,7 @@ import logger from "../middleware/logger.js";
 import { reconcileMemberCount } from "./reconcileMemberCount.js";
 import { reconcileRsvpCount } from "./reconcileRsvpCount.js";
 import { cleanupExpiredEvents } from "./cleanupExpiredEvents.js";
+import { cleanupExpiredBlocks } from "../modules/events/event.service.js";
 
 const safeRun = async (name, fn) => {
   try {
@@ -32,6 +33,7 @@ export const startScheduler = () => {
   // Every hour at :00
   cron.schedule("0 * * * *", () => {
     safeRun("cleanupExpiredEvents", cleanupExpiredEvents);
+    safeRun("cleanupExpiredBlocks", cleanupExpiredBlocks);
   });
 
   logger.info("[scheduler] started — reconcile every 10min, cleanup every 1hr");

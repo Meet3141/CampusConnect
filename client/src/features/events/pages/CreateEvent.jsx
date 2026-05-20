@@ -46,6 +46,12 @@ export default function CreateEvent() {
     showOnVolunteerHub: false,
     volunteerLimit: "",
     volunteerSkillsNeeded: "",   // comma-separated string, converted to array on submit
+    // Attendance policy
+    countWarnings: false,
+    allowGraceReview: true,
+    strictAttendance: false,
+    noShowThreshold: 2,
+    warningLimit: 3,
   });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
@@ -106,6 +112,13 @@ export default function CreateEvent() {
         endDate:     form.endDate || null,
         venue:       form.venue.trim(),
         showOnVolunteerHub: form.showOnVolunteerHub,
+        attendancePolicy: {
+          countWarnings: form.countWarnings,
+          allowGraceReview: form.allowGraceReview,
+          strictAttendance: form.strictAttendance,
+          noShowThreshold: Number(form.noShowThreshold) || 2,
+          warningLimit: Number(form.warningLimit) || 3,
+        },
       };
       if (form.maxAttendees)  body.maxAttendees = Number(form.maxAttendees);
       if (form.image.trim())  body.image = form.image.trim();
@@ -289,6 +302,33 @@ export default function CreateEvent() {
                 </FormField>
               </div>
             )}
+          </div>
+
+          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-cc">🎯 Attendance Policy</p>
+              <p className="text-[11px] text-cc-muted mt-0.5">Control warning and review behavior for this event.</p>
+            </div>
+            <label className="flex items-center gap-3 text-sm text-cc cursor-pointer">
+              <input type="checkbox" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} />
+              Count Warnings
+            </label>
+            <label className="flex items-center gap-3 text-sm text-cc cursor-pointer">
+              <input type="checkbox" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} />
+              Allow Grace Review
+            </label>
+            <label className="flex items-center gap-3 text-sm text-cc cursor-pointer">
+              <input type="checkbox" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} />
+              Strict Attendance
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="No-show Threshold" hint="Misses before warning/review">
+                <input type="number" min={1} value={form.noShowThreshold} onChange={(e) => set("noShowThreshold", e.target.value)} className={inputCls(false)} />
+              </FormField>
+              <FormField label="Warning Limit" hint="Warnings before block">
+                <input type="number" min={1} value={form.warningLimit} onChange={(e) => set("warningLimit", e.target.value)} className={inputCls(false)} />
+              </FormField>
+            </div>
           </div>
 
           {apiError && (

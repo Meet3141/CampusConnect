@@ -13,6 +13,9 @@ export const listEvents = (params = {}) =>
 export const fetchEventById = (eventId) =>
   api.get(`/events/${eventId}`);
 
+export const fetchEventAnalytics = (eventId) =>
+  api.get(`/events/${eventId}/analytics`);
+
 export const createEvent = (payload) =>
   api.post("/events", payload);
 
@@ -36,6 +39,12 @@ export const fetchEventAttendees = (eventId) =>
 
 export const rsvpEvent = (eventId) =>
   api.post(`/events/${eventId}/rsvp`);
+
+export const submitGraceRequest = (eventId, reason) =>
+  api.post(`/events/${eventId}/grace-request`, { reason });
+
+export const reviewAttendanceIssue = (eventId, userId, action, reason = "") =>
+  api.post(`/events/${eventId}/review/${userId}`, { action, reason });
 
 export const cancelRsvp = (eventId) =>
   api.post(`/events/${eventId}/cancel-rsvp`);

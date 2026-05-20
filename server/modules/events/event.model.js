@@ -121,6 +121,9 @@ const eventSchema = new mongoose.Schema(
     // Attendance policy configuration
     attendancePolicy: {
       type: {
+        countWarnings: { type: Boolean, default: false },
+        allowGraceReview: { type: Boolean, default: true },
+        strictAttendance: { type: Boolean, default: false },
         requiresQR: { type: Boolean, default: false },
         manualCheckIn: { type: Boolean, default: true },
         gracePeriodMinutes: { type: Number, default: 15 },

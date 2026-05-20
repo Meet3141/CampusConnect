@@ -16,10 +16,13 @@ import {
   removeVolunteer,
   getVolunteers,
   getVolunteerEvents,
+  getEventAnalytics,
   publishEvent,
   startEvent,
   restartEvent,
   endEvent,
+  submitGraceRequest,
+  reviewAttendanceIssue,
   markAttendance,
 } from "./event.controller.js";
 
@@ -46,6 +49,9 @@ router.post("/:id/publish", auth, asyncHandler(publishEvent));
 router.post("/:id/start", auth, asyncHandler(startEvent));
 router.post("/:id/restart", auth, asyncHandler(restartEvent));
 router.post("/:id/end", auth, asyncHandler(endEvent));
+router.get("/:id/analytics", auth, asyncHandler(getEventAnalytics));
+router.post("/:id/grace-request", auth, asyncHandler(submitGraceRequest));
+router.post("/:id/review/:userId", auth, asyncHandler(reviewAttendanceIssue));
 router.post("/:id/attendance", auth, asyncHandler(markAttendance));
 
 export default router;

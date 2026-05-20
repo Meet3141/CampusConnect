@@ -91,6 +91,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    reviewRequired: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

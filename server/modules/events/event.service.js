@@ -2,6 +2,9 @@ import Event from "./event.model.js";
 import Club from "../clubs/club.model.js";
 import Membership from "../clubs/membership.model.js";
 import RSVP from "./rsvp.model.js";
+import User from "../users/user.model.js";
+import GraceRequest from "./grace-request.model.js";
+import ReviewHistory from "./review-history.model.js";
 import VolunteerApplication from "./volunteer-application.model.js";
 import { createHttpError } from "../../utils/httpError.js";
 import { getOrSet, invalidate } from "../../utils/cache.js";
@@ -34,6 +37,24 @@ const syncExpiredUpcomingEvents = async () => {
       $set: { status: "completed" },
     }
   );
+};
+
+export const cleanupExpiredBlocks = async () => {
+  const result = await User.updateMany(
+    {
+      isBlocked: true,
+      blockedUntil: { $lt: new Date() },
+    },
+    {
+      $set: {
+        isBlocked: false,
+        blockedUntil: null,
+        reviewRequired: false,
+      },
+    }
+  );
+
+  return result;
 };
 
 const loadEventAttendees = async (eventId, pagination) => {
@@ -96,6 +117,7 @@ export const createEvent = async ({ body, user }) => {
     volunteerLimit,
     volunteerSkillsNeeded,
     endDate,
+    attendancePolicy,
   } = body;
 
   const club = await Club.findById(clubId);
@@ -141,6 +163,7 @@ export const createEvent = async ({ body, user }) => {
     volunteerSkillsNeeded: Array.isArray(volunteerSkillsNeeded)
       ? volunteerSkillsNeeded.map(String).filter(Boolean)
       : [],
+    attendancePolicy: attendancePolicy || {},
   });
 
   return event;
@@ -177,6 +200,24 @@ export const getEvents = async ({ query }) => {
     events,
     meta: { total, page: pageSafe, limit: limitNumber },
   };
+};
+
+export const getEventAnalytics = async ({ id }) => {
+  await syncExpiredUpcomingEvents();
+  const event = await Event.findById(id).lean();
+  if (!event) throw createHttpError(404, "Event not found");
+
+  const registered = event.registeredCount || 0;
+  const attended = event.attendedCount || 0;
+  const noShow = event.noShowCount || 0;
+  const attendanceRate = registered > 0 ? Math.round((attended / registered) * 100) : 0;
+
+  const [graceRequests, reviewRequiredUsers] = await Promise.all([
+    GraceRequest.find({ eventId: event._id, status: "pending" }).populate("userId", "name email warningCount missedEvents graceUsed isBlocked blockedUntil reviewRequired").sort({ createdAt: -1 }).lean(),
+    User.find({ reviewRequired: true, missedEvents: event._id }).select("name email warningCount missedEvents graceUsed isBlocked blockedUntil reviewRequired").lean(),
+  ]);
+
+  return { registered, attended, noShow, attendanceRate, graceRequests, reviewRequiredUsers, attendancePolicy: event.attendancePolicy || {} };
 };
 
 export const getEventById = async ({ id }) => {
@@ -225,6 +266,7 @@ export const updateEvent = async ({ id, body, user }) => {
     "showOnVolunteerHub",
     "volunteerLimit",
     "volunteerSkillsNeeded",
+    "attendancePolicy",
   ];
 
   if (isAdminLevel) editableFields.push("status");
@@ -590,6 +632,58 @@ export const publishEvent = async ({ id, user }) => {
   await event.save();
 
   return event;
+};
+
+export const submitGraceRequest = async ({ id, user, body }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  const reason = String(body?.reason || "").trim();
+  if (!reason) throw createHttpError(400, "Reason is required");
+
+  const rsvp = await RSVP.findOne({ eventId: event._id, userId: user.id }).lean();
+  if (!rsvp) throw createHttpError(400, "You must be registered for this event to submit a grace request");
+
+  return GraceRequest.create({ eventId: event._id, userId: user.id, reason });
+};
+
+export const reviewAttendanceIssue = async ({ id, userId, body, user }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+  if (!(await canManageEvent(event, user))) throw createHttpError(403, "Forbidden");
+
+  const target = await User.findById(userId);
+  if (!target) throw createHttpError(404, "Student not found");
+
+  const action = String(body?.action || "").trim();
+  if (!["approveGrace", "reduceWarning", "blockStudent"].includes(action)) {
+    throw createHttpError(400, "Invalid action");
+  }
+
+  if (action === "approveGrace") {
+    target.graceUsed = true;
+    target.reviewRequired = false;
+  } else if (action === "reduceWarning") {
+    target.warningCount = Math.max(0, (target.warningCount || 0) - 1);
+    target.reviewRequired = false;
+  } else if (action === "blockStudent") {
+    target.isBlocked = true;
+    target.blockedUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    target.reviewRequired = false;
+  }
+
+  await target.save();
+
+  await ReviewHistory.create({
+    eventId: event._id,
+    userId: target._id,
+    action: action === "approveGrace" ? "GRACE_APPROVED" : action === "reduceWarning" ? "WARNING_REDUCED" : "STUDENT_BLOCKED",
+    performedBy: user.id,
+    role: user.roles?.includes("orgAdmin") ? "orgAdmin" : "clubAdmin",
+    reason: String(body?.reason || "").trim(),
+  });
+
+  return target.toJSON();
 };
 
 export const startEvent = async ({ id, user }) => {

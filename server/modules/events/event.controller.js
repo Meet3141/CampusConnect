@@ -90,9 +90,29 @@ export const getVolunteerEvents = async (req, res) => {
   res.json({ success: true, data: events });
 };
 
+export const getEventAnalytics = async (req, res) => {
+  const analytics = await eventService.getEventAnalytics({ id: req.params.id });
+  res.json({ success: true, data: analytics });
+};
+
 export const publishEvent = async (req, res) => {
   const event = await eventService.publishEvent({ id: req.params.id, user: req.user });
   res.json({ success: true, message: "Event published", data: event });
+};
+
+export const submitGraceRequest = async (req, res) => {
+  const request = await eventService.submitGraceRequest({ id: req.params.id, user: req.user, body: req.body });
+  res.json({ success: true, message: "Grace request submitted", data: request });
+};
+
+export const reviewAttendanceIssue = async (req, res) => {
+  const student = await eventService.reviewAttendanceIssue({
+    id: req.params.id,
+    userId: req.params.userId,
+    body: req.body,
+    user: req.user,
+  });
+  res.json({ success: true, message: "Attendance review updated", data: student });
 };
 
 export const startEvent = async (req, res) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import { useToast } from "../../../context/ToastContext";
+import { fetchEventAnalytics, reviewAttendanceIssue, submitGraceRequest } from "../api";
 
 export default function AttendanceManagement() {
   const { eventId } = useParams();
@@ -10,10 +11,14 @@ export default function AttendanceManagement() {
   
   const [event, setEvent] = useState(null);
   const [attendees, setAttendees] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [selectedAttendees, setSelectedAttendees] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [reason, setReason] = useState("");
+  const [submittingReason, setSubmittingReason] = useState(false);
   const isOngoing = event?.status === "ongoing";
+  const isCompleted = event?.status === "completed";
 
   const fetchEventAndAttendees = useCallback(async () => {
     try {
@@ -22,9 +27,11 @@ export default function AttendanceManagement() {
         api.get(`/events/${eventId}`),
         api.get(`/events/${eventId}/attendees`),
       ]);
+      const analyticsRes = await fetchEventAnalytics(eventId);
       
       setEvent(eventRes.data.data);
       setAttendees(attendeesRes.data.data || []);
+      setAnalytics(analyticsRes.data.data || null);
     } catch (error) {
       showToast(error.response?.data?.error || "Failed to fetch event details", "error");
     } finally {
@@ -81,6 +88,34 @@ export default function AttendanceManagement() {
     }
   };
 
+  const handleSubmitGraceRequest = async () => {
+    if (!reason.trim()) {
+      showToast("Please enter a reason", "warning");
+      return;
+    }
+
+    try {
+      setSubmittingReason(true);
+      const response = await submitGraceRequest(eventId, reason.trim());
+      showToast(response.data.message, "success");
+      setReason("");
+    } catch (error) {
+      showToast(error.response?.data?.error || "Failed to submit grace request", "error");
+    } finally {
+      setSubmittingReason(false);
+    }
+  };
+
+  const handleReviewAction = async (studentId, action) => {
+    try {
+      const response = await reviewAttendanceIssue(eventId, studentId, action);
+      showToast(response.data.message, "success");
+      fetchEventAndAttendees();
+    } catch (error) {
+      showToast(error.response?.data?.error || "Failed to update attendance review", "error");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -132,6 +167,48 @@ export default function AttendanceManagement() {
           <p className="text-2xl font-bold text-amber-600">{event.noShowCount || 0}</p>
         </div>
       </div>
+
+      {analytics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-600 text-sm">Registered</p>
+            <p className="text-2xl font-bold text-gray-900">{analytics.registered}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-600 text-sm">Attended</p>
+            <p className="text-2xl font-bold text-green-600">{analytics.attended}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-600 text-sm">No-show</p>
+            <p className="text-2xl font-bold text-amber-600">{analytics.noShow}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-600 text-sm">Attendance Rate</p>
+            <p className="text-2xl font-bold text-blue-600">{analytics.attendanceRate}%</p>
+          </div>
+        </div>
+      )}
+
+      {isCompleted && (
+        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-5 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Submit Grace Request</h2>
+          <p className="text-sm text-gray-600">Add a reason if you missed the event and need faculty review.</p>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Medical emergency, transport issue, etc."
+          />
+          <button
+            onClick={handleSubmitGraceRequest}
+            disabled={submittingReason}
+            className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-500 disabled:opacity-50"
+          >
+            {submittingReason ? "Submitting..." : "Submit Reason"}
+          </button>
+        </div>
+      )}
 
       {/* Attendees Table */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -228,6 +305,29 @@ export default function AttendanceManagement() {
           <p className="text-sm text-amber-800">
             Attendance is locked because this event is {event.status}. Use this page for analytics only.
           </p>
+        </div>
+      )}
+
+      {analytics?.reviewRequiredUsers?.length > 0 && (
+        <div className="mt-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h3 className="font-semibold text-gray-900">Faculty Review Required</h3>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {analytics.reviewRequiredUsers.map((student) => (
+              <div key={student._id} className="px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <p className="font-medium text-gray-900">{student.name}</p>
+                  <p className="text-sm text-gray-600">Misses: {student.missedEvents?.length || 0} · Warnings: {student.warningCount || 0}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => handleReviewAction(student._id, "approveGrace")} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-500">Approve Grace</button>
+                  <button onClick={() => handleReviewAction(student._id, "reduceWarning")} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs font-medium hover:bg-amber-500">Reduce Warning</button>
+                  <button onClick={() => handleReviewAction(student._id, "blockStudent")} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-medium hover:bg-red-500">Block Student</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

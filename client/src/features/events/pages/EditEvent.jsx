@@ -55,6 +55,8 @@ export default function EditEvent() {
     title: "", description: "", category: "", date: "", endDate: "",
     venue: "", maxAttendees: "", image: "",
     showOnVolunteerHub: false, volunteerLimit: "", volunteerSkillsNeeded: "",
+    countWarnings: false, allowGraceReview: true, strictAttendance: false,
+    noShowThreshold: 2, warningLimit: 3,
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiError, setApiError]       = useState("");
@@ -80,6 +82,11 @@ export default function EditEvent() {
           showOnVolunteerHub: ev.showOnVolunteerHub || false,
           volunteerLimit: ev.volunteerLimit ? String(ev.volunteerLimit) : "",
           volunteerSkillsNeeded: (ev.volunteerSkillsNeeded || []).join(", "),
+          countWarnings: ev.attendancePolicy?.countWarnings ?? false,
+          allowGraceReview: ev.attendancePolicy?.allowGraceReview ?? true,
+          strictAttendance: ev.attendancePolicy?.strictAttendance ?? false,
+          noShowThreshold: ev.attendancePolicy?.noShowThreshold ?? 2,
+          warningLimit: ev.attendancePolicy?.warningLimit ?? 3,
         });
       } catch (err) {
         setFetchErr(err.response?.data?.message || "Failed to load event.");
@@ -132,6 +139,13 @@ export default function EditEvent() {
         endDate:     form.endDate || null,
         venue:       form.venue.trim(),
         showOnVolunteerHub: form.showOnVolunteerHub,
+        attendancePolicy: {
+          countWarnings: form.countWarnings,
+          allowGraceReview: form.allowGraceReview,
+          strictAttendance: form.strictAttendance,
+          noShowThreshold: Number(form.noShowThreshold) || 2,
+          warningLimit: Number(form.warningLimit) || 3,
+        },
       };
       if (form.maxAttendees) body.maxAttendees = Number(form.maxAttendees);
       if (form.image.trim()) body.image = form.image.trim();
@@ -346,6 +360,32 @@ export default function EditEvent() {
               </>
             )}
           </div>
+
+            <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
+              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">
+                Attendance Policy
+              </p>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
+                <span className="text-sm font-medium text-slate-300">Count Warnings</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
+                <span className="text-sm font-medium text-slate-300">Allow Grace Review</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
+                <span className="text-sm font-medium text-slate-300">Strict Attendance</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="No-show Threshold" hint="Misses before warning/review">
+                  <input type="number" value={form.noShowThreshold} min={1} onChange={(e) => set("noShowThreshold", e.target.value)} className={inputCls(false)} />
+                </FormField>
+                <FormField label="Warning Limit" hint="Warnings before block">
+                  <input type="number" value={form.warningLimit} min={1} onChange={(e) => set("warningLimit", e.target.value)} className={inputCls(false)} />
+                </FormField>
+              </div>
+            </div>
 
           {apiError && (
             <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-sm">
