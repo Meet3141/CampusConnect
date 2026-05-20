@@ -862,6 +862,24 @@ export const restartEvent = async ({ id, user }) => {
     throw createHttpError(400, `Cannot restart event while status is '${event.status}'`);
   }
 
+  await RSVP.updateMany(
+    { eventId: event._id, status: "attended" },
+    {
+      $set: {
+        status: "registered",
+        "attendance.attended": false,
+        "attendance.attendanceMethod": null,
+        "attendance.manualOverride": false,
+        "attendance.entryTime": null,
+        "attendance.exitTime": null,
+        "attendance.attendancePercentage": null,
+      },
+    }
+  );
+
+  event.attendedCount = 0;
+  event.noShowCount = 0;
+  event.onSpotCount = 0;
   event.status = "ongoing";
   await event.save();
   invalidate(`event:${id}`);
