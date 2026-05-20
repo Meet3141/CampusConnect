@@ -31,7 +31,16 @@ export default function AttendanceManagement() {
       const analyticsRes = await fetchEventAnalytics(eventId);
       
       setEvent(eventRes.data.data);
-      setAttendees(attendeesRes.data.data || []);
+            const nextAttendees = attendeesRes.data.data || [];
+            setAttendees(nextAttendees);
+            setSelectedAttendees(
+              new Set(
+                nextAttendees
+                  .filter((attendee) => attendee.status === "attended")
+                  .map((attendee) => attendee.userId?._id)
+                  .filter(Boolean)
+              )
+            );
       setAnalytics(analyticsRes.data.data || null);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch event details");
@@ -66,7 +75,7 @@ export default function AttendanceManagement() {
     if (selectedAttendees.size === attendees.length) {
       setSelectedAttendees(new Set());
     } else {
-      setSelectedAttendees(new Set(attendees.map(a => a.userId._id)));
+      setSelectedAttendees(new Set(attendees.map((a) => a.userId?._id).filter(Boolean)));
     }
   };
 
@@ -75,20 +84,52 @@ export default function AttendanceManagement() {
       toast.info("Attendance can only be marked while the event is ongoing.");
       return;
     }
-    if (selectedAttendees.size === 0) {
-      toast.info("Please select at least one attendee");
-      return;
-    }
 
     try {
       setSubmitting(true);
+
+      // compute previous attended set and intended selection so we can show accurate feedback
+      const prevAttended = new Set(
+        attendees
+          .filter((a) => a.status === "attended")
+          .map((a) => a.userId?._id)
+          .filter(Boolean)
+      );
+      const selected = new Set(selectedAttendees);
+
+      // compute counts (added + removed)
+      let added = 0;
+      let removed = 0;
+      selected.forEach((id) => {
+        if (!prevAttended.has(id)) added += 1;
+      });
+      prevAttended.forEach((id) => {
+        if (!selected.has(id)) removed += 1;
+      });
+      const changedCount = added + removed;
+
       const response = await api.post(`/events/${eventId}/attendance`, {
-        attendeeIds: [...selectedAttendees],
+        attendeeIds: [...selected],
       });
 
-      toast.success(response.data.message);
-      setSelectedAttendees(new Set());
-      fetchEventAndAttendees();
+      // prefer a computed changedCount for clearer UX; fall back to server message
+      if (changedCount > 0) {
+        toast.success(`${changedCount} attendance(s) marked`);
+      } else {
+        toast.success(response.data?.message || "Attendance updated");
+      }
+
+      // update attendees locally to reflect the saved/desired state
+      const updated = attendees.map((a) => {
+        const uid = a.userId?._id;
+        if (!uid) return a;
+        if (selected.has(uid)) return { ...a, status: "attended" };
+        if (prevAttended.has(uid) && !selected.has(uid)) return { ...a, status: "registered" };
+        return a;
+      });
+
+      setAttendees(updated);
+      setSelectedAttendees(new Set(updated.map((a) => (a.status === "attended" ? a.userId?._id : null)).filter(Boolean)));
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to mark attendance");
     } finally {
@@ -125,7 +166,7 @@ export default function AttendanceManagement() {
   };
 
   const registeredCount = attendees.length;
-  const attendedCount = attendees.filter((attendee) => attendee.status === "attended").length;
+  const attendedCount = selectedAttendees.size;
   const noShowCount = Math.max(0, registeredCount - attendedCount);
   const attendanceRate = registeredCount > 0 ? Math.round((attendedCount / registeredCount) * 100) : 0;
 
@@ -217,7 +258,7 @@ export default function AttendanceManagement() {
                     <th className="px-5 py-4 text-left w-12">
                       <input
                         type="checkbox"
-                        checked={isOngoing && selectedAttendees.size === attendees.length && attendees.length > 0}
+                        checked={isOngoing && attendees.length > 0 && selectedAttendees.size === attendees.length}
                         onChange={toggleAll}
                         disabled={!isOngoing}
                         className="w-4 h-4 accent-indigo-500"
@@ -238,35 +279,42 @@ export default function AttendanceManagement() {
                   ) : (
                     attendees.map((attendee) => {
                       const attendeeId = attendee.userId?._id;
-                      const isSelected = selectedAttendees.has(attendeeId);
+                      const desired = selectedAttendees.has(attendeeId);
                       const alreadyAttended = attendee.status === "attended";
+
+                      // prioritize current user selection for immediate feedback
+                      let statusLabel;
+                      let statusClass;
+                      if (desired) {
+                        statusLabel = alreadyAttended ? "Present" : "Selected";
+                        statusClass = alreadyAttended
+                          ? "bg-emerald-950/50 text-emerald-300 border-emerald-800"
+                          : "bg-indigo-950/50 text-indigo-300 border-indigo-800";
+                      } else {
+                        statusLabel = "Pending";
+                        statusClass = "bg-slate-900/60 text-slate-400 border-slate-700";
+                      }
 
                       return (
                         <tr
                           key={attendee._id}
-                          className={`border-b border-cc-soft/70 transition-colors ${isSelected ? "bg-indigo-950/20" : "hover:bg-white/3"}`}
+                          className={`border-b border-cc-soft/70 transition-colors ${desired ? "bg-indigo-950/20" : "hover:bg-white/3"}`}
                         >
                           <td className="px-5 py-4">
                             <input
                               type="checkbox"
-                              checked={isSelected || alreadyAttended}
-                              onChange={() => !alreadyAttended && isOngoing && toggleAttendee(attendeeId)}
-                              disabled={alreadyAttended || !isOngoing}
+                              checked={desired}
+                              onChange={() => isOngoing && toggleAttendee(attendeeId)}
+                              disabled={!isOngoing}
                               className="w-4 h-4 accent-indigo-500"
                             />
                           </td>
                           <td className="px-5 py-4 font-medium text-cc">{attendee.userId.name}</td>
                           <td className="px-5 py-4 text-cc-muted">{attendee.userId.email}</td>
                           <td className="px-5 py-4 text-center">
-                            {alreadyAttended ? (
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-950/50 text-emerald-300 border border-emerald-800">
-                                ✓ Present
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-900/60 text-slate-400 border border-slate-700">
-                                Pending
-                              </span>
-                            )}
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${statusClass}`}>
+                              {statusLabel}
+                            </span>
                           </td>
                         </tr>
                       );
@@ -279,10 +327,10 @@ export default function AttendanceManagement() {
             <div className="px-5 py-4 border-t border-cc-soft bg-cc-surface-weak/40 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleMarkAttendance}
-                disabled={submitting || selectedAttendees.size === 0 || !isOngoing}
+                disabled={submitting || !isOngoing}
                 className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white py-3 px-4 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? "Marking..." : isOngoing ? `Mark ${selectedAttendees.size} Present` : "Attendance Locked"}
+                {submitting ? "Saving..." : isOngoing ? "Save Attendance" : "Attendance Locked"}
               </button>
               <button
                 onClick={() => setSelectedAttendees(new Set())}
@@ -359,7 +407,7 @@ export default function AttendanceManagement() {
 
             <div className="rounded-3xl border border-indigo-900/60 bg-indigo-950/20 p-5 shadow-2xl shadow-black/20">
               <p className="text-sm text-indigo-200">
-                <strong>Tip:</strong> Check the box next to each student name to mark them as present. Already marked attendees cannot be unchecked.
+                <strong>Tip:</strong> Check the box next to each student name to mark them as present. You can also uncheck attendees; click "Save Attendance" to persist changes.
               </p>
             </div>
           </div>

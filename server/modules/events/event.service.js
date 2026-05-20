@@ -933,41 +933,78 @@ export const markAttendance = async ({ id, body, user }) => {
   }
 
   const { attendeeIds } = body;
-  if (!Array.isArray(attendeeIds) || attendeeIds.length === 0) {
-    throw createHttpError(400, "attendeeIds must be a non-empty array");
+  if (!Array.isArray(attendeeIds)) {
+    throw createHttpError(400, "attendeeIds must be an array");
   }
 
   const idSet = new Set(attendeeIds.map(String));
   const now = new Date();
 
-  // Update RSVP records with attendance tracking
-  const result = await RSVP.updateMany(
-    {
-      eventId: event._id,
-      userId: { $in: [...idSet] },
-      status: "registered",
-    },
-    {
-      $set: {
-        status: "attended",
-        "attendance.attended": true,
-        "attendance.attendanceMethod": "manual",
-        "attendance.entryTime": now,
-      },
-    }
-  );
+  const currentlyAttendedIds = await RSVP.find({ eventId: event._id, status: "attended" })
+    .distinct("userId");
+  const currentlyAttendedSet = new Set(currentlyAttendedIds.map(String));
+  const selectedSet = new Set([...idSet]);
 
-  // Increment attendedCount on event
-  if (result.modifiedCount > 0) {
+  const idsToAttend = [...selectedSet].filter((attendeeId) => !currentlyAttendedSet.has(attendeeId));
+  const idsToRevert = [...currentlyAttendedSet].filter((attendeeId) => !selectedSet.has(attendeeId));
+
+  let attendedModified = 0;
+  let revertedModified = 0;
+
+  if (idsToAttend.length > 0) {
+    const result = await RSVP.updateMany(
+      {
+        eventId: event._id,
+        userId: { $in: idsToAttend },
+        status: "registered",
+      },
+      {
+        $set: {
+          status: "attended",
+          "attendance.attended": true,
+          "attendance.attendanceMethod": "manual",
+          "attendance.entryTime": now,
+        },
+      }
+    );
+    attendedModified = result.modifiedCount || 0;
+  }
+
+  if (idsToRevert.length > 0) {
+    const result = await RSVP.updateMany(
+      {
+        eventId: event._id,
+        userId: { $in: idsToRevert },
+        status: "attended",
+      },
+      {
+        $set: {
+          status: "registered",
+          "attendance.attended": false,
+          "attendance.attendanceMethod": null,
+          "attendance.manualOverride": false,
+          "attendance.entryTime": null,
+          "attendance.exitTime": null,
+          "attendance.attendancePercentage": null,
+        },
+      }
+    );
+    revertedModified = result.modifiedCount || 0;
+  }
+
+  if (attendedModified > 0 || revertedModified > 0) {
     await Event.findByIdAndUpdate(event._id, {
-      $inc: { attendedCount: result.modifiedCount },
+      $inc: {
+        attendedCount: attendedModified - revertedModified,
+      },
     });
   }
 
   const attendees = await loadEventAttendees(event._id);
 
   return {
-    modifiedCount: result.modifiedCount,
+    modifiedCount: attendedModified,
+    revertedCount: revertedModified,
     attendees,
   };
 };
