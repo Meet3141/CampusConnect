@@ -19,5 +19,6 @@ const graceRequestSchema = new mongoose.Schema(
 );
 
 graceRequestSchema.index({ eventId: 1, userId: 1, status: 1 });
+graceRequestSchema.index({ status: 1, createdAt: -1 });
 
 export default mongoose.model("GraceRequest", graceRequestSchema);

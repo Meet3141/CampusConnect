@@ -23,6 +23,7 @@ import VolunteerHub       from "./features/volunteers/pages/VolunteerHub";
 import AdminPanel         from "./features/admin/pages/AdminPanel";
 import VerifyEvents       from "./features/volunteers/pages/VerifyEvents";
 import AdminStats         from "./features/admin/pages/AdminStats";
+import ReviewDashboard    from "./features/admin/pages/ReviewDashboard";
 import NotFound           from "./features/common/pages/NotFound";
 import UserProfile        from "./features/users/pages/UserProfile";
 import ProtectedRoute     from "./routes/ProtectedRoute";
@@ -122,6 +123,14 @@ export default function App() {
               element={
                 <RoleRoute roles={["editor", "orgAdmin"]}>
                   <VerifyEvents />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/admin/reviews"
+              element={
+                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                  <ReviewDashboard />
                 </RoleRoute>
               }
             />

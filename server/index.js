@@ -16,6 +16,7 @@ import eventRoutes from "./modules/events/event.routes.js";
 import { chatRouter as chatRoutes, messageRouter as messageRoutes } from "./modules/chat/chat.routes.js";
 import externalEventRoutes from "./modules/external-events/external-event.routes.js";
 import bookmarkRoutes from "./modules/bookmarks/bookmark.routes.js";
+import notificationRoutes from "./modules/notifications/notification.routes.js";
 import userRoutes from "./modules/users/user.routes.js";
 import volunteerRoutes from "./modules/volunteers/volunteer.routes.js";
 import errorHandler from "./middleware/errorHandler.js";
@@ -131,6 +132,7 @@ app.use("/api/chats",           chatLimiter,   chatRoutes);
 app.use("/api/messages",        chatLimiter,   messageRoutes);
 app.use("/api/external-events",                externalEventRoutes);
 app.use("/api/bookmarks",                      bookmarkRoutes);
+app.use("/api/notifications",                  notificationRoutes);
 app.use("/api/users",                          userRoutes);
 app.use("/api/volunteers",                     volunteerRoutes);
 

@@ -61,6 +61,16 @@ export function IconSearch({ size = 16 }) {
   );
 }
 
+export function IconBell({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M8 14.5a1.6 1.6 0 001.5-1H6.5a1.6 1.6 0 001.5 1z" fill="currentColor" opacity="0.8" />
+      <path d="M3.5 11.5h9l-.8-1.1A2.2 2.2 0 0111.3 9V6.5a3.3 3.3 0 00-6.6 0V9c0 .5-.2 1-.4 1.4l-.8 1.1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M9.8 3.2a2.4 2.4 0 00-3.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconLogout({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="shrink-0">

@@ -32,12 +32,15 @@ export const NAV = [
   },
 ];
 
-export function getAdminNav({ isAdmin, isEditor }) {
+export function getAdminNav({ isAdmin, isEditor, isClubAdmin }) {
   return [
     ...(isAdmin ? [{ label: "Admin Panel", path: "/admin", icon: IconAdmin }] : []),
     ...((isEditor || isAdmin)
       ? [{ label: "Verify Events", path: "/admin/verify", icon: IconVerify }]
       : []),
     ...(isAdmin ? [{ label: "Analytics", path: "/admin/stats", icon: IconStats }] : []),
+    ...((isAdmin || isClubAdmin)
+      ? [{ label: "Reviews", path: "/admin/reviews", icon: IconVerify }]
+      : []),
   ];
 }

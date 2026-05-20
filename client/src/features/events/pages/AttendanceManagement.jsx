@@ -7,7 +7,7 @@ import { fetchEventAnalytics, reviewAttendanceIssue, submitGraceRequest } from "
 export default function AttendanceManagement() {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  const toast = useToast();
   
   const [event, setEvent] = useState(null);
   const [attendees, setAttendees] = useState([]);
@@ -33,11 +33,11 @@ export default function AttendanceManagement() {
       setAttendees(attendeesRes.data.data || []);
       setAnalytics(analyticsRes.data.data || null);
     } catch (error) {
-      showToast(error.response?.data?.error || "Failed to fetch event details", "error");
+      toast.error(error.response?.data?.error || "Failed to fetch event details");
     } finally {
       setLoading(false);
     }
-  }, [eventId, showToast]);
+  }, [eventId, toast]);
 
   useEffect(() => {
     fetchEventAndAttendees();
@@ -64,11 +64,11 @@ export default function AttendanceManagement() {
 
   const handleMarkAttendance = async () => {
     if (!isOngoing) {
-      showToast("Attendance can only be marked while the event is ongoing.", "warning");
+      toast.info("Attendance can only be marked while the event is ongoing.");
       return;
     }
     if (selectedAttendees.size === 0) {
-      showToast("Please select at least one attendee", "warning");
+      toast.info("Please select at least one attendee");
       return;
     }
 
@@ -78,11 +78,11 @@ export default function AttendanceManagement() {
         attendeeIds: [...selectedAttendees],
       });
 
-      showToast(response.data.message, "success");
+      toast.success(response.data.message);
       setSelectedAttendees(new Set());
       fetchEventAndAttendees();
     } catch (error) {
-      showToast(error.response?.data?.error || "Failed to mark attendance", "error");
+      toast.error(error.response?.data?.error || "Failed to mark attendance");
     } finally {
       setSubmitting(false);
     }
@@ -90,17 +90,17 @@ export default function AttendanceManagement() {
 
   const handleSubmitGraceRequest = async () => {
     if (!reason.trim()) {
-      showToast("Please enter a reason", "warning");
+      toast.info("Please enter a reason");
       return;
     }
 
     try {
       setSubmittingReason(true);
       const response = await submitGraceRequest(eventId, reason.trim());
-      showToast(response.data.message, "success");
+      toast.success(response.data.message);
       setReason("");
     } catch (error) {
-      showToast(error.response?.data?.error || "Failed to submit grace request", "error");
+      toast.error(error.response?.data?.error || "Failed to submit grace request");
     } finally {
       setSubmittingReason(false);
     }
@@ -109,12 +109,17 @@ export default function AttendanceManagement() {
   const handleReviewAction = async (studentId, action) => {
     try {
       const response = await reviewAttendanceIssue(eventId, studentId, action);
-      showToast(response.data.message, "success");
+      toast.success(response.data.message);
       fetchEventAndAttendees();
     } catch (error) {
-      showToast(error.response?.data?.error || "Failed to update attendance review", "error");
+      toast.error(error.response?.data?.error || "Failed to update attendance review");
     }
   };
+
+  const registeredCount = attendees.length;
+  const attendedCount = attendees.filter((attendee) => attendee.status === "attended").length;
+  const noShowCount = Math.max(0, registeredCount - attendedCount);
+  const attendanceRate = registeredCount > 0 ? Math.round((attendedCount / registeredCount) * 100) : 0;
 
   if (loading) {
     return (
@@ -148,46 +153,29 @@ export default function AttendanceManagement() {
           Venue: <span className="font-semibold">{event.venue}</span>
         </p>
         <p className="text-gray-600">
-          Total Registered: <span className="font-semibold">{attendees.length}</span>
+          Total Registered: <span className="font-semibold">{registeredCount}</span>
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <p className="text-gray-600 text-sm">Registered</p>
-          <p className="text-2xl font-bold text-blue-600">{attendees.length}</p>
+          <p className="text-2xl font-bold text-blue-600">{registeredCount}</p>
         </div>
         <div className="bg-green-50 p-4 rounded-lg border border-green-200">
           <p className="text-gray-600 text-sm">Attended</p>
-          <p className="text-2xl font-bold text-green-600">{event.attendedCount || 0}</p>
+          <p className="text-2xl font-bold text-green-600">{attendedCount}</p>
         </div>
         <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-          <p className="text-gray-600 text-sm">No Shows</p>
-          <p className="text-2xl font-bold text-amber-600">{event.noShowCount || 0}</p>
+          <p className="text-gray-600 text-sm">No-shows</p>
+          <p className="text-2xl font-bold text-amber-600">{noShowCount}</p>
+        </div>
+        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+          <p className="text-gray-600 text-sm">Attendance Rate</p>
+          <p className="text-2xl font-bold text-indigo-600">{attendanceRate}%</p>
         </div>
       </div>
-
-      {analytics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-gray-600 text-sm">Registered</p>
-            <p className="text-2xl font-bold text-gray-900">{analytics.registered}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-gray-600 text-sm">Attended</p>
-            <p className="text-2xl font-bold text-green-600">{analytics.attended}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-gray-600 text-sm">No-show</p>
-            <p className="text-2xl font-bold text-amber-600">{analytics.noShow}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-gray-600 text-sm">Attendance Rate</p>
-            <p className="text-2xl font-bold text-blue-600">{analytics.attendanceRate}%</p>
-          </div>
-        </div>
-      )}
 
       {isCompleted && (
         <div className="mb-6 bg-white border border-gray-200 rounded-lg p-5 space-y-4">

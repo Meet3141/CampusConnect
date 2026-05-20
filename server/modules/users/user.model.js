@@ -96,6 +96,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    disciplineStatus: {
+      type: String,
+      enum: ["normal", "warning", "review", "blocked"],
+      default: "normal",
+    },
   },
   { timestamps: true }
 );

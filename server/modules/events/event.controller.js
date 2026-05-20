@@ -105,6 +105,15 @@ export const submitGraceRequest = async (req, res) => {
   res.json({ success: true, message: "Grace request submitted", data: request });
 };
 
+export const reviewGraceRequest = async (req, res) => {
+  const result = await eventService.reviewGraceRequest({
+    requestId: req.params.requestId,
+    user: req.user,
+    body: req.body,
+  });
+  res.json({ success: true, message: "Grace request reviewed", data: result });
+};
+
 export const reviewAttendanceIssue = async (req, res) => {
   const student = await eventService.reviewAttendanceIssue({
     id: req.params.id,
@@ -113,6 +122,11 @@ export const reviewAttendanceIssue = async (req, res) => {
     user: req.user,
   });
   res.json({ success: true, message: "Attendance review updated", data: student });
+};
+
+export const getReviewDashboard = async (req, res) => {
+  const dashboard = await eventService.getReviewDashboard({ user: req.user, query: req.query });
+  res.json({ success: true, data: dashboard });
 };
 
 export const startEvent = async (req, res) => {

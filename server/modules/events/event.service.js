@@ -6,6 +6,7 @@ import User from "../users/user.model.js";
 import GraceRequest from "./grace-request.model.js";
 import ReviewHistory from "./review-history.model.js";
 import VolunteerApplication from "./volunteer-application.model.js";
+import Notification from "../notifications/notification.model.js";
 import { createHttpError } from "../../utils/httpError.js";
 import { getOrSet, invalidate } from "../../utils/cache.js";
 import { processNoShows } from "../../utils/processNoShows.js";
@@ -218,6 +219,37 @@ export const getEventAnalytics = async ({ id }) => {
   ]);
 
   return { registered, attended, noShow, attendanceRate, graceRequests, reviewRequiredUsers, attendancePolicy: event.attendancePolicy || {} };
+};
+
+export const getReviewDashboard = async () => {
+  const [pendingGraceRequests, reviewRequiredUsers, blockedUsers] = await Promise.all([
+    GraceRequest.find({ status: "pending" })
+      .populate("eventId", "title date status clubId")
+      .populate("userId", "name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil")
+      .sort({ createdAt: -1 })
+      .lean(),
+    User.find({ reviewRequired: true })
+      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked")
+      .populate("missedEvents", "title date status clubId")
+      .sort({ warningCount: -1, updatedAt: -1 })
+      .lean(),
+    User.find({ isBlocked: true })
+      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked")
+      .populate("missedEvents", "title date status clubId")
+      .sort({ blockedUntil: 1 })
+      .lean(),
+  ]);
+
+  return {
+    pendingGraceRequests,
+    reviewRequiredUsers,
+    blockedUsers,
+    summary: {
+      pendingGraceRequests: pendingGraceRequests.length,
+      reviewRequiredUsers: reviewRequiredUsers.length,
+      blockedUsers: blockedUsers.length,
+    },
+  };
 };
 
 export const getEventById = async ({ id }) => {
@@ -644,7 +676,113 @@ export const submitGraceRequest = async ({ id, user, body }) => {
   const rsvp = await RSVP.findOne({ eventId: event._id, userId: user.id }).lean();
   if (!rsvp) throw createHttpError(400, "You must be registered for this event to submit a grace request");
 
-  return GraceRequest.create({ eventId: event._id, userId: user.id, reason });
+  const request = await GraceRequest.create({ eventId: event._id, userId: user.id, reason });
+  await Notification.create({
+    userId: user.id,
+    type: "grace_submitted",
+    title: "Grace request submitted",
+    message: "Your grace request was submitted and is waiting for faculty review.",
+    eventId: event._id,
+  });
+
+  return request;
+};
+
+export const reviewGraceRequest = async ({ requestId, user, body }) => {
+  const request = await GraceRequest.findById(requestId);
+  if (!request) throw createHttpError(404, "Grace request not found");
+
+  if (request.status !== "pending") {
+    throw createHttpError(400, "Grace request already reviewed");
+  }
+
+  const event = await Event.findById(request.eventId);
+  if (!event) throw createHttpError(404, "Event not found");
+  if (!(await canManageEvent(event, user))) throw createHttpError(403, "Forbidden");
+
+  const action = String(body?.action || "").trim();
+  if (!["approveGrace", "reduceWarning", "blockStudent", "reject"].includes(action)) {
+    throw createHttpError(400, "Invalid action");
+  }
+
+  const target = await User.findById(request.userId);
+  if (!target) throw createHttpError(404, "Student not found");
+
+  if (action === "approveGrace") {
+    target.graceUsed = true;
+    target.warningCount = Math.max(0, (target.warningCount || 0) - 1);
+    target.reviewRequired = false;
+    target.disciplineStatus = target.isBlocked ? "blocked" : "normal";
+    request.status = "approved";
+  } else if (action === "reduceWarning") {
+    target.warningCount = Math.max(0, (target.warningCount || 0) - 1);
+    target.reviewRequired = false;
+    target.disciplineStatus = target.isBlocked ? "blocked" : "normal";
+    request.status = "approved";
+  } else if (action === "blockStudent") {
+    target.isBlocked = true;
+    target.blockedUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    target.reviewRequired = false;
+    target.disciplineStatus = "blocked";
+    request.status = "approved";
+  } else if (action === "reject") {
+    request.status = "rejected";
+    target.reviewRequired = false;
+    if (!target.isBlocked) {
+      target.disciplineStatus = (target.warningCount || 0) > 0 ? "warning" : "normal";
+    }
+  }
+
+  request.reviewedBy = user.id;
+  request.reviewedAt = new Date();
+  request.facultyRemark = String(body?.reason || "").trim();
+
+  await Promise.all([request.save(), target.save()]);
+
+  const notificationType = action === "approveGrace"
+    ? "grace_approved"
+    : action === "reduceWarning"
+      ? "warning"
+      : action === "blockStudent"
+        ? "blocked"
+        : "grace_rejected";
+
+  await Notification.create({
+    userId: target._id,
+    type: notificationType,
+    title: action === "approveGrace"
+      ? "Grace approved"
+      : action === "reduceWarning"
+        ? "Warning reduced"
+        : action === "blockStudent"
+          ? "Attendance blocked"
+          : "Grace request rejected",
+    message: action === "approveGrace"
+      ? "Your grace request was approved."
+      : action === "reduceWarning"
+        ? "Your warning count was reduced after faculty review."
+        : action === "blockStudent"
+          ? "Your attendance access has been temporarily blocked."
+          : "Your grace request was rejected.",
+    eventId: event._id,
+  });
+
+  await ReviewHistory.create({
+    eventId: event._id,
+    userId: target._id,
+    action: action === "approveGrace"
+      ? "GRACE_APPROVED"
+      : action === "reduceWarning"
+        ? "WARNING_REDUCED"
+        : action === "blockStudent"
+          ? "STUDENT_BLOCKED"
+          : "GRACE_REJECTED",
+    performedBy: user.id,
+    role: user.roles?.includes("orgAdmin") ? "orgAdmin" : "clubAdmin",
+    reason: String(body?.reason || "").trim(),
+  });
+
+  return { request: request.toJSON(), student: target.toJSON() };
 };
 
 export const reviewAttendanceIssue = async ({ id, userId, body, user }) => {
@@ -660,16 +798,24 @@ export const reviewAttendanceIssue = async ({ id, userId, body, user }) => {
     throw createHttpError(400, "Invalid action");
   }
 
+  if (target.disciplineStatus !== "review" && action === "approveGrace") {
+    throw createHttpError(400, "No review required for this student");
+  }
+
   if (action === "approveGrace") {
     target.graceUsed = true;
+    target.warningCount = Math.max(0, (target.warningCount || 0) - 1);
     target.reviewRequired = false;
+    target.disciplineStatus = target.isBlocked ? "blocked" : "normal";
   } else if (action === "reduceWarning") {
     target.warningCount = Math.max(0, (target.warningCount || 0) - 1);
     target.reviewRequired = false;
+    target.disciplineStatus = target.isBlocked ? "blocked" : "normal";
   } else if (action === "blockStudent") {
     target.isBlocked = true;
     target.blockedUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
     target.reviewRequired = false;
+    target.disciplineStatus = "blocked";
   }
 
   await target.save();

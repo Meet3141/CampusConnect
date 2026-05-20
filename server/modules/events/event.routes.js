@@ -22,13 +22,16 @@ import {
   restartEvent,
   endEvent,
   submitGraceRequest,
+  reviewGraceRequest,
   reviewAttendanceIssue,
+  getReviewDashboard,
   markAttendance,
 } from "./event.controller.js";
 
 const router = express.Router();
 
 router.get("/volunteer-feed", asyncHandler(getVolunteerEvents));
+router.get("/reviews", auth, asyncHandler(getReviewDashboard));
 
 router.post("/", auth, authorize("clubAdmin", "orgAdmin"), asyncHandler(createEvent));
 router.get("/", asyncHandler(getEvents));
@@ -51,6 +54,7 @@ router.post("/:id/restart", auth, asyncHandler(restartEvent));
 router.post("/:id/end", auth, asyncHandler(endEvent));
 router.get("/:id/analytics", auth, asyncHandler(getEventAnalytics));
 router.post("/:id/grace-request", auth, asyncHandler(submitGraceRequest));
+router.post("/:id/grace-request/:requestId/review", auth, asyncHandler(reviewGraceRequest));
 router.post("/:id/review/:userId", auth, asyncHandler(reviewAttendanceIssue));
 router.post("/:id/attendance", auth, asyncHandler(markAttendance));
 

@@ -48,3 +48,19 @@ export const fetchPlatformStats = () =>
     api.get("/chats"),
     api.get("/bookmarks"),
   ]);
+
+/** GET /events/reviews — governance review dashboard */
+export const fetchReviewDashboard = () =>
+  api.get("/events/reviews");
+
+/** GET /notifications — current user's notifications */
+export const fetchNotifications = (limit = 8) =>
+  api.get("/notifications", { params: { limit } });
+
+/** PATCH /notifications/:id/read — mark a notification as read */
+export const markNotificationRead = (notificationId) =>
+  api.patch(`/notifications/${notificationId}/read`);
+
+/** PATCH /notifications/read-all — mark all current user's notifications as read */
+export const markAllNotificationsRead = () =>
+  api.patch("/notifications/read-all");
