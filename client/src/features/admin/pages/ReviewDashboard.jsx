@@ -16,12 +16,60 @@ const STATUS_BADGE = {
   blocked: "bg-red-950 text-red-300 border-red-800",
 };
 
+const VIEW_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "pendingReview", label: "Pending review" },
+  { value: "warningsOnly", label: "Warnings only" },
+  { value: "gracePending", label: "Grace pending" },
+  { value: "blocked", label: "Blocked users" },
+];
+
+function getClubMeta(club) {
+  if (!club) return { clubId: "", clubName: "Unknown club" };
+  if (typeof club === "string") return { clubId: club, clubName: "Unknown club" };
+  const clubId = club._id || club.id || club.value || club.toString?.() || "";
+  return { clubId: String(clubId), clubName: club.name || club.title || "Unknown club" };
+}
+
+function getStudentClubMeta(student) {
+  const events = Array.isArray(student?.missedEvents) ? student.missedEvents : [];
+  const map = new Map();
+
+  events.forEach((event) => {
+    const { clubId, clubName } = getClubMeta(event?.clubId);
+    if (clubId) {
+      map.set(clubId, clubName);
+    }
+  });
+
+  if (map.size === 0) {
+    return {
+      clubIds: [],
+      clubNames: ["Unknown club"],
+      primaryClubId: "",
+      primaryClubName: "Unknown club",
+    };
+  }
+
+  const clubIds = [...map.keys()];
+  const clubNames = [...map.values()];
+
+  return {
+    clubIds,
+    clubNames,
+    primaryClubId: clubIds[0],
+    primaryClubName: clubNames[0],
+  };
+}
+
 export default function ReviewDashboard() {
   const navigate = useNavigate();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [busyKey, setBusyKey] = useState("");
+  const [isProcessing, setIsProcessing] = useState("");
+  const [view, setView] = useState("all");
+  const [clubFilter, setClubFilter] = useState("all");
 
   const load = async () => {
     try {
@@ -37,35 +85,120 @@ export default function ReviewDashboard() {
 
   useEffect(() => { load(); }, []);
 
-  const rows = useMemo(() => data?.reviewRequiredUsers || [], [data]);
-  const requests = data?.pendingGraceRequests || [];
-  const blocked = data?.blockedUsers || [];
+  const rows = useMemo(() => (data?.reviewRequiredUsers || []).map((student) => {
+    const { clubIds, clubNames, primaryClubId, primaryClubName } = getStudentClubMeta(student);
+    return {
+      ...student,
+      clubIds,
+      clubNames,
+      clubId: primaryClubId,
+      clubName: primaryClubName,
+    };
+  }), [data]);
+
+  const requests = useMemo(() => (data?.pendingGraceRequests || []).map((request) => {
+    const { clubId, clubName } = getClubMeta(request.eventId?.clubId);
+    return {
+      ...request,
+      clubId,
+      clubName,
+    };
+  }), [data]);
+
+  const blocked = useMemo(() => (data?.blockedUsers || []).map((student) => {
+    const { clubIds, clubNames, primaryClubId, primaryClubName } = getStudentClubMeta(student);
+    return {
+      ...student,
+      clubIds,
+      clubNames,
+      clubId: primaryClubId,
+      clubName: primaryClubName,
+    };
+  }), [data]);
+
+  const clubs = useMemo(() => {
+    const map = new Map();
+    [...rows, ...blocked].forEach((item) => {
+      const ids = Array.isArray(item.clubIds) ? item.clubIds : [];
+      const names = Array.isArray(item.clubNames) ? item.clubNames : [];
+      ids.forEach((id, index) => {
+        if (!id) return;
+        if (!map.has(id)) {
+          map.set(id, names[index] || "Unknown club");
+        }
+      });
+    });
+    requests.forEach((item) => {
+      if (!item.clubId) return;
+      if (!map.has(item.clubId)) {
+        map.set(item.clubId, item.clubName || "Unknown club");
+      }
+    });
+    return [...map.entries()].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [rows, requests, blocked]);
+
+  const visibleRows = useMemo(() => {
+    let filtered = rows;
+    if (view === "warningsOnly") {
+      filtered = filtered.filter((student) => student.disciplineStatus === "warning");
+    } else if (view === "pendingReview") {
+      filtered = filtered.filter((student) => student.disciplineStatus === "review" || student.reviewRequired);
+    } else if (view === "blocked") {
+      filtered = [];
+    }
+    if (clubFilter !== "all") {
+      filtered = filtered.filter((student) => Array.isArray(student.clubIds) && student.clubIds.includes(clubFilter));
+    }
+    return filtered;
+  }, [rows, view, clubFilter]);
+
+  const visibleRequests = useMemo(() => {
+    let filtered = requests;
+    if (view !== "all" && view !== "gracePending") {
+      filtered = [];
+    }
+    if (clubFilter !== "all") {
+      filtered = filtered.filter((request) => request.clubId === clubFilter);
+    }
+    return filtered;
+  }, [requests, view, clubFilter]);
+
+  const visibleBlocked = useMemo(() => {
+    let filtered = blocked;
+    if (view !== "all" && view !== "blocked") {
+      filtered = [];
+    }
+    if (clubFilter !== "all") {
+      filtered = filtered.filter((student) => Array.isArray(student.clubIds) && student.clubIds.includes(clubFilter));
+    }
+    return filtered;
+  }, [blocked, view, clubFilter]);
 
   const reviewUser = async (user, action, eventId, extra = {}) => {
     const key = `${user._id}-${action}`;
     try {
-      setBusyKey(key);
+      setIsProcessing(key);
       await api.post(`/events/${eventId}/review/${user._id}`, { action, ...extra });
       toast.success("Review updated");
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update review.");
     } finally {
-      setBusyKey("");
+      setIsProcessing("");
     }
   };
 
   const reviewRequest = async (request, action, extra = {}) => {
     const key = `${request._id}-${action}`;
     try {
-      setBusyKey(key);
+      setIsProcessing(key);
       await api.post(`/events/${request.eventId._id}/grace-request/${request._id}/review`, { action, ...extra });
       toast.success("Grace request reviewed");
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to review grace request.");
     } finally {
-      setBusyKey("");
+      setIsProcessing("");
     }
   };
 
@@ -96,25 +229,62 @@ export default function ReviewDashboard() {
         <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5"><p className="text-sm text-cc-muted">Blocked</p><p className="text-3xl font-bold mt-1">{data?.summary?.blockedUsers || 0}</p></div>
       </div>
 
+      <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-2">
+          {VIEW_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setView(option.value)}
+              className={`px-3 py-2 rounded-full text-xs border transition-colors ${view === option.value ? "bg-indigo-600 text-white border-indigo-500" : "bg-transparent text-cc-muted border-cc-soft hover:text-cc hover:border-cc"}`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-cc-muted uppercase tracking-widest">Club</span>
+          <select
+            value={clubFilter}
+            onChange={(e) => setClubFilter(e.target.value)}
+            className="rounded-xl border border-cc-soft bg-cc-surface px-3 py-2 text-sm text-cc"
+          >
+            <option value="all">All clubs</option>
+            {clubs.map((club) => (
+              <option key={club.value} value={club.value}>{club.label}</option>
+            ))}
+          </select>
+          <button
+            onClick={() => {
+              setView("all");
+              setClubFilter("all");
+            }}
+            className="px-3 py-2 rounded-xl border border-cc-soft text-sm text-cc-muted hover:text-cc hover:border-cc transition-colors"
+          >
+            Clear filters
+          </button>
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-cc-soft overflow-hidden">
         <div className="px-5 py-3 border-b border-cc-soft bg-cc-surface-weak">
           <h2 className="font-semibold">Students Needing Review</h2>
         </div>
         <div className="divide-y divide-cc-soft">
-          {rows.length === 0 ? (
+          {visibleRows.length === 0 ? (
             <div className="px-5 py-8 text-cc-muted text-sm">No students currently require review.</div>
-          ) : rows.map((student) => {
+          ) : visibleRows.map((student) => {
             const eventId = latestMissedEventId(student);
             return (
               <div key={student._id} className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   <p className="font-medium">{student.name}</p>
-                  <p className="text-sm text-cc-muted">Misses: {student.missedEvents?.length || 0} · Warnings: {student.warningCount || 0} · Status: {student.disciplineStatus || "normal"}</p>
+                  <p className="text-sm text-cc-muted">Misses: {student.missedEvents?.length || 0} · Warnings: {student.warningCount || 0} · Status: {student.disciplineStatus || "normal"} · Club: {student.clubNames?.join(", ") || "Unknown club"}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button disabled={!eventId || busyKey === `${student._id}-approveGrace`} onClick={() => reviewUser(student, "approveGrace", eventId)} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs">Approve Grace</button>
-                  <button disabled={!eventId || busyKey === `${student._id}-reduceWarning`} onClick={() => reviewUser(student, "reduceWarning", eventId)} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs">Reduce Warning</button>
-                  <button disabled={!eventId || busyKey === `${student._id}-blockStudent`} onClick={() => reviewUser(student, "blockStudent", eventId)} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs">Block Student</button>
+                  <button disabled={!eventId || isProcessing === `${student._id}-approveGrace`} onClick={() => reviewUser(student, "approveGrace", eventId)} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs disabled:opacity-50">Approve Grace</button>
+                  <button disabled={!eventId || isProcessing === `${student._id}-reduceWarning`} onClick={() => reviewUser(student, "reduceWarning", eventId)} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs disabled:opacity-50">Reduce Warning</button>
+                  <button disabled={!eventId || isProcessing === `${student._id}-blockStudent`} onClick={() => reviewUser(student, "blockStudent", eventId)} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs disabled:opacity-50">Block Student</button>
                 </div>
               </div>
             );
@@ -127,19 +297,19 @@ export default function ReviewDashboard() {
           <h2 className="font-semibold">Pending Grace Requests</h2>
         </div>
         <div className="divide-y divide-cc-soft">
-          {requests.length === 0 ? (
+          {visibleRequests.length === 0 ? (
             <div className="px-5 py-8 text-cc-muted text-sm">No pending grace requests.</div>
-          ) : requests.map((request) => (
+          ) : visibleRequests.map((request) => (
             <div key={request._id} className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
                 <p className="font-medium">{request.userId?.name || "Student"}</p>
-                <p className="text-sm text-cc-muted">Event: {request.eventId?.title || "Unknown"} · Reason: {request.reason}</p>
+                <p className="text-sm text-cc-muted">Event: {request.eventId?.title || "Unknown"} · Reason: {request.reason} · Club: {request.clubName}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button disabled={busyKey === `${request._id}-approveGrace`} onClick={() => reviewRequest(request, "approveGrace", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs">Approve Grace</button>
-                <button disabled={busyKey === `${request._id}-reduceWarning`} onClick={() => reviewRequest(request, "reduceWarning", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs">Reduce Warning</button>
-                <button disabled={busyKey === `${request._id}-blockStudent`} onClick={() => reviewRequest(request, "blockStudent", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs">Block Student</button>
-                <button disabled={busyKey === `${request._id}-reject`} onClick={() => reviewRequest(request, "reject", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs">Reject</button>
+                <button disabled={isProcessing === `${request._id}-approveGrace`} onClick={() => reviewRequest(request, "approveGrace", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs disabled:opacity-50">Approve Grace</button>
+                <button disabled={isProcessing === `${request._id}-reduceWarning`} onClick={() => reviewRequest(request, "reduceWarning", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs disabled:opacity-50">Reduce Warning</button>
+                <button disabled={isProcessing === `${request._id}-blockStudent`} onClick={() => reviewRequest(request, "blockStudent", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs disabled:opacity-50">Block Student</button>
+                <button disabled={isProcessing === `${request._id}-reject`} onClick={() => reviewRequest(request, "reject", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs disabled:opacity-50">Reject</button>
               </div>
             </div>
           ))}
@@ -151,13 +321,13 @@ export default function ReviewDashboard() {
           <h2 className="font-semibold">Blocked Students</h2>
         </div>
         <div className="divide-y divide-cc-soft">
-          {blocked.length === 0 ? (
+          {visibleBlocked.length === 0 ? (
             <div className="px-5 py-8 text-cc-muted text-sm">No blocked students.</div>
-          ) : blocked.map((student) => (
+          ) : visibleBlocked.map((student) => (
             <div key={student._id} className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
                 <p className="font-medium">{student.name}</p>
-                <p className="text-sm text-cc-muted">Warnings: {student.warningCount || 0} · Until: {student.blockedUntil ? new Date(student.blockedUntil).toLocaleDateString() : "n/a"}</p>
+                <p className="text-sm text-cc-muted">Warnings: {student.warningCount || 0} · Until: {student.blockedUntil ? new Date(student.blockedUntil).toLocaleDateString() : "n/a"} · Club: {student.clubNames?.join(", ") || "Unknown club"}</p>
               </div>
               <span className={`px-3 py-1 rounded-full border text-xs ${STATUS_BADGE.blocked}`}>Blocked</span>
             </div>

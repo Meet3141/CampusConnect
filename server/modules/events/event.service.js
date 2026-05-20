@@ -10,6 +10,7 @@ import Notification from "../notifications/notification.model.js";
 import { createHttpError } from "../../utils/httpError.js";
 import { getOrSet, invalidate } from "../../utils/cache.js";
 import { processNoShows } from "../../utils/processNoShows.js";
+import { getAttendanceStats } from "../../../utils/attendanceStats.js";
 
 const EVENT_CACHE_TTL = 60; // seconds
 
@@ -208,34 +209,31 @@ export const getEventAnalytics = async ({ id }) => {
   const event = await Event.findById(id).lean();
   if (!event) throw createHttpError(404, "Event not found");
 
-  const registered = event.registeredCount || 0;
-  const attended = event.attendedCount || 0;
-  const noShow = event.noShowCount || 0;
-  const attendanceRate = registered > 0 ? Math.round((attended / registered) * 100) : 0;
+  const attendanceStats = getAttendanceStats(event);
 
   const [graceRequests, reviewRequiredUsers] = await Promise.all([
     GraceRequest.find({ eventId: event._id, status: "pending" }).populate("userId", "name email warningCount missedEvents graceUsed isBlocked blockedUntil reviewRequired").sort({ createdAt: -1 }).lean(),
     User.find({ reviewRequired: true, missedEvents: event._id }).select("name email warningCount missedEvents graceUsed isBlocked blockedUntil reviewRequired").lean(),
   ]);
 
-  return { registered, attended, noShow, attendanceRate, graceRequests, reviewRequiredUsers, attendancePolicy: event.attendancePolicy || {} };
+  return { ...attendanceStats, graceRequests, reviewRequiredUsers, attendancePolicy: event.attendancePolicy || {} };
 };
 
 export const getReviewDashboard = async () => {
   const [pendingGraceRequests, reviewRequiredUsers, blockedUsers] = await Promise.all([
     GraceRequest.find({ status: "pending" })
-      .populate("eventId", "title date status clubId")
+      .populate({ path: "eventId", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
       .populate("userId", "name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil")
       .sort({ createdAt: -1 })
       .lean(),
-    User.find({ reviewRequired: true })
+    User.find({ disciplineStatus: { $in: ["warning", "review"] } })
       .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked")
-      .populate("missedEvents", "title date status clubId")
+      .populate({ path: "missedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
       .sort({ warningCount: -1, updatedAt: -1 })
       .lean(),
     User.find({ isBlocked: true })
       .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked")
-      .populate("missedEvents", "title date status clubId")
+      .populate({ path: "missedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
       .sort({ blockedUntil: 1 })
       .lean(),
   ]);

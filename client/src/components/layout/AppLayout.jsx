@@ -54,6 +54,8 @@ export default function AppLayout() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationLoading, setNotificationLoading] = useState(false);
+  const [notificationProcessingId, setNotificationProcessingId] = useState("");
+  const [markAllProcessing, setMarkAllProcessing] = useState(false);
   const notificationsRef = useRef(null);
 
   const isAdmin = user?.roles?.includes("orgAdmin");
@@ -66,7 +68,7 @@ export default function AppLayout() {
     : "?";
 
   const unreadNotifications = useMemo(
-    () => notifications.filter((notification) => !notification.readAt),
+    () => notifications.filter((notification) => notification.status !== "read" && !notification.readAt),
     [notifications]
   );
 
@@ -110,13 +112,23 @@ export default function AppLayout() {
   };
 
   const handleMarkAllRead = async () => {
-    await markAllNotificationsRead();
-    await refreshNotifications();
+    try {
+      setMarkAllProcessing(true);
+      await markAllNotificationsRead();
+      await refreshNotifications();
+    } finally {
+      setMarkAllProcessing(false);
+    }
   };
 
   const handleMarkRead = async (notificationId) => {
-    await markNotificationRead(notificationId);
-    await refreshNotifications();
+    try {
+      setNotificationProcessingId(notificationId);
+      await markNotificationRead(notificationId);
+      await refreshNotifications();
+    } finally {
+      setNotificationProcessingId("");
+    }
   };
 
   return (
@@ -243,7 +255,7 @@ export default function AppLayout() {
                       <p className="text-sm font-semibold text-cc">Notifications</p>
                       <p className="text-[11px] text-cc-muted">Attendance and moderation updates</p>
                     </div>
-                    <button onClick={handleMarkAllRead} className="text-xs text-indigo-300 hover:text-indigo-200">
+                    <button disabled={markAllProcessing} onClick={handleMarkAllRead} className="text-xs text-indigo-300 hover:text-indigo-200 disabled:opacity-50">
                       Mark all read
                     </button>
                   </div>
@@ -257,8 +269,9 @@ export default function AppLayout() {
                         <button
                           key={notification._id}
                           onClick={() => handleMarkRead(notification._id)}
+                          disabled={notificationProcessingId === notification._id}
                           className={`w-full text-left px-4 py-3 border-b border-cc-soft/60 hover-bg-cc-surface transition-colors ${
-                            notification.readAt ? "opacity-70" : "bg-cc-surface-weak"
+                            notification.status === "read" || notification.readAt ? "opacity-70" : "bg-cc-surface-weak"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -266,7 +279,7 @@ export default function AppLayout() {
                               <p className="text-sm font-medium text-cc">{notification.title}</p>
                               <p className="text-xs text-cc-muted mt-1">{notification.message}</p>
                             </div>
-                            {!notification.readAt && <span className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-400 shrink-0" />}
+                            {notification.status !== "read" && !notification.readAt && <span className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-400 shrink-0" />}
                           </div>
                         </button>
                       ))

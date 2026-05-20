@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import { useToast } from "../../../context/ToastContext";
 import { fetchEventAnalytics, reviewAttendanceIssue, submitGraceRequest } from "../api";
+import { getAttendanceStats } from "../../../../../utils/attendanceStats.js";
 
 export default function AttendanceManagement() {
   const { eventId } = useParams();
@@ -16,7 +17,7 @@ export default function AttendanceManagement() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reason, setReason] = useState("");
-  const [submittingReason, setSubmittingReason] = useState(false);
+  const [isProcessing, setIsProcessing] = useState("");
   const previousStatusRef = useRef(null);
   const isOngoing = event?.status === "ongoing";
   const isCompleted = event?.status === "completed";
@@ -130,6 +131,18 @@ export default function AttendanceManagement() {
 
       setAttendees(updated);
       setSelectedAttendees(new Set(updated.map((a) => (a.status === "attended" ? a.userId?._id : null)).filter(Boolean)));
+      setAnalytics((current) =>
+        current
+          ? {
+              ...current,
+              ...getAttendanceStats({
+                registeredCount: updated.length,
+                attendedCount: updated.filter((attendee) => attendee.status === "attended").length,
+                noShowCount: Math.max(0, updated.length - updated.filter((attendee) => attendee.status === "attended").length),
+              }),
+            }
+          : current
+      );
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to mark attendance");
     } finally {
@@ -144,31 +157,35 @@ export default function AttendanceManagement() {
     }
 
     try {
-      setSubmittingReason(true);
+      setIsProcessing("grace");
       const response = await submitGraceRequest(eventId, reason.trim());
       toast.success(response.data.message);
       setReason("");
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to submit grace request");
     } finally {
-      setSubmittingReason(false);
+      setIsProcessing("");
     }
   };
 
   const handleReviewAction = async (studentId, action) => {
     try {
+      setIsProcessing(`${studentId}-${action}`);
       const response = await reviewAttendanceIssue(eventId, studentId, action);
       toast.success(response.data.message);
       fetchEventAndAttendees();
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to update attendance review");
+    } finally {
+      setIsProcessing("");
     }
   };
 
-  const registeredCount = attendees.length;
-  const attendedCount = selectedAttendees.size;
-  const noShowCount = Math.max(0, registeredCount - attendedCount);
-  const attendanceRate = registeredCount > 0 ? Math.round((attendedCount / registeredCount) * 100) : 0;
+  const attendanceStats = getAttendanceStats(analytics || event || {});
+  const registeredCount = attendanceStats.registered;
+  const attendedCount = attendanceStats.attended;
+  const noShowCount = attendanceStats.noShow;
+  const attendanceRate = attendanceStats.attendanceRate;
 
   if (loading) {
     return (
@@ -374,10 +391,10 @@ export default function AttendanceManagement() {
                 />
                 <button
                   onClick={handleSubmitGraceRequest}
-                  disabled={submittingReason}
+                  disabled={isProcessing === "grace"}
                   className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white py-3 px-4 text-sm font-semibold transition-colors disabled:opacity-40"
                 >
-                  {submittingReason ? "Submitting..." : "Submit Reason"}
+                  {isProcessing === "grace" ? "Submitting..." : "Submit Reason"}
                 </button>
               </div>
             )}
@@ -395,9 +412,9 @@ export default function AttendanceManagement() {
                         <p className="text-sm text-cc-muted">Misses: {student.missedEvents?.length || 0} · Warnings: {student.warningCount || 0}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <button onClick={() => handleReviewAction(student._id, "approveGrace")} className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-500 transition-colors">Approve Grace</button>
-                        <button onClick={() => handleReviewAction(student._id, "reduceWarning")} className="px-3 py-2 rounded-xl bg-amber-600 text-white text-xs font-medium hover:bg-amber-500 transition-colors">Reduce Warning</button>
-                        <button onClick={() => handleReviewAction(student._id, "blockStudent")} className="px-3 py-2 rounded-xl bg-red-600 text-white text-xs font-medium hover:bg-red-500 transition-colors">Block Student</button>
+                        <button disabled={isProcessing === `${student._id}-approveGrace`} onClick={() => handleReviewAction(student._id, "approveGrace")} className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-500 transition-colors disabled:opacity-50">Approve Grace</button>
+                        <button disabled={isProcessing === `${student._id}-reduceWarning`} onClick={() => handleReviewAction(student._id, "reduceWarning")} className="px-3 py-2 rounded-xl bg-amber-600 text-white text-xs font-medium hover:bg-amber-500 transition-colors disabled:opacity-50">Reduce Warning</button>
+                        <button disabled={isProcessing === `${student._id}-blockStudent`} onClick={() => handleReviewAction(student._id, "blockStudent")} className="px-3 py-2 rounded-xl bg-red-600 text-white text-xs font-medium hover:bg-red-500 transition-colors disabled:opacity-50">Block Student</button>
                       </div>
                     </div>
                   ))}

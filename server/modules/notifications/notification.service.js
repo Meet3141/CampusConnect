@@ -7,12 +7,15 @@ export const getNotifications = async ({ user, query }) => {
   const filter = { userId: user.id };
 
   if (unreadOnly) {
-    filter.readAt = null;
+    filter.$or = [{ status: "unread" }, { status: { $exists: false }, readAt: null }];
   }
 
   const [notifications, unreadCount] = await Promise.all([
     Notification.find(filter).sort({ createdAt: -1 }).limit(pageSize).lean(),
-    Notification.countDocuments({ userId: user.id, readAt: null }),
+    Notification.countDocuments({
+      userId: user.id,
+      $or: [{ status: "unread" }, { status: { $exists: false }, readAt: null }],
+    }),
   ]);
 
   return {
@@ -27,7 +30,7 @@ export const getNotifications = async ({ user, query }) => {
 export const markNotificationRead = async ({ id, user }) => {
   const notification = await Notification.findOneAndUpdate(
     { _id: id, userId: user.id },
-    { $set: { readAt: new Date() } },
+    { $set: { readAt: new Date(), status: "read" } },
     { new: true }
   ).lean();
 
@@ -40,8 +43,8 @@ export const markNotificationRead = async ({ id, user }) => {
 
 export const markAllNotificationsRead = async ({ user }) => {
   const result = await Notification.updateMany(
-    { userId: user.id, readAt: null },
-    { $set: { readAt: new Date() } }
+    { userId: user.id, status: "unread" },
+    { $set: { readAt: new Date(), status: "read" } }
   );
 
   return {
