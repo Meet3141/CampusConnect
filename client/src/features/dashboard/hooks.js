@@ -21,6 +21,7 @@ import {
 export const useDashboardData = (user) => {
   const [myClubs,   setMyClubs]   = useState([]);
   const [events,    setEvents]    = useState([]);
+  const [ongoingEvents, setOngoingEvents] = useState([]);
   const [chats,     setChats]     = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -67,7 +68,14 @@ export const useDashboardData = (user) => {
 
       // Upcoming only, capped at 5
       const now = new Date();
-      setEvents(allEvents.filter((e) => new Date(e.date) > now).slice(0, 5));
+      const upcomingEvents = allEvents
+        .filter((e) => e.status === "upcoming" && new Date(e.date) > now)
+        .slice(0, 5);
+      const liveEvents = allEvents
+        .filter((e) => e.status === "ongoing")
+        .slice(0, 5);
+      setEvents(upcomingEvents);
+      setOngoingEvents(liveEvents);
 
       // 3 — fetch chats + bookmarks in parallel
       const [chatsRes, bookmarksRes] = await Promise.allSettled([
@@ -101,8 +109,17 @@ export const useDashboardData = (user) => {
     const totalBk      = bookmarks.length;
     const internalBk   = bookmarks.filter((b) => b.eventType === "internal").length;
     const externalBk   = totalBk - internalBk;
-    return { activeClubs, pendingClubs, events: events.length, unreadChats, totalBk, internalBk, externalBk };
-  }, [myClubs, events, chats, bookmarks]);
+    return {
+      activeClubs,
+      pendingClubs,
+      events: events.length,
+      ongoingEvents: ongoingEvents.length,
+      unreadChats,
+      totalBk,
+      internalBk,
+      externalBk,
+    };
+  }, [myClubs, events, ongoingEvents, chats, bookmarks]);
 
-  return { myClubs, events, chats, bookmarks, loading, stats };
+  return { myClubs, events, ongoingEvents, chats, bookmarks, loading, stats };
 };

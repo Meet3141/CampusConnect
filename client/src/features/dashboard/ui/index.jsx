@@ -1,5 +1,6 @@
 import Button from "../../../components/ui/Button";
 import React from "react";
+import { STATUS_STYLE } from "../../events/ui/eventStyles";
 
 export const styles = {
   page: "w-full px-5 lg:px-6 py-6 space-y-6",
@@ -122,6 +123,7 @@ export function EventRow({ event, last, onClick }) {
   const day = d ? d.getDate() : "—";
   const mon = d ? d.toLocaleDateString("en-US", { month: "short" }) : "";
   const cat = event?.category || {};
+  const statusCls = STATUS_STYLE[event.status] || STATUS_STYLE.completed;
 
   return (
     <button
@@ -141,9 +143,14 @@ export function EventRow({ event, last, onClick }) {
         </p>
         <p className={styles.rowMeta}>📍 {event.venue}</p>
       </div>
-      <span className={`shrink-0 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium ${cat.badge || "bg-slate-700"}`}>
-        {event.category}
-      </span>
+      <div className="flex shrink-0 items-center gap-2 flex-wrap justify-end">
+        <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium ${statusCls}`}>
+          {event.status}
+        </span>
+        <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium ${cat.badge || "bg-slate-700"}`}>
+          {event.category}
+        </span>
+      </div>
     </button>
   );
 }
@@ -214,7 +221,7 @@ export function EmptyState({ icon, message, action, onAction }) {
   return (
     <div className={styles.emptyState}>
       <span className="text-3xl">{icon}</span>
-      <p className="text-cc-muted text-xs max-w-[160px] leading-relaxed">{message}</p>
+      <p className="text-cc-muted text-xs max-w-40 leading-relaxed">{message}</p>
       {action && (
         <Button variant="ghost" size="sm" onClick={onAction} className="text-xs">
           {action} →

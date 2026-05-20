@@ -472,7 +472,7 @@ export default function EventDetail() {
               </dl>
             </div>
 
-            {(isOngoing || isCompleted) && (
+            {canManageLifecycle && (isOngoing || isCompleted) && (
               <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
                 <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">Attendance</h3>
                 <div className="grid grid-cols-3 gap-3 text-center text-xs mb-4">

@@ -40,7 +40,7 @@ export default function Dashboard() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
 
-  const { myClubs, events, chats, bookmarks, loading, stats } = useDashboardData(user);
+  const { myClubs, events, ongoingEvents, chats, bookmarks, loading, stats } = useDashboardData(user);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -88,8 +88,8 @@ export default function Dashboard() {
       {/* ── Two-column: events + (chats | bookmarks) ── */}
       <div className={styles.twoColumnGrid}>
 
-        {/* Upcoming events */}
-        <div className="lg:col-span-3">
+        {/* Events stack */}
+        <div className="lg:col-span-3 space-y-6">
           <Section title="Upcoming events" count={events.length} linkLabel="See all →" onLink={() => navigate("/clubs")}>
             {events.length === 0 ? (
               <EmptyState icon="📅" message="No upcoming events found." />
@@ -97,6 +97,18 @@ export default function Dashboard() {
               <div className={styles.eventList}>
                 {events.map((ev, i) => (
                   <EventRow key={ev._id} event={ev} last={i === events.length - 1} onClick={() => navigate(`/events/${ev._id}`)} />
+                ))}
+              </div>
+            )}
+          </Section>
+
+          <Section title="Ongoing events" count={ongoingEvents.length} linkLabel="See all →" onLink={() => navigate("/events")}>
+            {ongoingEvents.length === 0 ? (
+              <EmptyState icon="🟢" message="No ongoing events right now." />
+            ) : (
+              <div className={styles.eventList}>
+                {ongoingEvents.map((ev, i) => (
+                  <EventRow key={ev._id} event={ev} last={i === ongoingEvents.length - 1} onClick={() => navigate(`/events/${ev._id}`)} />
                 ))}
               </div>
             )}
