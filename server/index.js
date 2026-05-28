@@ -34,14 +34,36 @@ const server = http.createServer(app);
 if (process.env.TRUST_PROXY === "1" || process.env.TRUST_PROXY === "true") {
   app.set("trust proxy", 1);
 }
-const ALLOWED_ORIGIN =
-  process.env.CORS_ORIGIN ||
-  process.env.ALLOWED_ORIGIN ||
-  "http://localhost:5173";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGIN;
+
+// In development: allow ANY localhost port (Vite can land on 5173, 5174, etc.)
+// In production: must set CORS_ORIGIN env var explicitly.
+const corsOriginFn = (origin, callback) => {
+  // Allow requests with no origin (server-to-server, curl, mobile apps)
+  if (!origin) return callback(null, true);
+
+  const isProd = process.env.NODE_ENV === "production";
+
+  if (isProd) {
+    // Production: only exact match against CORS_ORIGIN env var
+    if (origin === CORS_ORIGIN) return callback(null, true);
+    return callback(new Error(`CORS: origin ${origin} not allowed`));
+  }
+
+  // Development: allow any localhost or 127.0.0.1 origin on any port
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    return callback(null, true);
+  }
+
+  // Also honour the explicit env var if set
+  if (CORS_ORIGIN && origin === CORS_ORIGIN) return callback(null, true);
+
+  return callback(new Error(`CORS: origin ${origin} not allowed`));
+};
 
 const io = new Server(server, {
   cors: {
-    origin: ALLOWED_ORIGIN,
+    origin: corsOriginFn,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   },
@@ -55,7 +77,7 @@ app.use(compression());
 // ── Security & Parsing Middlewares ──
 app.use(
   cors({
-    origin: ALLOWED_ORIGIN,
+    origin: corsOriginFn,
     credentials: true,            // allow cookies to be sent cross-origin
   })
 );
