@@ -1,0 +1,361 @@
+
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    --cc-brand-steel-azure: #004F9F;
+    --cc-brand-bright-snow: #F8F9FA;
+    --cc-brand-sky-surge: #00BCEB;
+    --cc-brand-white: #FFFFFF;
+    --cc-brand-graphite: #333333;
+
+    --cc-neutral-950: #0A0F1A;
+    --cc-neutral-900: #0F1724;
+    --cc-neutral-850: #141C2B;
+    --cc-neutral-800: #1C2433;
+
+    --cc-color-brand-steel-azure: var(--cc-brand-steel-azure);
+    --cc-color-brand-bright-snow: var(--cc-brand-bright-snow);
+    --cc-color-brand-sky-surge: var(--cc-brand-sky-surge);
+    --cc-color-brand-white: var(--cc-brand-white);
+    --cc-color-brand-graphite: var(--cc-brand-graphite);
+    --cc-color-brand-primary: var(--cc-brand-steel-azure);
+    --cc-color-brand-accent: var(--cc-brand-sky-surge);
+    --cc-color-brand: var(--cc-color-brand-primary);
+    --cc-color-brand-hover: #0A63C7;
+    --cc-color-background: var(--cc-neutral-950);
+    --cc-color-surface: var(--cc-neutral-900);
+    --cc-color-surface-elevated: var(--cc-neutral-850);
+    --cc-color-surface-hover: rgba(248, 249, 250, 0.06);
+    --cc-color-surface-weak: rgba(248, 249, 250, 0.03);
+    --cc-color-surface-overlay: rgba(10, 15, 26, 0.88);
+    --cc-color-text-primary: var(--cc-brand-bright-snow);
+    --cc-color-text-secondary: #C7D2E0;
+    --cc-color-text-muted: #94A3B8;
+    --cc-color-border: rgba(248, 249, 250, 0.12);
+    --cc-color-border-subtle: rgba(248, 249, 250, 0.08);
+    --cc-color-border-strong: rgba(248, 249, 250, 0.22);
+    --cc-color-accent: var(--cc-brand-sky-surge);
+    --cc-color-accent-soft: rgba(0, 188, 235, 0.35);
+    --cc-color-success: #22C55E;
+    --cc-color-warning: #F59E0B;
+    --cc-color-error: #EF4444;
+    --cc-color-info: #38BDF8;
+    --cc-color-focus: var(--cc-color-accent);
+
+    --cc-bg: var(--cc-color-background);
+    --cc-surface: var(--cc-color-surface);
+    --cc-text: var(--cc-color-text-primary);
+    --cc-muted: var(--cc-color-text-muted);
+    --cc-border-soft: var(--cc-color-border-subtle);
+    --cc-border-strong: var(--cc-color-border-strong);
+    --cc-brand: var(--cc-color-brand);
+    --cc-brand-hover: var(--cc-color-brand-hover);
+    --cc-accent: var(--cc-color-accent);
+    --cc-surface-weak: var(--cc-color-surface-weak);
+    --cc-surface-hover: var(--cc-color-surface-hover);
+    --cc-surface-overlay: var(--cc-color-surface-overlay);
+
+    --cc-space-0: 0;
+    --cc-space-1: 0.25rem;
+    --cc-space-2: 0.5rem;
+    --cc-space-3: 0.75rem;
+    --cc-space-4: 1rem;
+    --cc-space-5: 1.25rem;
+    --cc-space-6: 1.5rem;
+    --cc-space-8: 2rem;
+    --cc-space-10: 2.5rem;
+    --cc-space-12: 3rem;
+    --cc-space-16: 4rem;
+    --cc-space-20: 5rem;
+    --cc-space-24: 6rem;
+    --cc-space-32: 8rem;
+    --cc-space-40: 10rem;
+    --cc-space-48: 12rem;
+    --cc-space-64: 16rem;
+    --cc-space-80: 20rem;
+    --cc-space-96: 24rem;
+
+    --cc-font-heading: "Sora", "Manrope", "Segoe UI", sans-serif;
+    --cc-font-body: "Manrope", "Segoe UI", sans-serif;
+    --cc-font-family-display: var(--cc-font-heading);
+    --cc-font-family-body: var(--cc-font-body);
+    --cc-font-family-mono: "JetBrains Mono", "Consolas", monospace;
+
+    --cc-font-weight-regular: 400;
+    --cc-font-weight-medium: 500;
+    --cc-font-weight-semibold: 600;
+    --cc-font-weight-bold: 700;
+
+    --cc-font-size-display-xl: clamp(2.75rem, 2.2rem + 2.4vw, 4rem);
+    --cc-font-size-display-lg: clamp(2.25rem, 1.9rem + 1.8vw, 3.25rem);
+    --cc-font-size-heading-xl: clamp(1.875rem, 1.6rem + 1.1vw, 2.5rem);
+    --cc-font-size-heading-lg: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+    --cc-font-size-heading-md: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+    --cc-font-size-heading-sm: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+    --cc-font-size-body-lg: clamp(1rem, 0.98rem + 0.2vw, 1.125rem);
+    --cc-font-size-body-md: clamp(1rem, 0.98rem + 0.1vw, 1.0625rem);
+    --cc-font-size-body-sm: clamp(0.9375rem, 0.92rem + 0.08vw, 0.98rem);
+    --cc-font-size-caption: clamp(0.8125rem, 0.8rem + 0.05vw, 0.875rem);
+    --cc-font-size-micro: clamp(0.75rem, 0.74rem + 0.04vw, 0.8rem);
+
+    --cc-text-display-xl: var(--cc-font-size-display-xl);
+    --cc-text-display-lg: var(--cc-font-size-display-lg);
+    --cc-text-heading-xl: var(--cc-font-size-heading-xl);
+    --cc-text-heading-lg: var(--cc-font-size-heading-lg);
+    --cc-text-heading-md: var(--cc-font-size-heading-md);
+    --cc-text-heading-sm: var(--cc-font-size-heading-sm);
+    --cc-text-body-lg: var(--cc-font-size-body-lg);
+    --cc-text-body-md: var(--cc-font-size-body-md);
+    --cc-text-body-sm: var(--cc-font-size-body-sm);
+    --cc-text-caption: var(--cc-font-size-caption);
+    --cc-text-micro: var(--cc-font-size-micro);
+
+    --cc-line-height-tight: 1.1;
+    --cc-line-height-normal: 1.6;
+    --cc-line-height-relaxed: 1.75;
+
+    --cc-line-height-display-xl: var(--cc-line-height-tight);
+    --cc-line-height-display-lg: 1.15;
+    --cc-line-height-heading-xl: 1.2;
+    --cc-line-height-heading-lg: 1.25;
+    --cc-line-height-heading-md: 1.3;
+    --cc-line-height-heading-sm: 1.35;
+    --cc-line-height-body-lg: var(--cc-line-height-normal);
+    --cc-line-height-body-md: var(--cc-line-height-normal);
+    --cc-line-height-body-sm: 1.55;
+    --cc-line-height-caption: 1.4;
+    --cc-line-height-micro: 1.35;
+
+    --cc-letter-spacing-tight: -0.02em;
+    --cc-letter-spacing-normal: 0em;
+    --cc-letter-spacing-display: var(--cc-letter-spacing-tight);
+    --cc-letter-spacing-caption: 0.01em;
+    --cc-letter-spacing-micro: 0.02em;
+
+    --cc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --cc-shadow-md: 0 8px 20px rgba(0, 0, 0, 0.32);
+    --cc-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.36);
+    --cc-shadow-xl: 0 28px 60px rgba(0, 0, 0, 0.4);
+    /* Hover-specific shadows — softer lift feel */
+    --cc-shadow-hover-sm: 0 4px 12px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.14);
+    --cc-shadow-hover-md: 0 8px 24px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.16);
+    /* Card depth — surfaces layered above background */
+    --cc-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.20), 0 4px 12px rgba(0, 0, 0, 0.12);
+    /* ── Semantic shadow aliases ── */
+    --cc-shadow-soft:    var(--cc-shadow-card);     /* flat card depth */
+    --cc-shadow-overlay: var(--cc-shadow-lg);        /* dropdown/modal depth */
+    /* ── Composite transition shorthands ── */
+    --cc-transition-premium: all var(--cc-motion-normal) var(--cc-motion-ease-emphasized);
+    --cc-transition-fast:    all var(--cc-motion-fast) var(--cc-motion-ease-standard);
+    --cc-transition-spring:  all var(--cc-motion-spring) var(--cc-motion-ease-spring);
+
+
+    --cc-radius-sm: 6px;
+    --cc-radius-md: 10px;
+    --cc-radius-lg: 12px;
+    --cc-radius-xl: 16px;
+    --cc-radius-2xl: 24px;
+    --cc-radius-pill: 999px;
+
+    --cc-motion-fast: 120ms;
+    --cc-motion-normal: 180ms;
+    --cc-motion-slow: 280ms;
+    --cc-motion-spring: 380ms;
+    --cc-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --cc-motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+    --cc-motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --cc-motion-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+    /* Hover Motion Timing */
+    --cc-hover-duration-fast: 120ms;
+    --cc-hover-duration-normal: 180ms;
+    --cc-hover-duration-slow: 240ms;
+    --cc-hover-easing-standard: ease-out;
+    --cc-hover-easing-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Hover Elevation Shadows */
+    --cc-shadow-hover-elevation-subtle: 0 2px 8px rgba(0, 79, 159, 0.08);
+    --cc-shadow-hover-elevation-soft: 0 4px 16px rgba(0, 79, 159, 0.12);
+    --cc-shadow-hover-elevation-elevated: 0 8px 24px rgba(0, 79, 159, 0.16);
+    --cc-shadow-hover-elevation-focus: 0 4px 12px rgba(0, 188, 235, 0.15);
+
+    --cc-z-base: 0;
+    --cc-z-dropdown: 1000;
+    --cc-z-sticky: 1100;
+    --cc-z-overlay: 1200;
+    --cc-z-modal: 1300;
+    --cc-z-toast: 1400;
+    --cc-z-tooltip: 1500;
+
+    /* Focus ring */
+    --cc-focus-ring-color: rgba(99, 102, 241, 0.40);
+    --cc-focus-ring: 0 0 0 3px var(--cc-focus-ring-color);
+    --cc-focus-ring-offset: 2px;
+
+    --cc-breakpoint-xs: 360px;
+    --cc-breakpoint-sm: 480px;
+    --cc-breakpoint-md: 768px;
+    --cc-breakpoint-lg: 1024px;
+    --cc-breakpoint-xl: 1280px;
+    --cc-breakpoint-2xl: 1440px;
+
+    --cc-line-length-default: 68ch;
+
+    /* ── Layout structural vars ── */
+    --cc-sidebar-expanded: 220px;
+    --cc-sidebar-collapsed: 56px;
+    --cc-topbar-height: 56px;
+    --cc-bottom-nav-height: 60px;
+    --cc-page-padding-x: var(--cc-space-6);
+    --cc-page-padding-y: var(--cc-space-6);
+    --cc-page-max-width: 1280px;
+    --cc-page-wide-max-width: 1440px;
+    --cc-page-reading-max-width: 720px;
+    /* ── Surface depth tokens (layered hierarchy) ── */
+    --cc-surface-depth-0: var(--cc-color-background);
+    --cc-surface-depth-1: var(--cc-color-surface);
+    --cc-surface-depth-2: var(--cc-color-surface-elevated);
+    --cc-surface-depth-3: rgba(248, 249, 250, 0.07);
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+
+    /* ── Brand ── */
+    --cc-color-brand:              #004F9F;
+    --cc-color-brand-hover:        #0062C4;
+
+    /* ── Primary interaction tokens ── */
+    --cc-color-primary-soft:       rgba(0, 79, 159, 0.08);
+    --cc-color-primary-border:     rgba(0, 79, 159, 0.14);
+
+    /* ── Accent tokens ── */
+    --cc-color-accent:             #00BCEB;
+    --cc-color-accent-soft:        rgba(0, 188, 235, 0.08);
+    --cc-color-accent-border:      rgba(0, 188, 235, 0.18);
+
+    /* ── Surface hierarchy (reconstructed) ── */
+    /* depth-0: calm operational canvas */
+    --cc-color-background:         #F5F7FA;
+    /* depth-1: card/panel base — pure white for contrast against canvas */
+    --cc-color-surface:            #FFFFFF;
+    /* depth-2: slight elevation */
+    --cc-color-surface-elevated:   #FFFFFF;
+    /* depth-3: grouped section background — visible contrast */
+    --cc-color-surface-secondary:  #EEF2F7;
+    /* grouped surface — for section-group containers */
+    --cc-color-surface-grouped:    #F0F3F8;
+    /* interaction states */
+    --cc-color-surface-hover:      rgba(0, 79, 159, 0.04);
+    --cc-color-surface-active:     rgba(0, 79, 159, 0.06);
+    --cc-color-surface-weak:       rgba(15, 23, 42, 0.025);
+    --cc-color-surface-overlay:    rgba(255, 255, 255, 0.96);
+
+    /* ── Text hierarchy — ensured dark/visible on light backgrounds ── */
+    --cc-color-text-primary:       #1A1D23;
+    --cc-color-text-secondary:     #4A5568;
+    --cc-color-text-muted:         #718096;
+    --cc-color-text-disabled:      #A0AEC0;
+
+    /* ── Border tokens ── */
+    --cc-color-border:             rgba(0, 79, 159, 0.12);
+    --cc-color-border-subtle:      rgba(0, 79, 159, 0.08);
+    --cc-color-border-strong:      rgba(0, 79, 159, 0.20);
+    --cc-color-border-hover:       rgba(0, 79, 159, 0.16);
+    --cc-color-border-focus:       rgba(0, 79, 159, 0.28);
+
+    /* ── Sidebar tokens ── */
+    --cc-color-sidebar-bg:         #FFFFFF;
+    --cc-color-sidebar-border:     rgba(0, 79, 159, 0.08);
+    --cc-color-sidebar-active:     rgba(0, 79, 159, 0.08);
+    --cc-color-sidebar-hover:      rgba(0, 188, 235, 0.06);
+    --cc-color-sidebar-text:       #4A5568;
+    --cc-color-sidebar-text-active:#004F9F;
+
+    /* ── Stat accent tokens ── */
+    --cc-stat-accent-clubs:        #004F9F;
+    --cc-stat-accent-events:       #00BCEB;
+    --cc-stat-accent-chats:        #00C27A;
+    --cc-stat-accent-bookmarks:    #FFB020;
+
+    /* ── Feedback ── */
+    --cc-color-success:            #00C27A;
+    --cc-color-warning:            #E5A000;
+    --cc-color-error:              #E53E5C;
+    --cc-color-info:               #3B8DD4;
+    --cc-color-focus:              #004F9F;
+
+    /* ── Shadows — tight, brand-tinted, no floating-card feel ── */
+    --cc-shadow-sm:        0 1px 2px rgba(0, 40, 80, 0.05);
+    --cc-shadow-md:        0 2px 8px rgba(0, 40, 80, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --cc-shadow-lg:        0 4px 16px rgba(0, 40, 80, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --cc-shadow-xl:        0 8px 32px rgba(0, 40, 80, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05);
+    --cc-shadow-hover-sm:  0 2px 8px rgba(0, 40, 80, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --cc-shadow-hover-md:  0 4px 16px rgba(0, 40, 80, 0.10), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --cc-shadow-card:      0 1px 3px rgba(0, 40, 80, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    /* ── Focus ring ── */
+    --cc-focus-ring-color: rgba(0, 79, 159, 0.24);
+    --cc-focus-ring:       0 0 0 3px var(--cc-focus-ring-color);
+
+    /* ── Scrollbar ── */
+    --cc-scrollbar-thumb:  rgba(0, 79, 159, 0.18);
+    --cc-scrollbar-thumb-hover: rgba(0, 79, 159, 0.30);
+
+    /* ── Surface depth map ── */
+    --cc-surface-depth-0:  #F5F7FA;
+    --cc-surface-depth-1:  #FFFFFF;
+    --cc-surface-depth-2:  #EEF2F7;
+    --cc-surface-depth-3:  rgba(0, 79, 159, 0.04);
+
+    /* ── Font weight extension ── */
+    --cc-font-weight-extrabold:    800;
+
+    /* ── Alias shortcuts ── */
+    --cc-bg:               var(--cc-color-background);
+    --cc-surface:          var(--cc-color-surface);
+    --cc-text:             var(--cc-color-text-primary);
+    --cc-muted:            var(--cc-color-text-muted);
+    --cc-border-soft:      var(--cc-color-border-subtle);
+    --cc-border-strong:    var(--cc-color-border-strong);
+    --cc-brand:            var(--cc-color-brand);
+    --cc-brand-hover:      var(--cc-color-brand-hover);
+    --cc-accent:           var(--cc-color-accent);
+    --cc-surface-weak:     var(--cc-color-surface-weak);
+    --cc-surface-hover:    var(--cc-color-surface-hover);
+    --cc-surface-overlay:  var(--cc-color-surface-overlay);
+  }
+
+
+  html {
+    font-family: var(--cc-font-family-body);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--cc-color-background);
+    color: var(--cc-color-text-primary);
+    font-family: var(--cc-font-family-body);
+    font-size: var(--cc-text-body-md);
+    line-height: var(--cc-line-height-body-md);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: var(--cc-color-accent-soft);
+    color: var(--cc-color-text-primary);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--cc-color-focus);
+    outline-offset: 2px;
+  }
+}

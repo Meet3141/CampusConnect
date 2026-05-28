@@ -1,85 +1,434 @@
+/* ─── components.css ─────────────────────────────────────────────────────────
+ * Global component-level CSS helpers and semantic bridge classes.
+ * Layers 4 & 6 of the Semantic Token Migration System.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Keyframes ── */
 @keyframes cc-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(var(--cc-space-2)); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cc-slide-up {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes cc-backdrop-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cc-skeleton-pulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
 }
 
-.animate-fade-in {
-  animation: cc-fade-in 0.3s ease both;
-}
+/* ── Animation helpers ── */
+.animate-fade-in    { animation: cc-fade-in    var(--cc-motion-slow) var(--cc-motion-ease-standard)  both; }
+.animate-slide-up   { animation: cc-slide-up   220ms                 var(--cc-motion-ease-emphasized) both; }
+.animate-backdrop   { animation: cc-backdrop-fade 180ms ease both; }
+.animate-pulse      { animation: cc-skeleton-pulse 1.8s ease-in-out infinite; }
 
+/* ── Scrollbar — themed via CSS variable so light/dark work ── */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cc-scrollbar-thumb, rgba(255,255,255,0.12)) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar        { width: 4px; height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track  { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb  {
+  background: var(--cc-scrollbar-thumb, rgba(255,255,255,0.12));
+  border-radius: 99px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--cc-scrollbar-thumb-hover, rgba(255,255,255,0.22));
+}
+.scrollbar-none                              { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar          { display: none; }
+
+/* ── cc-card — minimal flat card with hover intelligence ── */
 .cc-card {
   border: 1px solid var(--cc-border-soft);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--cc-radius-xl);
+  background: var(--cc-color-surface);
+  transition: border-color 150ms ease, box-shadow 200ms ease;
 }
 
-/* Theme utility classes mapping to CSS variables. Use these gradually to replace Tailwind color utilities. */
-.bg-cc-surface { background-color: var(--cc-surface) !important; }
-.bg-cc-bg { background-color: var(--cc-bg) !important; }
-.bg-cc-surface-weak { background-color: var(--cc-surface-weak) !important; }
+.cc-card:hover {
+  border-color: var(--cc-color-border-hover, var(--cc-border-strong));
+  box-shadow: var(--cc-shadow-hover-sm);
+}
+
+/* ── Theme utility classes (semantic bridge) ── */
+.bg-cc-surface         { background-color: var(--cc-surface)         !important; }
+.bg-cc-bg              { background-color: var(--cc-bg)              !important; }
+.bg-cc-surface-weak    { background-color: var(--cc-surface-weak)    !important; }
+.bg-cc-surface-hover   { background-color: var(--cc-surface-hover)   !important; }
 .bg-cc-surface-overlay { background-color: var(--cc-surface-overlay) !important; }
-.bg-cc-brand { background-color: var(--cc-brand) !important; }
-.text-cc { color: var(--cc-text) !important; }
-.text-cc-muted { color: var(--cc-muted) !important; }
-.border-cc-soft { border-color: var(--cc-border-soft) !important; }
-.border-cc-strong { border-color: var(--cc-border-strong) !important; }
-.bg-cc-border-soft { background-color: var(--cc-border-soft) !important; }
-.hover-bg-cc-surface:hover { background-color: var(--cc-surface-hover) !important; }
-.hover-border-cc-strong:hover { border-color: var(--cc-border-strong) !important; }
-.btn-cc-primary { background-color: var(--cc-brand); color: var(--cc-text); border-radius: 0.75rem; padding: 0.5rem 0.9rem; }
+.bg-cc-brand           { background-color: var(--cc-brand)           !important; }
+
+/* New semantic backgrounds */
+.bg-primary-soft       { background-color: var(--cc-color-primary-soft)      !important; }
+.bg-accent-soft        { background-color: var(--cc-color-accent-soft)        !important; }
+.bg-surface-secondary  { background-color: var(--cc-color-surface-secondary)  !important; }
+.bg-surface-active     { background-color: var(--cc-color-surface-active)     !important; }
+
+/* ── Text colours ── */
+.text-cc               { color: var(--cc-text)   !important; }
+.text-cc-muted         { color: var(--cc-muted)  !important; }
+.text-primary-brand    { color: var(--cc-brand)  !important; }
+
+/* ── Border colours ── */
+.border-cc-soft        { border-color: var(--cc-border-soft)   !important; }
+.border-cc-strong      { border-color: var(--cc-border-strong) !important; }
+.bg-cc-border-soft     { background-color: var(--cc-border-soft) !important; }
+
+/* New semantic borders */
+.border-subtle  { border-color: var(--cc-color-border-subtle)  !important; }
+.border-hover   { border-color: var(--cc-color-border-hover)   !important; }
+.border-focus   { border-color: var(--cc-color-border-focus)   !important; }
+
+/* ── Hover state helpers ── */
+.hover-bg-cc-surface:hover      { background-color: var(--cc-surface-hover)   !important; }
+.hover-border-cc-strong:hover   { border-color:     var(--cc-border-strong)   !important; }
+
+/* ── Button semantic helpers ── */
+.btn-cc-primary       { background-color: var(--cc-brand); color: #fff; border-radius: var(--cc-radius-lg); padding: var(--cc-space-2) var(--cc-space-4); }
 .btn-cc-primary:hover { background-color: var(--cc-brand-hover); }
 
-/* Small helpers for badges */
-.badge-cc { padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 10px; font-weight: 600; display: inline-block; }
-
-/* Light theme visibility fixes for legacy dark utility classes.
-   These are scoped to the light theme so dark mode stays unchanged. */
-html[data-theme="light"] [class*="bg-white/"] {
-  background-color: var(--cc-surface) !important;
+/* ── Badge helper ── */
+.badge-cc {
+  padding: var(--cc-space-1) var(--cc-space-2);
+  border-radius: var(--cc-radius-pill);
+  font-size: var(--cc-font-size-micro);
+  font-weight: var(--cc-font-weight-semibold);
+  display: inline-block;
 }
 
-/* Placeholder helper to keep placeholder color consistent with theme tokens */
+/* ── Placeholder helper ── */
 .placeholder-cc-muted::-webkit-input-placeholder { color: var(--cc-muted) !important; }
-.placeholder-cc-muted::-moz-placeholder { color: var(--cc-muted) !important; opacity: 1; }
-.placeholder-cc-muted:-ms-input-placeholder { color: var(--cc-muted) !important; }
-.placeholder-cc-muted::placeholder { color: var(--cc-muted) !important; }
+.placeholder-cc-muted::-moz-placeholder          { color: var(--cc-muted) !important; opacity: 1; }
+.placeholder-cc-muted:-ms-input-placeholder      { color: var(--cc-muted) !important; }
+.placeholder-cc-muted::placeholder               { color: var(--cc-muted) !important; }
 
-html[data-theme="light"] [class*="border-white/"] {
-  border-color: var(--cc-border-soft) !important;
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYER 6 — Light-theme semantic safety net overrides
+   Scoped to [data-theme="light"] so dark mode is NEVER affected.
+   Catches the most common dark-pattern classes used in Phase 5/6 components.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Primary brand blue — replace indigo Tailwind with brand token ── */
+[data-theme="light"] .bg-indigo-600          { background-color: var(--cc-color-brand)       !important; }
+[data-theme="light"] .hover\:bg-indigo-500:hover { background-color: var(--cc-color-brand-hover) !important; }
+[data-theme="light"] .active\:bg-indigo-700:active { background-color: var(--cc-color-brand)  !important; }
+[data-theme="light"] .text-indigo-400         { color: var(--cc-color-brand)                  !important; }
+[data-theme="light"] .border-indigo-500\/40   { border-color: var(--cc-color-primary-border)  !important; }
+
+/* ── Dark opacity surfaces → semantic tokens ── */
+[data-theme="light"] .bg-cc-surface-weak      { background-color: var(--cc-color-surface-grouped, var(--cc-color-surface-secondary)) !important; }
+[data-theme="light"] .bg-cc-surface           { background-color: var(--cc-color-surface)            !important; }
+
+/* ── Raw white opacities (dark-only patterns) ── */
+[data-theme="light"] [class*="bg-white\/"]    { background-color: var(--cc-color-surface)            !important; }
+[data-theme="light"] [class*="border-white\/"]{ border-color:     var(--cc-color-border-subtle)      !important; }
+
+/* ── text-white inside cards → primary text ── */
+[data-theme="light"] .text-white              { color: var(--cc-color-text-primary)                  !important; }
+
+/* ── Dark opaque surfaces ── */
+[data-theme="light"] [class*="bg-slate-9"]    { background-color: var(--cc-color-surface)            !important; }
+[data-theme="light"] [class*="bg-gray-9"]     { background-color: var(--cc-color-surface)            !important; }
+[data-theme="light"] [class*="bg-neutral-9"]  { background-color: var(--cc-color-surface)            !important; }
+[data-theme="light"] [class*="bg-zinc-9"]     { background-color: var(--cc-color-surface)            !important; }
+
+/* ── Dark text that goes invisible on light ── */
+[data-theme="light"] [class*="text-slate-4"]  { color: var(--cc-color-text-muted)                    !important; }
+[data-theme="light"] [class*="text-slate-5"]  { color: var(--cc-color-text-secondary)                !important; }
+[data-theme="light"] [class*="text-slate-6"]  { color: var(--cc-color-text-primary)                  !important; }
+[data-theme="light"] .text-muted              { color: var(--cc-color-text-muted)                    !important; }
+
+/* ── Dark text children inside white-opacity cards ── */
+[data-theme="light"] [class*="bg-white\/"] h1,
+[data-theme="light"] [class*="bg-white\/"] h2,
+[data-theme="light"] [class*="bg-white\/"] h3,
+[data-theme="light"] [class*="bg-white\/"] h4,
+[data-theme="light"] [class*="bg-white\/"] p,
+[data-theme="light"] [class*="bg-white\/"] li,
+[data-theme="light"] [class*="bg-white\/"] label,
+[data-theme="light"] [class*="bg-white\/"] small { color: var(--cc-color-text-primary) !important; }
+
+/* ── Danger/success tinted surfaces → semantic feedback tokens ── */
+[data-theme="light"] .bg-red-950\/20    { background-color: rgba(255, 77, 109, 0.08)  !important; }
+[data-theme="light"] .bg-red-950\/50    { background-color: rgba(255, 77, 109, 0.16)  !important; }
+[data-theme="light"] .text-red-400      { color: var(--cc-color-error)                !important; }
+[data-theme="light"] .border-red-900\/30{ border-color: rgba(255, 77, 109, 0.20)      !important; }
+
+[data-theme="light"] .bg-emerald-950\/30  { background-color: rgba(0, 194, 122, 0.08)  !important; }
+[data-theme="light"] .bg-emerald-950\/60  { background-color: rgba(0, 194, 122, 0.16)  !important; }
+[data-theme="light"] .text-emerald-400    { color: var(--cc-color-success)              !important; }
+[data-theme="light"] .border-emerald-900\/30{ border-color: rgba(0, 194, 122, 0.20)    !important; }
+
+/* ── Focus rings → brand focus token ── */
+[data-theme="light"] .focus-visible\:ring-indigo-500\/40:focus-visible {
+  --tw-ring-color: var(--cc-color-border-focus) !important;
 }
 
-html[data-theme="light"] [class*="bg-white/"] h1,
-html[data-theme="light"] [class*="bg-white/"] h2,
-html[data-theme="light"] [class*="bg-white/"] h3,
-html[data-theme="light"] [class*="bg-white/"] h4,
-html[data-theme="light"] [class*="bg-white/"] h5,
-html[data-theme="light"] [class*="bg-white/"] h6,
-html[data-theme="light"] [class*="bg-white/"] p,
-html[data-theme="light"] [class*="bg-white/"] li,
-html[data-theme="light"] [class*="bg-white/"] label,
-html[data-theme="light"] [class*="bg-white/"] small {
-  color: var(--cc-text) !important;
+/* ── Hover states on interactive elements ── */
+[data-theme="light"] [class*="bg-white\/"]:hover { background-color: var(--cc-color-surface-hover) !important; }
+
+/* ── Input selects that still use dark surface ── */
+[data-theme="light"] select.bg-cc-surface-weak,
+[data-theme="light"] input.bg-cc-surface-weak {
+  background-color: var(--cc-color-surface-secondary) !important;
+  border-color: var(--cc-color-border-subtle) !important;
+  color: var(--cc-color-text-primary) !important;
+}
+[data-theme="light"] select option { background-color: var(--cc-color-surface) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYER 7 — Extended light-theme safety net (Phase 5 — Light Rollout)
+   Additional catches for dark patterns not covered in Layer 6.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Avatar & initials dark containers ── */
+[data-theme="light"] .bg-indigo-950               { background-color: var(--cc-color-primary-soft)   !important; }
+[data-theme="light"] [class*="text-indigo-3"]      { color:            var(--cc-color-brand)           !important; }
+[data-theme="light"] [class*="ring-indigo-5"]      { --tw-ring-color:  var(--cc-color-primary-border)  !important; }
+[data-theme="light"] [class*="ring-indigo-4"]      { --tw-ring-color:  var(--cc-color-primary-border)  !important; }
+
+/* ── Category/section tinted card backgrounds ── */
+[data-theme="light"] [class*="bg-indigo-9"]        { background-color: var(--cc-color-primary-soft)   !important; }
+[data-theme="light"] [class*="bg-sky-9"]           { background-color: var(--cc-color-accent-soft)    !important; }
+[data-theme="light"] [class*="bg-violet-9"]        { background-color: rgba(139, 92, 246, 0.06)       !important; }
+[data-theme="light"] [class*="bg-purple-9"]        { background-color: rgba(139, 92, 246, 0.06)       !important; }
+[data-theme="light"] [class*="bg-emerald-9"]       { background-color: rgba(0, 194, 122, 0.06)        !important; }
+[data-theme="light"] [class*="bg-amber-9"]         { background-color: rgba(255, 176, 32, 0.08)       !important; }
+[data-theme="light"] [class*="bg-orange-9"]        { background-color: rgba(255, 139, 0, 0.07)        !important; }
+
+/* ── Notification & status badges ── */
+[data-theme="light"] .bg-amber-500                 { background-color: #FFB020                        !important; }
+[data-theme="light"] .bg-amber-400                 { background-color: #FFB020                        !important; }
+
+/* ── Interactive nav/list hover states ── */
+[data-theme="light"] .bg-cc-surface-hover          { background-color: var(--cc-color-surface-hover)  !important; }
+
+/* ── Dark text that becomes invisible/low-contrast on light backgrounds ── */
+[data-theme="light"] [class*="text-indigo-4"]      { color: var(--cc-color-brand)                     !important; }
+[data-theme="light"] [class*="text-sky-4"]         { color: var(--cc-color-accent)                    !important; }
+[data-theme="light"] [class*="text-violet-4"]      { color: rgba(139, 92, 246, 0.90)                  !important; }
+[data-theme="light"] [class*="text-emerald-5"]     { color: var(--cc-color-success)                   !important; }
+[data-theme="light"] [class*="text-amber-5"]       { color: var(--cc-color-warning)                   !important; }
+
+/* ── Saturated brand bg opacities that look garish on light ── */
+[data-theme="light"] [class*="bg-violet-6\\/"]     { background-color: rgba(139, 92, 246, 0.08)       !important; }
+
+/* ── Border overrides for dark-pattern ring colors ── */
+[data-theme="light"] [class*="border-indigo-5"]    { border-color: var(--cc-color-primary-border)     !important; }
+[data-theme="light"] [class*="border-sky-5"]       { border-color: var(--cc-color-accent-border)      !important; }
+[data-theme="light"] [class*="border-violet-5"]    { border-color: rgba(139, 92, 246, 0.20)           !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VISUAL HIERARCHY ENHANCEMENT SYSTEM
+   Phase 10 — Premium Surface Architecture & Interaction Quality
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Stat Card Accent Strip System ── */
+.cc-stat-accent {
+  position: relative;
+  border-top: 3px solid var(--cc-stat-accent-color, var(--cc-color-brand));
 }
 
-html[data-theme="light"] [class*="bg-white/"] .text-slate-400 {
-  color: #64748b !important;
+.cc-stat-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cc-stat-accent-color, var(--cc-color-brand)) 0%, var(--cc-stat-accent-color, var(--cc-color-brand)) 100%);
+  opacity: 0.95;
 }
 
-html[data-theme="light"] [class*="bg-white/"] .text-slate-500 {
-  color: #475569 !important;
+/* ── Premium Card Hover System ── */
+.cc-card-hover {
+  transition: transform 200ms var(--cc-motion-ease-emphasized),
+              border-color 150ms ease,
+              box-shadow 200ms ease;
 }
 
-html[data-theme="light"] [class*="bg-white/"] .text-slate-600 {
-  color: #334155 !important;
+.cc-card-hover:hover {
+  transform: translateY(-1px);
+  border-color: var(--cc-color-border-hover);
+  box-shadow: var(--cc-shadow-hover-sm);
 }
 
-html[data-theme="light"] [class*="bg-white/"]:hover {
-  background-color: var(--cc-surface-hover) !important;
+/* ── Interactive Surface System ── */
+.cc-interactive-surface {
+  position: relative;
+  transition: all 150ms var(--cc-motion-ease-standard);
+  cursor: pointer;
+}
+
+.cc-interactive-surface:hover {
+  background-color: var(--cc-color-surface-hover);
+  transform: translateY(-0.5px);
+}
+
+.cc-interactive-surface:active {
+  transform: translateY(0);
+  opacity: 0.95;
+}
+
+/* ── Section Group Hierarchy ── */
+.cc-section-group {
+  background-color: var(--cc-color-surface-grouped);
+  border: 1px solid var(--cc-color-border-subtle);
+  border-radius: var(--cc-radius-xl);
+  padding: var(--cc-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-4);
+}
+
+/* ── Dashboard Surface Layering ── */
+.cc-dashboard-surface {
+  background-color: var(--cc-color-surface);
+  border: 1px solid var(--cc-color-border-subtle);
+  border-radius: var(--cc-radius-xl);
+  padding: var(--cc-space-4);
+  transition: all 150ms ease;
+}
+
+.cc-dashboard-surface:hover {
+  border-color: var(--cc-color-border-hover);
+  box-shadow: var(--cc-shadow-card);
+}
+
+/* ── Active State Indicator ── */
+.cc-active-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cc-color-success);
+  position: relative;
+}
+
+.cc-active-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid var(--cc-color-success);
+  opacity: 0;
+  animation: cc-pulse-ring 2s ease-out infinite;
+}
+
+/* ── Sidebar Navigation Hierarchy ── */
+.cc-sidebar-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-2) var(--cc-space-3);
+  border-radius: var(--cc-radius-lg);
+  transition: all 150ms ease;
+  color: var(--cc-color-sidebar-text);
+}
+
+.cc-sidebar-nav-item:hover {
+  background-color: var(--cc-color-sidebar-hover);
+  color: var(--cc-color-text-primary);
+}
+
+.cc-sidebar-nav-item--active {
+  background-color: var(--cc-color-sidebar-active);
+  color: var(--cc-color-sidebar-text-active);
+  font-weight: 600;
+}
+
+.cc-sidebar-nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background-color: var(--cc-color-brand);
+  border-radius: 0 var(--cc-radius-lg) var(--cc-radius-lg) 0;
+}
+
+/* ── Micro Spacing System ── */
+.cc-spacing-tight { gap: var(--cc-space-1) !important; }
+.cc-spacing-compact { gap: var(--cc-space-2) !important; }
+.cc-spacing-normal { gap: var(--cc-space-3) !important; }
+.cc-spacing-relaxed { gap: var(--cc-space-4) !important; }
+.cc-spacing-loose { gap: var(--cc-space-5) !important; }
+.cc-spacing-xl { gap: var(--cc-space-6) !important; }
+
+/* ── Typography Hierarchy Enforcement ── */
+.cc-text-overline {
+  font-size: var(--cc-font-size-micro);
+  font-weight: var(--cc-font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cc-color-text-secondary);
+}
+
+.cc-text-display {
+  font-weight: var(--cc-font-weight-extrabold);
+  color: var(--cc-color-text-primary);
+}
+
+.cc-text-heading {
+  font-weight: var(--cc-font-weight-bold);
+  color: var(--cc-color-text-primary);
+}
+
+.cc-text-body {
+  font-weight: var(--cc-font-weight-regular);
+  color: var(--cc-color-text-primary);
+}
+
+/* ── Focus Ring System ── */
+.cc-focus-ring {
+  outline: 2px solid var(--cc-color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--cc-radius-lg);
+}
+
+.cc-focus-ring:focus-visible {
+  outline: 2px solid var(--cc-color-focus);
+  outline-offset: 2px;
+}
+
+/* ── Loading & Skeleton System ── */
+.cc-skeleton-base {
+  background: linear-gradient(
+    90deg,
+    var(--cc-color-surface-weak) 0%,
+    var(--cc-color-surface-hover) 50%,
+    var(--cc-color-surface-weak) 100%
+  );
+  background-size: 200% 100%;
+  animation: cc-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--cc-radius-md);
+}
+
+/* ── Light Theme Specific Enhancements ── */
+[data-theme="light"] .cc-stat-accent {
+  background: linear-gradient(180deg, var(--cc-stat-accent-color, var(--cc-color-brand)) 0%, transparent 1%);
+}
+
+[data-theme="light"] .cc-section-group {
+  background-color: var(--cc-color-surface-grouped);
+  box-shadow: 0 1px 0 var(--cc-color-border-subtle) inset;
+}
+
+[data-theme="light"] .cc-card-hover:hover {
+  box-shadow: 0 2px 8px rgba(0, 40, 80, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .cc-active-dot {
+  background-color: var(--cc-color-success);
+  box-shadow: 0 0 0 2px var(--cc-color-surface);
 }

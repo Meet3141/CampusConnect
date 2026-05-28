@@ -1,0 +1,510 @@
+/**
+ * motion.css — Phase 5 Motion Architecture
+ *
+ * Philosophy: Motion must earn its place. Every animation here exists to:
+ *   1. Guide attention (entrance, hierarchy)
+ *   2. Confirm interaction (press, hover, feedback)
+ *   3. Smooth state transitions (filter, nav, skeleton)
+ *
+ * Keyframes → Utilities → Stagger system → Reduced-motion overrides
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   KEYFRAMES
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Shimmer sweep — skeleton loading replacement for flat pulse */
+@keyframes cc-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Pop-in — card/element entrance with spring overshoot feel */
+@keyframes cc-pop-in {
+  0%   { opacity: 0; transform: scale(0.95) translateY(6px); }
+  60%  { opacity: 1; transform: scale(1.005) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* Fade-scale — subtle modal/dropdown entrance */
+@keyframes cc-fade-scale {
+  from { opacity: 0; transform: scale(0.97) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* Slide-in-up — bottom nav, toast, drawer */
+@keyframes cc-slide-in-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Slide-in-right — right-side panels, notifications */
+@keyframes cc-slide-in-right {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* Count-up reveal — stat number entrance */
+@keyframes cc-count-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* Live pulse ring — status/online indicators */
+@keyframes cc-pulse-ring {
+  0%   { transform: scale(0.8);  opacity: 1;   }
+  70%  { transform: scale(2.0);  opacity: 0;   }
+  100% { transform: scale(2.0);  opacity: 0;   }
+}
+
+/* Dot pulse — simpler live indicator */
+@keyframes cc-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1);    }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Text reveal — staggered heading/subtext reveal */
+@keyframes cc-text-reveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Badge pop — achievement badge unlock */
+@keyframes cc-badge-pop {
+  0%   { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(1.12) rotate(2deg);  }
+  100% { opacity: 1; transform: scale(1) rotate(0deg);     }
+}
+
+/* Ripple — button press feedback */
+@keyframes cc-ripple {
+  from { transform: scale(0);    opacity: 0.35; }
+  to   { transform: scale(4);    opacity: 0;    }
+}
+
+/* Progress bar fill */
+@keyframes cc-fill {
+  from { width: 0%; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ANIMATION UTILITIES
+───────────────────────────────────────────────────────────────────────────── */
+
+.animate-pop-in {
+  animation: cc-pop-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-scale {
+  animation: cc-fade-scale 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-up {
+  animation: cc-slide-in-up 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: cc-slide-in-right 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-count-reveal {
+  animation: cc-count-reveal 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-badge-pop {
+  animation: cc-badge-pop 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-text-reveal {
+  animation: cc-text-reveal 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   STAGGER DELAY SYSTEM
+   Use with .animate-pop-in / .animate-fade-scale etc.
+───────────────────────────────────────────────────────────────────────────── */
+
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 160ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 240ms; }
+.stagger-7 { animation-delay: 280ms; }
+.stagger-8 { animation-delay: 320ms; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SHIMMER SKELETON SYSTEM
+───────────────────────────────────────────────────────────────────────────── */
+
+.cc-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--cc-color-surface-weak)  0%,
+    var(--cc-color-surface-hover) 50%,
+    var(--cc-color-surface-weak)  100%
+  );
+  background-size: 200% 100%;
+  animation: cc-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--cc-radius-md);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LIVE / REAL-TIME INDICATORS
+───────────────────────────────────────────────────────────────────────────── */
+
+.cc-live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cc-color-success);
+  flex-shrink: 0;
+}
+
+.cc-live-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: var(--cc-color-success);
+  animation: cc-pulse-ring 2s ease-out infinite;
+}
+
+.cc-live-dot--amber {
+  background-color: var(--cc-color-warning);
+}
+.cc-live-dot--amber::before {
+  background-color: var(--cc-color-warning);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   HOVER LIFT SYSTEM
+   Apply to interactive cards and buttons for premium tactile feel.
+───────────────────────────────────────────────────────────────────────────── */
+
+.hover-lift {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.hover-lift:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Light theme version */
+:root[data-theme="light"] .hover-lift:hover {
+  box-shadow: var(--cc-shadow-hover-sm);
+}
+
+/* Subtle version for smaller elements */
+.hover-lift-sm {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+
+.hover-lift-sm:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Semantic card hover — combines border-color + subtle translate + shadow */
+.cc-card-hover {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 150ms ease;
+}
+
+.cc-card-hover:hover {
+  transform: translateY(-1px);
+  border-color: var(--cc-color-border-hover);
+  box-shadow: var(--cc-shadow-hover-sm);
+}
+
+.cc-card-hover:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Interactive surface — for any clickable surface with premium hover feedback */
+.cc-interactive-surface {
+  transition: background-color 150ms ease,
+              border-color 150ms ease,
+              transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 150ms ease;
+  cursor: pointer;
+}
+
+.cc-interactive-surface:hover {
+  background-color: var(--cc-color-surface-hover);
+  border-color: var(--cc-color-border-hover);
+  transform: translateY(-0.5px);
+}
+
+.cc-interactive-surface:active {
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PRESS FEEDBACK
+───────────────────────────────────────────────────────────────────────────── */
+
+.press-feedback {
+  transition: transform 100ms ease;
+}
+
+.press-feedback:active {
+  transform: scale(0.97);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RIPPLE EFFECT
+───────────────────────────────────────────────────────────────────────────── */
+
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(0);
+  animation: cc-ripple 600ms linear;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CAPACITY / PROGRESS BAR
+───────────────────────────────────────────────────────────────────────────── */
+
+.cc-progress-bar {
+  height: 3px;
+  background-color: var(--cc-color-surface-weak);
+  border-radius: var(--cc-radius-pill);
+  overflow: hidden;
+}
+
+.cc-progress-bar__fill {
+  height: 100%;
+  border-radius: var(--cc-radius-pill);
+  background: linear-gradient(90deg, var(--cc-color-brand), var(--cc-color-accent));
+  animation: cc-fill 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   WILL-CHANGE PERFORMANCE HINTS
+───────────────────────────────────────────────────────────────────────────── */
+
+.will-change-transform { will-change: transform; }
+.will-change-opacity   { will-change: opacity;   }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   REDUCED MOTION — ACCESSIBILITY OVERRIDE
+   All animations disabled. Only instant/opacity transitions remain.
+───────────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop-in,
+  .animate-fade-scale,
+  .animate-slide-in-up,
+  .animate-slide-in-right,
+  .animate-count-reveal,
+  .animate-badge-pop,
+  .animate-text-reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .cc-skeleton {
+    animation: none;
+    background: var(--cc-color-surface-weak);
+  }
+
+  .cc-live-dot::before {
+    animation: none;
+  }
+
+  .hover-lift,
+  .hover-lift-sm {
+    transition: none;
+  }
+
+  .hover-lift:hover,
+  .hover-lift-sm:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PHASE 6 — SOCIAL PRODUCTIVITY SYSTEM
+   Expandable panels, chat slide, trend indicators, horizontal scroll
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Card expand — for expandable event detail panels */
+@keyframes cc-expand-y {
+  from { opacity: 0; max-height: 0; transform: translateY(-4px); }
+  to   { opacity: 1; max-height: 400px; transform: translateY(0); }
+}
+
+/* Chat community panel — slides in from right on desktop */
+@keyframes cc-slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Trend up — used on count cells */
+@keyframes cc-trend-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.cc-expand-panel {
+  animation: cc-expand-y 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
+}
+
+.cc-slide-in-right {
+  animation: cc-slide-in-right 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Trend indicator badges */
+.cc-trend-up {
+  color: var(--cc-color-success);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cc-trend-neutral {
+  color: var(--cc-color-text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Urgency glow — for "seats filling up" labels */
+.cc-urgency {
+  color: var(--cc-color-warning);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Mini sparkline bar — 3-bar visual trend indicator */
+.cc-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.cc-sparkline-bar {
+  width: 3px;
+  border-radius: 2px 2px 0 0;
+  background-color: currentColor;
+  opacity: 0.5;
+  transition: opacity 200ms ease;
+}
+
+.cc-sparkline-bar--active {
+  opacity: 1;
+}
+
+/* Horizontal scroll container — mobile card rows */
+.cc-horizontal-scroll {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 12px;
+  padding-bottom: 8px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.cc-horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cc-horizontal-scroll > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Panel toggle — collapsible chat side panel */
+.cc-panel-toggle {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .cc-panel-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--cc-color-surface-weak);
+    border: 1px solid var(--cc-color-border-subtle);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cc-color-text-muted);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+  }
+
+  .cc-panel-toggle:hover {
+    background: var(--cc-color-surface-hover);
+    color: var(--cc-color-text-primary);
+  }
+}
+
+/* Chat message bubble — semantic override */
+.cc-msg-bubble-me {
+  background-color: var(--cc-color-brand);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
+}
+
+.cc-msg-bubble-other {
+  background-color: var(--cc-color-surface-hover);
+  color: var(--cc-color-text-primary);
+  border-radius: 18px 18px 18px 4px;
+}
+
+/* Active member dot — clubs with recent activity */
+.cc-active-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--cc-color-success);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+  animation: cc-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Reduce motion overrides for phase 6 additions */
+@media (prefers-reduced-motion: reduce) {
+  .cc-expand-panel,
+  .cc-slide-in-right {
+    animation: none;
+  }
+
+  .cc-active-dot {
+    animation: none;
+  }
+}

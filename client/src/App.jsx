@@ -32,130 +32,127 @@ import RoleRoute          from "./routes/RoleRoute";
 import AppLayout          from "./components/layout/AppLayout";
 import { AuthProvider }   from "./context/AuthContext";
 import { ToastProvider }  from "./context/ToastContext";
+import { ThemeProvider }  from "./context/ThemeContext";
 import ToastViewport       from "./components/ui/ToastViewport";
 
 export default function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <ToastViewport />
-          <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login"    element={<Login />} />
-          <Route path="/register" element={<Register />} />
+    <ThemeProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <ToastViewport />
+            <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login"    element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* All authenticated pages share AppLayout (sidebar + topbar) */}
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            {/* All authenticated pages share AppLayout (sidebar + topbar) */}
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
 
-            {/* ── Member pages ── */}
-            <Route path="/dashboard"  element={<Dashboard />} />
-            <Route path="/my-clubs"   element={<MyClubs />} />
-            <Route path="/clubs"      element={<ClubList />} />
+              {/* ── Member pages ── */}
+              <Route path="/dashboard"  element={<Dashboard />} />
+              <Route path="/my-clubs"   element={<MyClubs />} />
+              <Route path="/clubs"      element={<ClubList />} />
 
-            {/* IMPORTANT: specific paths before dynamic :id */}
-            {/* S7.C2 — club creation locked to clubAdmin / orgAdmin at route level */}
-            <Route
-              path="/clubs/create"
-              element={
-                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
-                  <CreateClub />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/clubs/:id/edit"
-              element={
-                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
-                  <EditClub />
-                </RoleRoute>
-              }
-            />
-            <Route path="/clubs/:id"      element={<ClubDetail />} />
+              {/* IMPORTANT: specific paths before dynamic :id */}
+              {/* S7.C2 — club creation locked to clubAdmin / orgAdmin at route level */}
+              <Route
+                path="/clubs/create"
+                element={
+                  <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                    <CreateClub />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/clubs/:id/edit"
+                element={
+                  <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                    <EditClub />
+                  </RoleRoute>
+                }
+              />
+              <Route path="/clubs/:id"      element={<ClubDetail />} />
 
-            {/* S7.C2 — event creation locked to clubAdmin / orgAdmin */}
-            <Route
-              path="/events/create"
-              element={
-                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
-                  <CreateEvent />
-                </RoleRoute>
-              }
-            />
-            <Route path="/events"          element={<Events />} />
-            <Route
-              path="/events/:id/edit"
-              element={
-                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
-                  <EditEvent />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/events/:eventId/attendance"
-              element={
-                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
-                  <AttendanceManagement />
-                </RoleRoute>
-              }
-            />
-            <Route path="/events/:id"      element={<EventDetail />} />
+              {/* S7.C2 — event creation: clubAdmin/orgAdmin via RoleRoute;
+                   coordinators arrive with ?clubId= and are admitted by CreateEvent's own canCreate check */}
+              <Route path="/events/create" element={<CreateEvent />} />
+              <Route path="/events"          element={<Events />} />
+              <Route
+                path="/events/:id/edit"
+                element={
+                  <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                    <EditEvent />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/events/:eventId/attendance"
+                element={
+                  <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                    <AttendanceManagement />
+                  </RoleRoute>
+                }
+              />
+              <Route path="/events/:id"      element={<EventDetail />} />
 
-            {/* /edit must come before /:id */}
-            <Route path="/external-events/create"   element={<CreateExternalEvent />} />
-            <Route path="/external-events/:id/edit" element={<CreateExternalEvent editMode />} />
-            <Route path="/external-events/:id"      element={<ExternalEventDetail />} />
-            <Route path="/external-events"          element={<ExternalEvents />} />
+              {/* /edit must come before /:id */}
+              <Route path="/external-events/create"   element={<CreateExternalEvent />} />
+              <Route path="/external-events/:id/edit" element={<CreateExternalEvent editMode />} />
+              <Route path="/external-events/:id"      element={<ExternalEventDetail />} />
+              <Route path="/external-events"          element={<ExternalEvents />} />
 
-            <Route path="/bookmarks"  element={<Bookmarks />} />
-            <Route path="/chats"      element={<ChatList />} />
-            <Route path="/chats/:id"  element={<ChatRoom />} />
-            <Route path="/volunteers" element={<VolunteerHub />} />
-            <Route path="/profile"    element={<Profile />} />
+              <Route path="/bookmarks"  element={<Bookmarks />} />
+              <Route path="/chats"      element={<ChatList />} />
+              <Route path="/chats/:id"  element={<ChatRoom />} />
+              <Route path="/volunteers" element={<VolunteerHub />} />
+              <Route path="/profile"    element={<Profile />} />
 
-            {/* Public profile for any user — used by club admins to view members */}
-            <Route path="/users/:id"  element={<UserProfile />} />
+              {/* Public profile for any user — used by club admins to view members */}
+              <Route path="/users/:id"  element={<UserProfile />} />
 
-            {/* ── Admin / Editor pages — route-level role guards ── */}
-            {/* S7.C1 fix: /admin/verify and /admin/stats now have role guards */}
-            <Route
-              path="/admin/verify"
-              element={
-                <RoleRoute roles={["editor", "orgAdmin"]}>
-                  <VerifyEvents />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/admin/reviews"
-              element={
-                <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
-                  <ReviewDashboard />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/admin/stats"
-              element={
-                <RoleRoute roles={["orgAdmin"]}>
-                  <AdminStats />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminPanel />
-                </AdminRoute>
-              }
-            />
-          </Route>
+              {/* ── Admin / Editor pages — route-level role guards ── */}
+              {/* S7.C1 fix: /admin/verify and /admin/stats now have role guards */}
+              <Route
+                path="/admin/verify"
+                element={
+                  <RoleRoute roles={["editor", "orgAdmin"]}>
+                    <VerifyEvents />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/reviews"
+                element={
+                  <RoleRoute roles={["clubAdmin", "orgAdmin"]}>
+                    <ReviewDashboard />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/stats"
+                element={
+                  <RoleRoute roles={["orgAdmin"]}>
+                    <AdminStats />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminPanel />
+                  </AdminRoute>
+                }
+              />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </ToastProvider>
+            <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

@@ -1,0 +1,599 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   hover.css — Global Hover Interaction System
+   
+   Philosophy: Motion must improve clarity, not distract.
+   - Hover improves discoverability
+   - Hover improves feedback quality
+   - Hover improves emotional engagement
+   - Hover respects accessibility (prefers-reduced-motion)
+   
+───────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    /* Motion Durations */
+    --cc-motion-fast: 120ms;
+    --cc-motion-normal: 180ms;
+    --cc-motion-slow: 240ms;
+
+    /* Easing Functions */
+    --cc-motion-ease-standard: ease-out;
+    --cc-motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+    --cc-motion-ease-gentle: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Hover Color Overlays */
+    --cc-color-surface-hover: rgba(248, 249, 250, 0.06);
+    --cc-color-surface-hover-strong: rgba(248, 249, 250, 0.10);
+    --cc-color-border-hover: rgba(0, 188, 235, 0.3);
+
+    /* Shadow Elevations */
+    --cc-shadow-elevation-subtle: 0 2px 8px rgba(0, 79, 159, 0.08);
+    --cc-shadow-elevation-soft: 0 4px 16px rgba(0, 79, 159, 0.12);
+    --cc-shadow-elevation-elevated: 0 8px 24px rgba(0, 79, 159, 0.16);
+    --cc-shadow-elevation-focus: 0 4px 12px rgba(0, 188, 235, 0.15);
+
+    /* Action States */
+    --cc-color-border-focus: var(--cc-accent);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   HOVER INTENSITY LEVELS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * hover-subtle
+ * Minor interaction acknowledgment
+ * Use: Links, tags, breadcrumbs, secondary navigation
+ */
+.hover-subtle {
+  transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    color var(--cc-motion-fast) var(--cc-motion-ease-standard);
+}
+
+.hover-subtle:hover {
+  border-color: var(--cc-color-border-hover);
+  color: var(--cc-accent);
+}
+
+/**
+ * hover-interactive
+ * Standard interaction feedback for cards and controls
+ * Use: Card surfaces, table rows, clickable containers
+ */
+.hover-interactive {
+  transition: transform var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    background-color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.hover-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cc-shadow-elevation-soft);
+  border-color: var(--cc-border-strong);
+}
+
+/**
+ * hover-emphasis
+ * Primary CTA emphasis and high-priority elements
+ * Use: Primary buttons, featured cards, hero actions
+ */
+.hover-emphasis {
+  transition: transform var(--cc-motion-normal) var(--cc-motion-ease-emphasized),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    filter var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.hover-emphasis:hover {
+  transform: scale(1.02);
+  box-shadow: var(--cc-shadow-elevation-elevated);
+  filter: brightness(1.06);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CARD HOVER BEHAVIORS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Base card hover pattern
+ * Subtly lifts card with enhanced visibility
+ */
+.cc-card {
+  border: 1px solid var(--cc-border-soft);
+  border-radius: var(--cc-radius-lg);
+  background: var(--cc-color-surface);
+  transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-card:hover {
+  border-color: var(--cc-border-strong);
+  box-shadow: var(--cc-shadow-elevation-soft);
+  transform: translateY(-2px);
+}
+
+/**
+ * Dashboard card hover
+ * Subtle interaction, reveals secondary actions
+ */
+.cc-dashboard-card {
+  transition: background-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-dashboard-card:hover {
+  background-color: var(--cc-color-surface-elevated);
+  border-color: var(--cc-color-border-hover);
+  transform: translateY(-1px);
+}
+
+.cc-dashboard-card .cc-card-actions {
+  transition: opacity var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+  opacity: 0;
+  transform: translateY(2px);
+}
+
+.cc-dashboard-card:hover .cc-card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/**
+ * Club card hover
+ * Adds social energy with action reveal
+ */
+.cc-club-card {
+  transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-club-card:hover {
+  border-color: var(--cc-accent);
+  box-shadow: var(--cc-shadow-elevation-soft);
+  transform: translateY(-2px);
+}
+
+.cc-club-card .cc-card-actions {
+  transition: opacity var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+  opacity: 0;
+}
+
+.cc-club-card:hover .cc-card-actions {
+  opacity: 1;
+}
+
+/**
+ * Event card hover
+ * Highlights event importance
+ */
+.cc-event-card {
+  transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-event-card:hover {
+  border-color: var(--cc-accent);
+  box-shadow: var(--cc-shadow-elevation-soft);
+  transform: translateY(-2px);
+}
+
+.cc-event-card .cc-event-metadata {
+  transition: color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-event-card:hover .cc-event-metadata {
+  color: var(--cc-accent);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BUTTON HOVER BEHAVIORS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Primary button hover
+ * Elevation + brightness for authority feel
+ */
+.cc-btn-primary {
+  transition: transform var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    filter var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--cc-shadow-elevation-soft);
+  filter: brightness(1.06);
+}
+
+.cc-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/**
+ * Secondary button hover
+ * Border emphasis + soft surface tint
+ */
+.cc-btn-secondary {
+  transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    background-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-btn-secondary:hover:not(:disabled) {
+  border-color: var(--cc-border-strong);
+  background-color: var(--cc-surface-hover);
+}
+
+/**
+ * Ghost button hover
+ * Background fade-in + text emphasis
+ */
+.cc-btn-ghost {
+  transition: background-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-btn-ghost:hover:not(:disabled) {
+  background-color: var(--cc-surface-hover);
+  color: var(--cc-text-primary);
+}
+
+/**
+ * Icon button hover
+ * Scale + color tint
+ */
+.cc-btn-icon {
+  transition: transform var(--cc-motion-fast) var(--cc-motion-ease-standard),
+    color var(--cc-motion-fast) var(--cc-motion-ease-standard);
+}
+
+.cc-btn-icon:hover:not(:disabled) {
+  transform: scale(1.08);
+  color: var(--cc-accent);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   NAVIGATION HOVER BEHAVIORS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Sidebar item hover
+ * Smooth active state with soft background
+ */
+.cc-sidebar-item {
+  transition: background-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    border-color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-sidebar-item:hover:not(.cc-sidebar-item--active) {
+  background-color: var(--cc-surface-hover);
+}
+
+.cc-sidebar-item--active {
+  background-color: var(--cc-surface-elevated);
+  border-left: 3px solid var(--cc-brand);
+  padding-left: calc(var(--cc-space-3) - 3px);
+}
+
+.cc-sidebar-item--active:hover {
+  background-color: var(--cc-surface-hover);
+}
+
+/**
+ * Tab item hover
+ * Soft active state interpolation with underline
+ */
+.cc-tab-item {
+  position: relative;
+  transition: color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-tab-item::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--cc-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--cc-motion-normal) var(--cc-motion-ease-emphasized);
+}
+
+.cc-tab-item:hover::after {
+  transform: scaleX(1);
+}
+
+.cc-tab-item--active::after {
+  transform: scaleX(1);
+}
+
+/**
+ * Nav link hover
+ * Underline reveal
+ */
+.cc-nav-link {
+  position: relative;
+  transition: color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--cc-accent);
+  transition: width var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-nav-link:hover::after {
+  width: 100%;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TABLE ROW HOVER BEHAVIORS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Table row hover
+ * Soft highlighting without aggressive background
+ */
+.cc-table-row {
+  transition: background-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-table-row:hover {
+  background-color: var(--cc-surface-hover);
+  box-shadow: inset 0 0 0 1px rgba(248, 249, 250, 0.08);
+}
+
+.cc-table-row .cc-row-actions {
+  transition: opacity var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
+  opacity: 0;
+  transform: translateX(-4px);
+}
+
+.cc-table-row:hover .cc-row-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CHAT ROW HOVER BEHAVIORS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Chat row hover
+ * Soft highlighting with unread emphasis
+ */
+.cc-chat-row {
+  transition: background-color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-chat-row:hover {
+  background-color: var(--cc-surface-hover);
+}
+
+.cc-chat-row--unread {
+  background-color: var(--cc-surface-elevated);
+  border-left: 3px solid var(--cc-brand);
+  padding-left: calc(var(--cc-space-3) - 3px);
+}
+
+.cc-chat-row--unread:hover {
+  border-left-width: 4px;
+  padding-left: calc(var(--cc-space-3) - 4px);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORM INPUT HOVER BEHAVIORS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Text input hover
+ * Border emphasis on approach
+ */
+.cc-input {
+  border: 1px solid var(--cc-border-soft);
+  transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.cc-input:hover {
+  border-color: var(--cc-border-strong);
+}
+
+.cc-input:focus {
+  border-color: var(--cc-accent);
+  box-shadow: 0 0 0 3px rgba(0, 188, 235, 0.15);
+  outline: none;
+}
+
+/**
+ * Checkbox hover
+ * Border highlight
+ */
+.cc-checkbox {
+  transition: border-color var(--cc-motion-fast) var(--cc-motion-ease-standard),
+    background-color var(--cc-motion-fast) var(--cc-motion-ease-standard);
+}
+
+.cc-checkbox:hover {
+  border-color: var(--cc-brand);
+}
+
+.cc-checkbox:checked {
+  background-color: var(--cc-brand);
+  border-color: var(--cc-brand);
+}
+
+.cc-checkbox:checked:hover {
+  background-color: var(--cc-brand-hover);
+  border-color: var(--cc-brand-hover);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ACCESSIBILITY & REDUCED MOTION
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Respect prefers-reduced-motion
+ * Remove all transition durations for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  .hover-subtle,
+  .hover-interactive,
+  .hover-emphasis,
+  .cc-card,
+  .cc-dashboard-card,
+  .cc-club-card,
+  .cc-event-card,
+  .cc-btn-primary,
+  .cc-btn-secondary,
+  .cc-btn-ghost,
+  .cc-btn-icon,
+  .cc-sidebar-item,
+  .cc-tab-item,
+  .cc-nav-link,
+  .cc-table-row,
+  .cc-chat-row,
+  .cc-input,
+  .cc-checkbox {
+    transition: none !important;
+    animation-duration: 1ms !important;
+  }
+
+  .cc-card:hover,
+  .cc-dashboard-card:hover,
+  .cc-club-card:hover,
+  .cc-event-card:hover,
+  .cc-btn-primary:hover:not(:disabled),
+  .cc-btn-secondary:hover:not(:disabled),
+  .cc-btn-ghost:hover:not(:disabled),
+  .cc-btn-icon:hover:not(:disabled),
+  .cc-sidebar-item:hover,
+  .cc-table-row:hover,
+  .cc-chat-row:hover {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOBILE/TOUCH ADAPTATION
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * For touch devices, convert hover to active/focus states
+ */
+@media (hover: none) and (pointer: coarse) {
+  /* Reduce transform intensity on mobile */
+  .hover-interactive:active {
+    transform: translateY(-1px);
+  }
+
+  .hover-emphasis:active {
+    transform: scale(1.01);
+  }
+
+  .cc-card:active {
+    transform: translateY(-1px);
+  }
+
+  /* Preserve button feedback on touch */
+  .cc-btn-primary:active {
+    filter: brightness(1.04);
+  }
+
+  /* Slightly longer transition on mobile for clarity */
+  .cc-card,
+  .cc-btn-primary,
+  .cc-btn-secondary {
+    transition-duration: 200ms;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DISABLED STATES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.cc-btn-primary:disabled,
+.cc-btn-secondary:disabled,
+.cc-btn-ghost:disabled,
+.cc-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cc-btn-primary:disabled:hover,
+.cc-btn-secondary:disabled:hover,
+.cc-btn-ghost:disabled:hover {
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILITY CLASSES FOR COMMON PATTERNS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Hover text emphasis
+ */
+.hover-text-emphasis {
+  transition: color var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.hover-text-emphasis:hover {
+  color: var(--cc-accent);
+}
+
+/**
+ * Hover opacity change
+ */
+.hover-opacity {
+  transition: opacity var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.hover-opacity:hover {
+  opacity: 0.8;
+}
+
+/**
+ * Hover visibility toggle
+ */
+.hover-hidden {
+  opacity: 0;
+  transition: opacity var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}
+
+.hover-hidden:hover {
+  opacity: 1;
+}
+
+/**
+ * Hover group support
+ */
+.cc-hover-group:hover .group-hover\:visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.group-hover\:visible {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--cc-motion-normal) var(--cc-motion-ease-standard);
+}

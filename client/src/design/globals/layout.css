@@ -1,0 +1,687 @@
+/**
+ * layout.css — Phase 3 Layout System
+ *
+ * Sections:
+ *   1. App Shell Structure     (.cc-app-shell, .cc-sidebar, .cc-main, .cc-topbar)
+ *   2. Page Containers         (.cc-page, .cc-page-wide, .cc-page-reading)
+ *   3. Stack Utilities         (.stack-xs → .stack-xl, .section-gap-*)
+ *   4. Responsive Grid System  (.cc-grid-2/3/4/auto, .cc-dashboard-grid)
+ *   5. Section Primitives      (.cc-section, .cc-page-header)
+ *   6. Responsive Overrides
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. APP SHELL STRUCTURE
+   The outer flex container that holds sidebar + main content area.
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .cc-app-shell {
+    display: flex;
+    height: 100dvh;
+    background-color: var(--cc-color-background);
+    color: var(--cc-color-text-primary);
+    overflow: hidden;
+  }
+
+  /* Sidebar — desktop hover-to-expand rail */
+  .cc-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--cc-color-sidebar-bg, var(--cc-color-surface));
+    border-right: 1px solid var(--cc-color-sidebar-border, var(--cc-color-border-subtle));
+    overflow: hidden;
+    /* Always start at collapsed width — hover drives expansion */
+    width: var(--cc-sidebar-collapsed);
+    /* Smooth expand/collapse — 350ms feels natural, not jarring */
+    transition: width 350ms var(--cc-motion-ease-emphasized);
+    z-index: var(--cc-z-sticky);
+  }
+
+  /* Expanded state — stays in flow, pushes content right */
+  .cc-sidebar:not(.cc-sidebar--collapsed) {
+    width: var(--cc-sidebar-expanded);
+  }
+
+  /* Collapsed state */
+  .cc-sidebar--collapsed {
+    width: var(--cc-sidebar-collapsed);
+  }
+
+  /* Mobile sidebar — off-canvas drawer */
+  .cc-sidebar--mobile {
+    position: fixed;
+    inset-y: 0;
+    left: 0;
+    z-index: var(--cc-z-modal);
+    height: 100dvh;
+    width: var(--cc-sidebar-expanded);
+    transform: translateX(-100%);
+    transition: transform var(--cc-motion-slow) var(--cc-motion-ease-emphasized);
+  }
+
+  .cc-sidebar--mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Main content column */
+  .cc-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0; /* prevent flex blowout */
+  }
+
+  /* Topbar — sits visually below sidebar authority */
+  .cc-topbar {
+    height: var(--cc-topbar-height);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding-left: var(--cc-space-5);
+    padding-right: var(--cc-space-5);
+    border-bottom: 1px solid var(--cc-color-border-subtle);
+    background-color: var(--cc-color-surface);
+    position: sticky;
+    top: 0;
+    z-index: var(--cc-z-dropdown);
+  }
+
+  /* Scrollable page content */
+  .cc-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  /* Mobile overlay backdrop */
+  .cc-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: calc(var(--cc-z-modal) - 1);
+  }
+
+  /* ── Bottom navigation (mobile hybrid adaptive) ── */
+  .cc-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--cc-bottom-nav-height);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background-color: var(--cc-color-surface-overlay);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--cc-color-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: var(--cc-z-sticky);
+    /* Only show on mobile */
+    display: none;
+  }
+
+  /* Bottom nav item */
+  .cc-bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    height: 100%;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--cc-color-text-muted);
+    transition: color var(--cc-motion-fast) var(--cc-motion-ease-standard),
+                transform var(--cc-motion-fast) var(--cc-motion-ease-spring);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cc-bottom-nav__item:active {
+    transform: scale(0.92);
+  }
+
+  .cc-bottom-nav__item--active {
+    color: var(--cc-color-brand);
+  }
+
+  .cc-bottom-nav__label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  /* ── Activity pulse strip ── */
+  .cc-activity-strip {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-4);
+    flex-wrap: wrap;
+    padding: var(--cc-space-2) var(--cc-page-padding-x);
+    border-bottom: 1px solid var(--cc-color-border-subtle);
+    background-color: var(--cc-color-surface-weak);
+    font-size: var(--cc-font-size-micro);
+    color: var(--cc-color-text-muted);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. PAGE CONTAINERS
+   Provide consistent max-width + horizontal padding for page-level content.
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Standard content container — 1280px */
+  .cc-page {
+    width: 100%;
+    max-width: var(--cc-page-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--cc-page-padding-x);
+    padding-right: var(--cc-page-padding-x);
+  }
+
+  /* Wide dashboard container — 1440px */
+  .cc-page-wide {
+    width: 100%;
+    max-width: var(--cc-page-wide-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--cc-page-padding-x);
+    padding-right: var(--cc-page-padding-x);
+  }
+
+  /* Reading container — 720px (for long-form content) */
+  .cc-page-reading {
+    width: 100%;
+    max-width: var(--cc-page-reading-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--cc-page-padding-x);
+    padding-right: var(--cc-page-padding-x);
+  }
+
+  /* Full-width inset (padding only, no max-width) */
+  .cc-page-inset {
+    padding-left: var(--cc-page-padding-x);
+    padding-right: var(--cc-page-padding-x);
+    padding-top: var(--cc-page-padding-y);
+    padding-bottom: var(--cc-page-padding-y);
+  }
+
+  /* Legacy aliases — keep existing pages working */
+  .u-container {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--cc-space-6);
+    padding-right: var(--cc-space-6);
+  }
+
+  .u-container-wide {
+    width: 100%;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--cc-space-6);
+    padding-right: var(--cc-space-6);
+  }
+
+  .u-container-narrow {
+    width: 100%;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--cc-space-6);
+    padding-right: var(--cc-space-6);
+  }
+
+  .u-readable {
+    max-width: var(--cc-line-length-default);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. STACK & SPACING UTILITIES
+   Vertical rhythm — always use these, never hardcode margin/padding values.
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Named stack sizes */
+  .stack-xs { display: flex; flex-direction: column; gap: var(--cc-space-1); }
+  .stack-sm { display: flex; flex-direction: column; gap: var(--cc-space-2); }
+  .stack-md { display: flex; flex-direction: column; gap: var(--cc-space-4); }
+  .stack-lg { display: flex; flex-direction: column; gap: var(--cc-space-6); }
+  .stack-xl { display: flex; flex-direction: column; gap: var(--cc-space-8); }
+
+  /* Horizontal stack */
+  .hstack-xs { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-1); }
+  .hstack-sm { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-2); }
+  .hstack-md { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-4); }
+  .hstack-lg { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-6); }
+
+  /* Section-level vertical gaps */
+  .section-gap-sm { margin-top: var(--cc-space-4); }
+  .section-gap-md { margin-top: var(--cc-space-6); }
+  .section-gap-lg { margin-top: var(--cc-space-8); }
+
+  /* Legacy aliases */
+  .u-stack    { display: flex; flex-direction: column; gap: var(--cc-space-4); }
+  .u-stack-sm { display: flex; flex-direction: column; gap: var(--cc-space-2); }
+  .u-stack-md { display: flex; flex-direction: column; gap: var(--cc-space-4); }
+  .u-stack-lg { display: flex; flex-direction: column; gap: var(--cc-space-6); }
+
+  .u-inline-stack { display: inline-flex; align-items: center; gap: var(--cc-space-3); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. RESPONSIVE GRID SYSTEM
+   12-column conceptual grid via responsive named variants.
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Base grid */
+  .cc-grid {
+    display: grid;
+    gap: var(--cc-space-4);
+  }
+
+  /* Fixed column counts */
+  .cc-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  .cc-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  .cc-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  /* Auto-fit — cards find their own column count based on min-width */
+  .cc-grid-auto-sm {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  .cc-grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  .cc-grid-auto-lg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  /* KPI stat card grid — 4 on desktop, 2 on tablet, 1 on mobile */
+  .cc-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--cc-space-4);
+  }
+
+  /* Dashboard split — 3+2 layout (events left, chats+bookmarks right) */
+  .cc-dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--cc-space-5);
+    align-items: start;
+  }
+
+  /* Dashboard split — narrow left column variant */
+  .cc-dashboard-grid.cc-narrow-left {
+    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+  }
+
+  /* Dashboard pair — two equal compact columns */
+  .cc-dashboard-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cc-space-5);
+    align-items: start;
+    width: 100%;
+    max-width: 1040px;
+  }
+
+  /* Dashboard triple — three equal compact columns */
+  .cc-dashboard-triple {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--cc-space-4);
+    align-items: start;
+    width: 100%;
+    max-width: 1080px;
+  }
+
+  /* Legacy aliases */
+  .u-grid   { display: grid; gap: var(--cc-space-6); }
+  .u-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cc-space-6); }
+  .u-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cc-space-6); }
+  .u-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--cc-space-6); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. SECTION & PAGE HEADER PRIMITIVES
+   Structural wrappers that enforce visual rhythm across pages.
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Content section — standard vertical block */
+  .cc-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-3);
+  }
+
+  .cc-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cc-space-3);
+    min-height: 32px;
+  }
+
+  .cc-section-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-2);
+  }
+
+  /* Page header — the hero-like band at the top of each page */
+  .cc-page-header {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--cc-color-border-subtle);
+    padding: var(--cc-space-6) var(--cc-page-padding-x) var(--cc-space-5);
+  }
+
+  /* Decorative glow blobs (positioned via JS/JSX with absolute) */
+  .cc-page-header-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .cc-page-header-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-4);
+  }
+
+  .cc-page-header-top {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--cc-space-4);
+    flex-wrap: wrap;
+  }
+
+  /* Action bar — right-aligned row of action buttons */
+  .cc-action-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-2);
+    flex-wrap: wrap;
+  }
+
+  /* Filter row — search + filter controls in a horizontal row */
+  .cc-filter-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cc-space-3);
+    flex-wrap: wrap;
+  }
+
+  /* Split panel — two-pane horizontal layout */
+  .cc-split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--cc-space-6);
+    align-items: start;
+  }
+
+  /* Sidebar + content split */
+  .cc-split-with-aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: var(--cc-space-6);
+    align-items: start;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   6. RESPONSIVE OVERRIDES
+   Mobile-first cascade — overrides at breakpoints.
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Tablet — 1024px */
+@media (max-width: 1024px) {
+  .cc-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cc-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-dashboard-grid.cc-narrow-left {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-dashboard-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-events-split {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-events-split.cc-narrow-left {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-dashboard-triple {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cc-split-with-aside {
+    grid-template-columns: 1fr;
+  }
+
+  .u-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile — 768px */
+@media (max-width: 768px) {
+  .cc-page,
+  .cc-page-wide,
+  .cc-page-reading,
+  .u-container,
+  .u-container-wide,
+  .u-container-narrow {
+    padding-left: var(--cc-space-4);
+    padding-right: var(--cc-space-4);
+  }
+
+  .cc-page-header {
+    padding-left: var(--cc-space-4);
+    padding-right: var(--cc-space-4);
+    padding-top: var(--cc-space-5);
+    padding-bottom: var(--cc-space-4);
+  }
+
+  .cc-grid-2,
+  .cc-grid-3,
+  .cc-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-split-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cc-page-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .u-grid-2,
+  .u-grid-3,
+  .u-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small mobile — 480px */
+@media (max-width: 480px) {
+  .cc-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cc-space-3);
+  }
+
+  .cc-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Mobile bottom nav — show on < 768px */
+@media (max-width: 767px) {
+  .cc-bottom-nav {
+    display: flex;
+  }
+
+  /* Scroll area needs padding to not hide behind bottom nav */
+  .cc-scroll-area {
+    padding-bottom: calc(var(--cc-bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Activity strip tighter on mobile */
+  .cc-activity-strip {
+    gap: var(--cc-space-3);
+    padding-left: var(--cc-space-4);
+    padding-right: var(--cc-space-4);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7. STRUCTURAL PRIMITIVES (Phase 3 additions)
+   New layout building blocks for grouped surfaces, chat split, and sidebar groups.
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Section group — balanced visible grouping for dashboard sections */
+  .cc-section-group {
+    background-color: var(--cc-color-surface-grouped, var(--cc-color-surface-secondary));
+    border-radius: var(--cc-radius-xl);
+    border: 1px solid var(--cc-color-border-subtle);
+    padding: var(--cc-space-5);
+  }
+
+  /* Content wrapper — consistent horizontal inset; replaces ad-hoc px-5 lg:px-6 */
+  .cc-content-wrapper {
+    padding-left: var(--cc-page-padding-x);
+    padding-right: var(--cc-page-padding-x);
+  }
+
+  /* Chat split — 60/40 dominant conversation + secondary panel */
+  .cc-split-chat {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--cc-space-4);
+    align-items: start;
+  }
+
+  /* Events split — upcoming + ongoing side by side */
+  .cc-events-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--cc-space-5);
+    align-items: start;
+  }
+
+  /* Events split — narrow left column variant */
+  .cc-events-split.cc-narrow-left {
+    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+  }
+
+  /* Compact side panel — announcements, quick links, secondary info */
+  .cc-compact-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-3);
+  }
+
+  /* Sidebar nav group — section divider for grouped navigation items */
+  .cc-sidebar-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-1);
+    padding: var(--cc-space-2) 0;
+  }
+
+  .cc-sidebar-group:not(:last-child) {
+    border-bottom: 1px solid var(--cc-color-border-subtle);
+    margin-bottom: var(--cc-space-2);
+  }
+
+  /* Stat card accent strip — top 3px accent indicator */
+  .cc-stat-accent {
+    border-top: 3px solid var(--cc-stat-accent-color, var(--cc-color-brand));
+  }
+
+  /* Section divider — light horizontal separator */
+  .cc-section-divider {
+    height: 1px;
+    background-color: var(--cc-color-border-subtle);
+    margin: var(--cc-space-2) 0;
+  }
+
+  /* Named padding helpers — semantic convenience aliases */
+  .cc-page-padding {
+    padding: var(--cc-page-padding-y) var(--cc-page-padding-x);
+  }
+
+  .cc-content-padding {
+    padding: var(--cc-space-5) var(--cc-page-padding-x);
+  }
+}
+
+/* Chat split collapses to single column on tablet */
+@media (max-width: 1024px) {
+  .cc-split-chat {
+    grid-template-columns: 1fr;
+  }
+}

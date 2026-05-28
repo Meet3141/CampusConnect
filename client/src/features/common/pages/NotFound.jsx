@@ -13,7 +13,7 @@ export default function NotFound() {
       <div className="text-center max-w-sm">
         <div className="relative mb-6">
           <p className="text-8xl font-bold text-white/[0.03] leading-none select-none">404</p>
-          <p className="absolute inset-0 flex items-center justify-center text-4xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+          <p className="absolute inset-0 flex items-center justify-center text-4xl font-bold" style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
             404
           </p>
         </div>

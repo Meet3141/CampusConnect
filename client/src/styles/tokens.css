@@ -1,56 +1,26 @@
+/**
+ * tokens.css — Semantic alias bridge
+ * Defers all colour values to base.css --cc-color-* tokens.
+ * This file should NOT define raw colours — those belong in base.css.
+ */
+
 :root {
-  /* Palette tokens */
-  --steel-azure: #2563EB;
-  --sky-surge: #06B6D4;
-  --violet-royal: #7C3AED;
-  --indigo-600: #4F46E5;
-  --slate-900: #0A0A12;
-  --slate-800: #0D0D18;
-  --text-light: #F8FAFC;
-  --muted-light: #94A3B8;
-
-  /* Semantic tokens (dark/default) */
-  --cc-bg: var(--slate-900);
-  --cc-surface: var(--slate-800);
-  --cc-text: var(--text-light);
-  --cc-muted: var(--muted-light);
-  --cc-border-soft: rgba(255, 255, 255, 0.08);
-  --cc-border-strong: rgba(255, 255, 255, 0.16);
-  --cc-brand: var(--steel-azure);
-  --cc-brand-hover: var(--indigo-600);
-  --cc-accent: var(--sky-surge);
-  --cc-surface-weak: rgba(255,255,255,0.02);
-  --cc-surface-hover: rgba(255,255,255,0.05);
-  --cc-surface-overlay: rgba(10,10,18,0.9);
-}
-
-:root[data-theme="light"] {
-  /* Palette tokens (light context may reuse same palette vars) */
-  --steel-azure: #2563EB;
-  --sky-surge: #06B6D4;
-  --violet-royal: #7C3AED;
-  --indigo-600: #4F46E5;
-  --slate-50: #F7F9FC;
-  --slate-0: #FFFFFF;
-  --text-dark: #0F172A;
-  --muted-dark: #475569;
-
-  /* Semantic tokens (light theme) */
-  --cc-bg: var(--slate-50);
-  --cc-surface: var(--slate-0);
-  --cc-text: var(--text-dark);
-  --cc-muted: var(--muted-dark);
-  --cc-border-soft: rgba(15,23,42,0.08);
-  --cc-border-strong: rgba(15,23,42,0.16);
-  --cc-brand: var(--steel-azure);
-  --cc-brand-hover: var(--indigo-600);
-  --cc-accent: var(--sky-surge);
-  --cc-surface-weak: rgba(15,23,42,0.035);
-  --cc-surface-hover: rgba(15,23,42,0.06);
-  --cc-surface-overlay: rgba(247,249,252,0.92);
+  /* Legacy --cc-* shortcuts — now proxied to the authoritative base.css vars */
+  --cc-bg:             var(--cc-color-background);
+  --cc-surface:        var(--cc-color-surface);
+  --cc-text:           var(--cc-color-text-primary);
+  --cc-muted:          var(--cc-color-text-muted);
+  --cc-border-soft:    var(--cc-color-border-subtle);
+  --cc-border-strong:  var(--cc-color-border-strong);
+  --cc-brand:          var(--cc-color-brand);
+  --cc-brand-hover:    var(--cc-color-brand-hover);
+  --cc-accent:         var(--cc-color-accent);
+  --cc-surface-weak:   var(--cc-color-surface-weak);
+  --cc-surface-hover:  var(--cc-color-surface-hover);
+  --cc-surface-overlay:var(--cc-color-surface-overlay);
 }
 
 body {
-  background-color: var(--cc-bg);
-  color: var(--cc-text);
+  background-color: var(--cc-color-background);
+  color:            var(--cc-color-text-primary);
 }
