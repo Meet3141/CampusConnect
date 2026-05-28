@@ -1,6 +1,23 @@
 import mongoose from "mongoose";
 import bcryptjs from "bcryptjs";
 
+const techStackItemSchema = new mongoose.Schema(
+  {
+    label: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 40,
+    },
+    icon: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -40,6 +57,11 @@ const userSchema = new mongoose.Schema(
 
     interests: {
       type: [String],
+      default: [],
+    },
+
+    techStack: {
+      type: [techStackItemSchema],
       default: [],
     },
 
@@ -101,6 +123,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["normal", "warning", "review", "blocked"],
       default: "normal",
+    },
+
+    // ── Social links — all optional, stored as raw URLs/usernames ──
+    socialLinks: {
+      github:    { type: String, default: null, trim: true },
+      instagram: { type: String, default: null, trim: true },
+      linkedin:  { type: String, default: null, trim: true },
+      website:   { type: String, default: null, trim: true },
     },
   },
   { timestamps: true }

@@ -10,6 +10,9 @@ import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useUserProfile } from "../hooks";
+import { useSyneFont } from "../../auth/hooks";
+import { TechStackBadges } from "../techStack.jsx";
+import { normalizeTechStack } from "../techStackUtils";
 
 // Same 12 avatars as Profile.jsx
 const AVATARS = {
@@ -38,6 +41,8 @@ export default function UserProfile() {
   const { id }   = useParams();
   const navigate = useNavigate();
   const { user: me } = useAuth();
+
+  useSyneFont();
 
   const { profile, loading, error } = useUserProfile(id);
 
@@ -74,12 +79,9 @@ export default function UserProfile() {
   const since      = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "—";
-  const initials   = (profile.name || "?").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
-
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -174,6 +176,25 @@ export default function UserProfile() {
               )}
             </div>
 
+            {/* Working Stack */}
+            <div style={S.panel}>
+              <h3 style={S.panelTitle}>Working Stack</h3>
+              <TechStackBadges
+                items={profile.techStack}
+                emptyText="No technologies listed."
+                chipStyle={S.techChip}
+                iconWrapStyle={S.techIconWrap}
+                labelStyle={S.techLabel}
+                emptyStyle={S.emptyText}
+              />
+            </div>
+
+            {/* Social Links */}
+            <div style={S.panel}>
+              <h3 style={S.panelTitle}>Social Links</h3>
+              <PublicSocialLinks links={profile.socialLinks} />
+            </div>
+
             {/* Account snapshot */}
             <div style={S.panel}>
               <h3 style={S.panelTitle}>Account</h3>
@@ -182,6 +203,7 @@ export default function UserProfile() {
                   { label: "User ID",   value: (profile._id || "").slice(-8).toUpperCase() },
                   { label: "Roles",     value: (profile.roles || []).join(", ") },
                   { label: "Interests", value: `${(profile.interests || []).length} topics` },
+                  { label: "Technologies", value: `${normalizeTechStack(profile.techStack).length} items` },
                   { label: "Joined",    value: since },
                 ].map(({ label, value }) => (
                   <div key={label} style={S.statRow}>
@@ -198,6 +220,59 @@ export default function UserProfile() {
   );
 }
 
+// ── Inline social icon SVGs (self-contained so UserProfile has no cross-feature imports) ──
+function GHIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12z"/></svg>;
+}
+function IGIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162S8.597 18.163 12 18.163s6.162-2.759 6.162-6.162S15.403 5.838 12 5.838zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>;
+}
+function LIIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>;
+}
+function WWIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
+}
+
+const PUB_SOCIAL = [
+  { key: "github",    label: "GitHub",    Icon: GHIcon, color: "#e0e0e0", hoverBg: "rgba(224,224,224,0.08)" },
+  { key: "instagram", label: "Instagram", Icon: IGIcon, color: "#e1306c", hoverBg: "rgba(225,48,108,0.1)"   },
+  { key: "linkedin",  label: "LinkedIn",  Icon: LIIcon, color: "#0a66c2", hoverBg: "rgba(10,102,194,0.12)"  },
+  { key: "website",   label: "Website",   Icon: WWIcon, color: "#00d4ff", hoverBg: "rgba(0,212,255,0.1)"    },
+];
+
+function PublicSocialLinks({ links }) {
+  const filled = PUB_SOCIAL.filter(s => links?.[s.key]);
+  if (!filled.length) {
+    return <p style={{ color: "#444", fontSize: 13, fontStyle: "italic", fontFamily: "'DM Mono', monospace" }}>No social links shared.</p>;
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      {filled.map((social) => {
+        const SocialIcon = social.Icon;
+        const raw = links[social.key];
+        const href = raw.startsWith("http") ? raw : `https://${raw}`;
+        return (
+          <a
+            key={social.key}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", borderRadius: 8, textDecoration: "none", color: social.color, transition: "background 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = social.hoverBg; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          >
+            <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}><SocialIcon /></span>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555", width: 70, flexShrink: 0 }}>{social.label}</span>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: social.color }}>{raw}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+
 // ── Styles ─────────────────────────────────────────────────────────────────────
 const S = {
   page: { minHeight: "100vh", background: "#0d0d0d", color: "#e0e0e0", fontFamily: "'Syne', sans-serif" },
@@ -209,7 +284,7 @@ const S = {
   navBack: { display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "6px 14px", color: "#888", cursor: "pointer", transition: "background 0.2s" },
   navBrand: { fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 15, letterSpacing: "0.12em", color: "#e0e0e0" },
 
-  main: { maxWidth: 860, margin: "0 auto", padding: "32px 24px", animation: "fadeUp 0.35s ease both" },
+  main: { maxWidth: 1160, margin: "0 auto", padding: "32px 24px", animation: "fadeUp 0.35s ease both" },
 
   card: { position: "relative", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "28px 28px 24px", marginBottom: 24, overflow: "hidden" },
   gradientBar: { position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #e94560, #b347ea, #00d4ff)", borderRadius: "16px 16px 0 0" },
@@ -221,11 +296,16 @@ const S = {
   rolesRow: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 },
   since: { fontFamily: "'DM Mono', monospace", fontSize: 11, margin: 0 },
 
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 },
-  panel: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "20px 22px", animation: "fadeUp 0.4s ease both" },
+  grid: { columnWidth: 330, columnGap: 20 },
+  panel: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "20px 22px", display: "inline-block", width: "100%", marginBottom: 20, breakInside: "avoid", pageBreakInside: "avoid", verticalAlign: "top", animation: "fadeUp 0.4s ease both" },
   panelTitle: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 14px", paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.05)" },
 
   tag: { fontFamily: "'DM Mono', monospace", fontSize: 12, padding: "4px 10px", borderRadius: 6, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#a0a0a0" },
+
+  emptyText: { color: "#444", fontSize: 13, fontStyle: "italic", fontFamily: "'DM Mono', monospace", margin: 0 },
+  techChip: { display: "inline-flex", alignItems: "center", gap: 8, maxWidth: "100%", fontFamily: "'DM Mono', monospace", fontSize: 12, padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#d0d0d0" },
+  techIconWrap: { width: 20, height: 20, borderRadius: 6, background: "rgba(255,255,255,0.04)", color: "#00d4ff", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  techLabel: { minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
 
   statRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" },
   statLabel: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555" },
