@@ -23,6 +23,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
 import { CLUB_CATEGORY_META } from "../../../theme";
+import { Calendar, Clock, Hourglass, MapPin, Settings, MessageCircle, Trash2 } from "lucide-react";
 import {
   approveMember,
   assignCoordinator,
@@ -428,10 +429,10 @@ export default function ClubDetail() {
     return (
       <div className="flex items-center justify-center px-4 py-20 text-center">
         <div>
-          <p className="text-red-400 mb-4">{error || "Club not found."}</p>
+          <p className="text-body-sm text-error mb-4">{error || "Club not found."}</p>
           <button
             onClick={() => navigate("/clubs")}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors"
+            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors"
           >
             Back to Clubs
           </button>
@@ -458,7 +459,7 @@ export default function ClubDetail() {
           {/* Back */}
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center gap-2 text-cc-muted hover:text-cc text-sm mb-8 transition-colors"
+            className="group flex items-center gap-2 text-body-sm text-muted hover:text-cc mb-8 transition-colors"
           >
             <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
             Back
@@ -466,30 +467,30 @@ export default function ClubDetail() {
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
             {/* Avatar */}
-            <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-cc-surface-weak ring-1 ${meta.ring} flex items-center justify-center text-3xl sm:text-4xl shrink-0`}>
-              {meta.emoji}
+            <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-cc-surface-weak ring-1 ${meta.ring} flex items-center justify-center shrink-0`}>
+              {meta.Icon && <meta.Icon size={24} className="opacity-70" />}
             </div>
 
             <div className="flex-1 min-w-0">
               {/* Category + status */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="text-[11px] uppercase tracking-widest text-cc-muted font-mono">
+                <span className="text-label text-muted font-mono">
                   {club.category}
                 </span>
                 {isApprovedMember && (
-                  <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-700 rounded-full font-semibold">
+                  <span className="text-label px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-700 rounded-full">
                     Member
                   </span>
                 )}
                 {myStatus === "pending" && (
-                  <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-yellow-950 text-yellow-300 border border-yellow-700 rounded-full font-semibold">
+                  <span className="text-label px-2 py-0.5 bg-yellow-950 text-yellow-300 border border-yellow-700 rounded-full">
                     Pending Approval
                   </span>
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{club.name}</h1>
-              <p className="text-cc-muted text-sm mt-2 leading-relaxed max-w-2xl">
+              <h1 className="text-heading-xl">{club.name}</h1>
+              <p className="text-body-sm text-muted mt-2 text-relaxed max-w-2xl">
                 {club.description}
               </p>
 
@@ -510,7 +511,7 @@ export default function ClubDetail() {
                 <button
                   onClick={handleJoin}
                   disabled={actionLoading}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
                   {actionLoading ? "Requesting…" : "Request to Join"}
                 </button>
@@ -518,7 +519,7 @@ export default function ClubDetail() {
               {isBlocked && (
                 <button
                   disabled
-                  className="px-5 py-2.5 bg-red-900/20 border border-red-800 text-red-300 rounded-xl text-sm transition-colors whitespace-nowrap cursor-not-allowed"
+                  className="px-5 py-2.5 bg-red-900/20 border border-red-800 text-red-300 rounded-xl text-body-sm transition-colors whitespace-nowrap cursor-not-allowed"
                   title={`Blocked until ${blockedUntilStr}`}
                 >
                   Blocked until {blockedUntilStr}
@@ -527,7 +528,7 @@ export default function ClubDetail() {
               {!user && (
                 <button
                   onClick={() => navigate("/login")}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors whitespace-nowrap"
                 >
                   Login to Join
                 </button>
@@ -537,7 +538,7 @@ export default function ClubDetail() {
                 <button
                   onClick={handleLeave}
                   disabled={actionLoading}
-                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap"
+                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-body-sm transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
                   Leave Club
                 </button>
@@ -546,9 +547,9 @@ export default function ClubDetail() {
               {isClubAdmin && (
                 <button
                   onClick={() => navigate(`/clubs/${id}/edit`)}
-                  className="px-5 py-2.5 bg-white/7 hover:bg-white/12 rounded-xl text-sm text-white transition-colors whitespace-nowrap"
+                  className="px-5 py-2.5 bg-white/7 hover:bg-white/12 rounded-xl text-body-sm text-white transition-colors whitespace-nowrap flex items-center gap-2"
                 >
-                  ⚙ Manage
+                  <Settings size={16} /> Manage
                 </button>
               )}
               {/* Club Chat — visible to active members & admins */}
@@ -556,9 +557,9 @@ export default function ClubDetail() {
                 <button
                   onClick={handleOpenChat}
                   disabled={chatLoading}
-                  className="px-5 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-300 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                  className="px-5 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-300 rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                 >
-                  {chatLoading ? "Opening…" : "💬 Club Chat"}
+                  <MessageCircle size={16} /> {chatLoading ? "Opening…" : "Club Chat"}
                 </button>
               )}
               {/* Delete club — orgAdmin only */}
@@ -566,9 +567,9 @@ export default function ClubDetail() {
                 <button
                   onClick={handleDeleteClub}
                   disabled={actionLoading}
-                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap"
+                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-body-sm transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                 >
-                  🗑 Delete Club
+                  <Trash2 size={16} /> Delete Club
                 </button>
               )}
             </div>
@@ -583,7 +584,7 @@ export default function ClubDetail() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`relative px-5 py-3.5 text-sm font-medium border-b-2 transition-all ${
+              className={`relative px-5 py-3.5 text-body-sm font-semibold border-b-2 transition-all ${
                 tab === t
                   ? meta.tabActive
                   : "border-transparent text-cc-muted hover:text-cc"
@@ -592,7 +593,7 @@ export default function ClubDetail() {
               {t}
               {/* Pending badge on Members tab */}
               {t === "Members" && isClubAdmin && pendingMembers.length > 0 && (
-                <span className="ml-2 text-[10px] bg-yellow-500 text-black rounded-full px-1.5 py-px font-bold">
+                <span className="ml-2 text-micro bg-yellow-500 text-black rounded-full px-1.5 py-px font-bold">
                   {pendingMembers.length}
                 </span>
               )}
@@ -609,14 +610,14 @@ export default function ClubDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-5">
               <Panel title="About">
-                <p className="text-slate-300 text-sm leading-relaxed">{club.description}</p>
+                <p className="text-body-sm text-secondary text-relaxed">{club.description}</p>
               </Panel>
 
               {(upcomingOverviewEvents.length > 0 || completedOverviewEvents.length > 0) && (
                 <div className="space-y-5">
                   <Panel title="Upcoming Events">
                     {upcomingOverviewEvents.length === 0 ? (
-                      <p className="text-slate-500 text-sm">No upcoming events right now.</p>
+                      <p className="text-body-sm text-muted">No upcoming events right now.</p>
                     ) : (
                       <div className="space-y-2">
                         {upcomingOverviewEvents.map((ev) => {
@@ -629,20 +630,21 @@ export default function ClubDetail() {
                               className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
                             >
                               <div>
-                                <p className="text-sm font-medium text-white">{ev.title}</p>
-                                <p className="text-[11px] text-slate-500 mt-0.5">
-                                  📅{' '}
+                                <p className="text-body-sm font-semibold text-white">{ev.title}</p>
+                                <p className="text-caption text-muted mt-0.5">
+                                  <span className="inline-flex items-center gap-1"><Calendar size={14} className="shrink-0" />{' '}
                                   {dateObj
                                     ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                                     : 'Date not set'}
-                                  {'  '}·{'  '}🕐 {dateObj ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                                  </span>
+                                  {'  '}·{'  '}<span className="inline-flex items-center gap-1"><Clock size={14} className="shrink-0" /> {dateObj ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
                                   {endObj && dateObj && endObj > dateObj && (
-                                    <> {'  '}·{'  '}⏳ {formatDuration(endObj - dateObj)}</>
+                                    <> {'  '}·{'  '}<span className="inline-flex items-center gap-1"><Hourglass size={14} className="shrink-0" /> {formatDuration(endObj - dateObj)}</span></>
                                   )}
-                                  {'  '}·{'  '}📍 {ev.venue}
+                                  {'  '}·{'  '}<span className="inline-flex items-center gap-1"><MapPin size={14} className="shrink-0" /> {ev.venue}</span>
                                 </p>
                               </div>
-                              <span className="text-slate-600 text-sm">→</span>
+                              <span className="text-body-sm text-muted">→</span>
                             </div>
                           );
                         })}
@@ -652,7 +654,7 @@ export default function ClubDetail() {
 
                   <Panel title="Completed Events">
                     {completedOverviewEvents.length === 0 ? (
-                      <p className="text-slate-500 text-sm">No completed events yet.</p>
+                      <p className="text-body-sm text-muted">No completed events yet.</p>
                     ) : (
                       <div className="space-y-2">
                         {completedOverviewEvents.map((ev) => {
@@ -665,19 +667,20 @@ export default function ClubDetail() {
                               className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/6 hover:border-white/12 cursor-pointer transition-colors"
                             >
                               <div>
-                                <p className="text-sm font-medium text-white">{ev.title}</p>
-                                <p className="text-[11px] text-slate-500 mt-0.5">
-                                  📅{' '}
+                                <p className="text-body-sm font-semibold text-white">{ev.title}</p>
+                                <p className="text-caption text-muted mt-0.5">
+                                  <span className="inline-flex items-center gap-1"><Calendar size={14} className="shrink-0" />{' '}
                                   {dateObj
                                     ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                                     : 'Date not set'}
+                                  </span>
                                   {endObj && dateObj && endObj > dateObj && (
-                                    <> {'  '}·{'  '}✅ Completed on {endObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>
+                                    <> {'  '}·{'  '}<span className="inline-flex items-center gap-1"><MapPin size={14} className="shrink-0" /> {ev.venue}</span></>
                                   )}
-                                  {'  '}·{'  '}📍 {ev.venue}
+                                  {'  '}·{'  '}<span className="inline-flex items-center gap-1"><MapPin size={14} className="shrink-0" /> {ev.venue}</span>
                                 </p>
                               </div>
-                              <span className="text-slate-600 text-sm">→</span>
+                              <span className="text-body-sm text-muted">→</span>
                             </div>
                           );
                         })}
@@ -688,7 +691,7 @@ export default function ClubDetail() {
                   {(events.length > 4) && (
                     <button
                       onClick={() => setTab("Events")}
-                      className={`text-xs mt-1 ${meta.accent} hover:underline`}
+                      className={`text-caption mt-1 ${meta.accent} hover:underline`}
                     >
                       See all {events.length} events →
                     </button>
@@ -700,7 +703,7 @@ export default function ClubDetail() {
             {/* Sidebar */}
             <div className="space-y-4">
               <Panel title="Info">
-                <dl className="space-y-3 text-sm">
+                <dl className="space-y-3 text-body-sm">
                   <InfoRow label="Category" value={club.category.charAt(0).toUpperCase() + club.category.slice(1)} />
                   <InfoRow label="Members"  value={activeMembers.length} />
                   <InfoRow
@@ -723,13 +726,13 @@ export default function ClubDetail() {
                       <div
                         key={m._id}
                         title={m.userId?.name}
-                        className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 uppercase select-none"
+                        className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-micro font-bold text-indigo-300 uppercase select-none"
                       >
                         {(m.userId?.name || "?")[0]}
                       </div>
                     ))}
                     {activeMembers.length > 9 && (
-                      <div className="w-8 h-8 rounded-full bg-white/6 ring-1 ring-white/8 flex items-center justify-center text-[10px] text-slate-500">
+                      <div className="w-8 h-8 rounded-full bg-white/6 ring-1 ring-white/8 flex items-center justify-center text-micro text-slate-500">
                         +{activeMembers.length - 9}
                       </div>
                     )}
@@ -771,7 +774,7 @@ export default function ClubDetail() {
             <div>
               <SectionHeading label="Active Members" count={activeMembers.length} />
               {activeMembers.length === 0 ? (
-                <p className="text-slate-600 text-sm">No active members yet.</p>
+                <p className="text-body-sm text-muted">No active members yet.</p>
               ) : (
                 <div className="space-y-2">
                   {activeMembers.map((m) => (
@@ -796,8 +799,8 @@ export default function ClubDetail() {
 
             {/* Not logged in notice */}
             {!user && (
-              <p className="text-slate-600 text-sm">
-                <button onClick={() => navigate("/login")} className="text-indigo-400 underline">
+              <p className="text-body-sm text-muted">
+                <button onClick={() => navigate("/login")} className="text-accent underline">
                   Log in
                 </button>{" "}
                 to see the full members list.
@@ -814,17 +817,19 @@ export default function ClubDetail() {
               {canCreateEvent && (
                 <button
                   onClick={() => navigate(`/events/create?clubId=${id}`)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors"
                 >
-                  {isCoordinator ? "+ Draft Event" : "+ Add Event"}
+                  {isCoordinator ? "+ Create Event" : "+ Add Event"}
                 </button>
               )}
             </div>
 
             {events.length === 0 ? (
               <div className="text-center py-16">
-                <div className="text-4xl mb-3">📅</div>
-                <p className="text-slate-600 text-sm">No events yet.</p>
+                <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-2xl bg-cc-surface-weak">
+                  <Calendar size={24} className="text-cc-muted" />
+                </div>
+                <p className="text-body-sm text-muted">No events yet.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -835,7 +840,7 @@ export default function ClubDetail() {
                     className="group rounded-2xl border border-white/7 bg-white/2 hover:bg-white/5 hover:border-white/14 p-5 cursor-pointer transition-all"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border font-medium ${
+                      <span className={`text-label px-2 py-0.5 rounded-full border ${
                         ev.status === "upcoming"        ? "bg-indigo-950 text-indigo-300 border-indigo-800"
                         : ev.status === "draft"         ? "bg-slate-900 text-slate-400 border-slate-700"
                         : ev.status === "pending_approval" ? "bg-yellow-950 text-yellow-400 border-yellow-800"
@@ -846,25 +851,27 @@ export default function ClubDetail() {
                         {ev.status === "pending_approval" ? "Pending Approval" : ev.status}
                       </span>
                     </div>
-                    <h3 className="font-semibold text-white text-sm group-hover:text-indigo-300 transition-colors line-clamp-2">
+                    <h3 className="text-body-sm font-semibold text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
                       {ev.title}
                     </h3>
-                    {
-                      (() => {
-                        const dateObj = isValidDate(ev.date) ? new Date(ev.date) : isValidDate(ev.createdAt) ? new Date(ev.createdAt) : null;
-                        return (
-                          <p className="text-slate-500 text-[11px] mt-2">
-                            📅 {dateObj ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'Date not set'}
+                    {(() => {
+                      const dateObj = isValidDate(ev.date) ? new Date(ev.date) : isValidDate(ev.createdAt) ? new Date(ev.createdAt) : null;
+                      return (
+                        <>
+                          <p className="text-caption text-muted mt-2 flex items-center gap-1">
+                            <Calendar size={14} className="shrink-0" /> {dateObj ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'Date not set'}
                           </p>
-                        );
-                      })()
-                    }
-                    <p className="text-slate-500 text-[11px] mt-0.5">📍 {ev.venue}</p>
+                          <p className="text-caption text-muted mt-0.5 flex items-center gap-1">
+                            <MapPin size={14} className="shrink-0" /> {ev.venue}
+                          </p>
+                        </>
+                      );
+                    })()}
                     {/* Publish button for admin on draft events */}
                     {isClubAdmin && ["draft", "pending_approval"].includes(ev.status) && (
                       <button
                         onClick={(e) => { e.stopPropagation(); handlePublishEvent(ev._id); }}
-                        className="mt-3 w-full py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold transition-colors"
+                        className="mt-3 w-full py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-caption font-semibold transition-colors"
                       >
                         ✓ Publish Event
                       </button>
@@ -886,7 +893,7 @@ export default function ClubDetail() {
               {(isClubAdmin || isCoordinator) && (
                 <button
                   onClick={() => setShowAnnForm((v) => !v)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors"
                 >
                   {showAnnForm ? "Cancel" : "+ Post"}
                 </button>
@@ -902,7 +909,7 @@ export default function ClubDetail() {
                   placeholder="Title…"
                   value={annForm.title}
                   onChange={(e) => setAnnForm((f) => ({ ...f, title: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm bg-white/4 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-600/50"
+                  className="w-full px-4 py-2.5 text-body-sm bg-white/4 border border-white/10 rounded-xl text-white placeholder-cc-muted focus:outline-none focus:border-indigo-600/50"
                 />
                 <textarea
                   required
@@ -911,13 +918,13 @@ export default function ClubDetail() {
                   placeholder="Write your announcement…"
                   value={annForm.body}
                   onChange={(e) => setAnnForm((f) => ({ ...f, body: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm bg-white/4 border border-white/10 rounded-xl text-white placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-600/50"
+                  className="w-full px-4 py-2.5 text-body-sm bg-white/4 border border-white/10 rounded-xl text-white placeholder-cc-muted resize-none focus:outline-none focus:border-indigo-600/50"
                 />
                 <div className="flex items-center gap-3">
                   <select
                     value={annForm.tag}
                     onChange={(e) => setAnnForm((f) => ({ ...f, tag: e.target.value }))}
-                    className="px-3 py-2 text-xs bg-white/4 border border-white/8 rounded-xl text-slate-400 focus:outline-none"
+                    className="px-3 py-2 text-caption bg-white/4 border border-white/8 rounded-xl text-slate-400 focus:outline-none"
                   >
                     <option value="general">📌 General</option>
                     <option value="event">📅 Event</option>
@@ -927,7 +934,7 @@ export default function ClubDetail() {
                   <button
                     type="submit"
                     disabled={annPosting}
-                    className="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                    className="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50"
                   >
                     {annPosting ? "Posting…" : "Post"}
                   </button>
@@ -942,9 +949,9 @@ export default function ClubDetail() {
               </div>
             ) : announcements.length === 0 ? (
               <div className="text-center py-16">
-                <div className="text-4xl mb-3">📢</div>
-                <p className="text-slate-600 text-sm">No announcements yet.</p>
-                {!user && <p className="text-slate-700 text-xs mt-1">Join the club to see announcements.</p>}
+                <div className="text-heading-lg mb-3">📢</div>
+                <p className="text-body-sm text-muted">No announcements yet.</p>
+                {!user && <p className="text-caption text-muted mt-1">Join the club to see announcements.</p>}
               </div>
             ) : (
               <div className="space-y-3">
@@ -968,24 +975,24 @@ export default function ClubDetail() {
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          {ann.pinned && <span className="text-amber-400 text-xs">📌</span>}
-                          <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border font-semibold ${TAG_STYLE[ann.tag] || TAG_STYLE.general}`}>
+                          {ann.pinned && <span className="text-caption text-amber-400">📌</span>}
+                          <span className={`text-label px-1.5 py-0.5 rounded border ${TAG_STYLE[ann.tag] || TAG_STYLE.general}`}>
                             {ann.tag}
                           </span>
-                          <h3 className="text-sm font-semibold text-white">{ann.title}</h3>
+                          <h3 className="text-body-sm font-semibold text-white">{ann.title}</h3>
                         </div>
                         {canDel && (
                           <button
                             onClick={() => handleDeleteAnnouncement(ann._id)}
-                            className="text-slate-700 hover:text-red-400 text-xs transition-colors shrink-0"
+                            className="text-slate-700 hover:text-red-400 text-caption transition-colors shrink-0"
                             title="Delete announcement"
                           >
                             ✕
                           </button>
                         )}
                       </div>
-                      <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-line">{ann.body}</p>
-                      <p className="text-[11px] text-slate-700 mt-3">
+                      <p className="text-body-sm text-secondary text-relaxed whitespace-pre-line">{ann.body}</p>
+                      <p className="text-caption text-muted mt-3">
                         {ann.postedBy?.name || "Unknown"} · {new Date(ann.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </p>
                     </div>
@@ -1004,21 +1011,21 @@ export default function ClubDetail() {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div className="w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07]">
-            <h2 className="text-sm font-bold text-white">Assign Coordinator</h2>
-            <button onClick={() => setPromotingMember(null)} className="text-slate-600 hover:text-white text-xl leading-none">×</button>
+            <h2 className="text-body-sm font-semibold text-white">Assign Coordinator</h2>
+            <button onClick={() => setPromotingMember(null)} className="text-slate-600 hover:text-white text-heading-sm leading-none">×</button>
           </div>
           <div className="px-6 py-5 space-y-4">
-            <p className="text-slate-400 text-sm">
+            <p className="text-body-sm text-muted">
               Promote <strong className="text-white">{promotingMember.name}</strong> to Student Club Coordinator?
             </p>
             <div className="relative">
-              <label className="block text-[11px] text-slate-500 uppercase tracking-widest mb-1.5">Coordinator Category (optional)</label>
+              <label className="block text-label text-muted mb-1.5">Coordinator Category (optional)</label>
 
               {/* Custom dropdown trigger */}
               <button
                 type="button"
                 onClick={() => setCoordDropOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-sm bg-[#1a1a2a] border border-white/12 rounded-xl text-white hover:border-indigo-600/50 transition-colors focus:outline-none focus:border-indigo-600/50"
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-body-sm bg-[#1a1a2a] border border-white/12 rounded-xl text-white hover:border-indigo-600/50 transition-colors focus:outline-none focus:border-indigo-600/50"
               >
                 <span>
                   {coordCategory === "none"      && "None (general)"}
@@ -1044,13 +1051,13 @@ export default function ClubDetail() {
                       key={opt.value}
                       type="button"
                       onClick={() => { setCoordCategory(opt.value); setCoordDropOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-body-sm text-left transition-colors ${
                         coordCategory === opt.value
                           ? "bg-indigo-600/20 text-indigo-300"
                           : "text-slate-300 hover:bg-white/5"
                       }`}
                     >
-                      <span className="text-base">{opt.icon}</span>
+                      <span className="text-body-lg">{opt.icon}</span>
                       <span>{opt.label}</span>
                       {coordCategory === opt.value && (
                         <svg className="ml-auto w-3.5 h-3.5 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
@@ -1062,22 +1069,22 @@ export default function ClubDetail() {
                 </div>
               )}
             </div>
-            <div className="text-[11px] text-slate-600 bg-white/3 border border-white/6 rounded-lg px-4 py-3 space-y-1">
-              <p>✓ Can create draft events, edit details, manage registrations</p>
+            <div className="text-caption text-muted bg-white/3 border border-white/6 rounded-lg px-4 py-3 space-y-1">
+              <p>✓ Can create events, edit details, manage registrations</p>
               <p>✓ Can mark attendance and post announcements</p>
               <p>✗ Cannot publish events or remove members</p>
             </div>
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setPromotingMember(null)}
-                className="flex-1 py-2.5 border border-white/10 text-slate-400 rounded-xl text-sm hover:border-white/20 transition-colors"
+                className="flex-1 py-2.5 border border-white/10 text-slate-400 rounded-xl text-body-sm hover:border-white/20 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePromote}
                 disabled={!!coordActing}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50"
               >
                 {coordActing ? "Assigning…" : "Assign Role"}
               </button>
@@ -1097,10 +1104,10 @@ export default function ClubDetail() {
 function StatPill({ label, value, highlight }) {
   return (
     <div>
-      <p className={`text-2xl font-bold tabular-nums ${highlight ? "text-yellow-400" : "text-cc"}`}>
+      <p className={`text-heading-lg font-bold tabular-nums ${highlight ? "text-yellow-400" : "text-cc"}`}>
         {value}
       </p>
-      <p className="text-[11px] text-cc-muted mt-0.5">{label}</p>
+      <p className="text-caption text-muted mt-0.5">{label}</p>
     </div>
   );
 }
@@ -1108,7 +1115,7 @@ function StatPill({ label, value, highlight }) {
 function Panel({ title, children }) {
   return (
     <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
-      <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
+      <h3 className="text-label text-muted mb-4">
         {title}
       </h3>
       {children}
@@ -1119,17 +1126,17 @@ function Panel({ title, children }) {
 function InfoRow({ label, value }) {
   return (
     <div className="flex justify-between items-baseline">
-      <dt className="text-cc-muted">{label}</dt>
-      <dd className="text-cc font-medium text-right max-w-[60%] truncate">{value}</dd>
+      <dt className="text-body-sm text-muted">{label}</dt>
+      <dd className="text-body-sm font-semibold text-cc text-right max-w-[60%] truncate">{value}</dd>
     </div>
   );
 }
 
 function SectionHeading({ label, count, countCls = "text-slate-500" }) {
   return (
-    <h2 className="flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-cc-muted mb-4">
+    <h2 className="flex items-center gap-2 text-label text-muted mb-4">
       {label}
-      <span className={`font-mono ${countCls}`}>{count}</span>
+      <span className={`text-micro font-mono ${countCls}`}>{count}</span>
     </h2>
   );
 }
@@ -1158,7 +1165,7 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
         title={onViewProfile ? `View ${name}'s profile` : undefined}
       >
         <div className="relative">
-          <div className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-micro font-bold text-indigo-300 shrink-0">
             {initial}
           </div>
           {/* Coordinator dot */}
@@ -1171,22 +1178,22 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className={`text-sm font-medium truncate transition-colors ${
+            <p className={`text-body-sm font-semibold truncate transition-colors ${
               onViewProfile ? "text-white group-hover:text-indigo-300" : "text-white"
             }`}>
               {name}
               {onViewProfile && (
-                <span className="ml-1 text-slate-600 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                <span className="ml-1 text-micro text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
               )}
             </p>
             {/* Coordinator badge */}
             {isCoordinator && (
-              <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-amber-950/60 text-amber-400 border border-amber-800/50 font-semibold whitespace-nowrap">
+              <span className="text-label px-1.5 py-0.5 rounded-md bg-amber-950/60 text-amber-400 border border-amber-800/50 whitespace-nowrap">
                 {COORD_CAT_LABEL[member.coordinatorCategory] || "Coordinator"}
               </span>
             )}
           </div>
-          <p className="text-[11px] text-slate-600 truncate">{email ? `${email} · ` : ""}{joined}</p>
+          <p className="text-caption text-muted truncate">{email ? `${email} · ` : ""}{joined}</p>
         </div>
       </button>
 
@@ -1198,14 +1205,14 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
             <button
               onClick={onApprove}
               disabled={actionLoading}
-              className="text-[11px] px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-800 text-emerald-300 transition-colors disabled:opacity-40"
+              className="text-caption px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-800 text-emerald-300 transition-colors disabled:opacity-40"
             >
               {actionLoading ? "…" : "Approve"}
             </button>
             <button
               onClick={onReject}
               disabled={actionLoading}
-              className="text-[11px] px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 border border-red-900 text-red-400 transition-colors disabled:opacity-40"
+              className="text-caption px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 border border-red-900 text-red-400 transition-colors disabled:opacity-40"
             >
               {actionLoading ? "…" : "Reject"}
             </button>
@@ -1220,7 +1227,7 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
               onClick={onDemote}
               disabled={coordActing}
               title="Remove coordinator role"
-              className="text-[11px] px-3 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/50 text-amber-400 transition-colors disabled:opacity-40"
+              className="text-caption px-3 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/50 text-amber-400 transition-colors disabled:opacity-40"
             >
               {coordActing ? "…" : "Demote"}
             </button>
@@ -1230,7 +1237,7 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
               onClick={onPromote}
               disabled={coordActing}
               title="Assign coordinator role"
-              className="text-[11px] px-3 py-1.5 rounded-lg bg-indigo-950/60 hover:bg-indigo-900/70 border border-indigo-800/60 text-indigo-300 transition-colors disabled:opacity-40"
+              className="text-caption px-3 py-1.5 rounded-lg bg-indigo-950/60 hover:bg-indigo-900/70 border border-indigo-800/60 text-indigo-300 transition-colors disabled:opacity-40"
             >
               {coordActing ? "…" : "★ Promote"}
             </button>
@@ -1239,22 +1246,22 @@ function MemberRow({ member, isAdmin, actionLoading, onApprove, onReject, onView
 
         {/* Status pill */}
         {isApproved && !isAdmin && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-full">
+          <span className="text-label px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-full">
             Active
           </span>
         )}
         {isApproved && isAdmin && !isCoordinator && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-full">
+          <span className="text-label px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-full">
             Active
           </span>
         )}
         {member.status === "rejected" && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-red-950 text-red-400 border border-red-900 rounded-full">
+          <span className="text-label px-2 py-0.5 bg-red-950 text-red-400 border border-red-900 rounded-full">
             Rejected
           </span>
         )}
         {member.status === "pending" && !isAdmin && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-yellow-950 text-yellow-400 border border-yellow-800 rounded-full">
+          <span className="text-label px-2 py-0.5 bg-yellow-950 text-yellow-400 border border-yellow-800 rounded-full">
             Pending
           </span>
         )}

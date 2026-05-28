@@ -1,8 +1,10 @@
+import { Cpu, Drama, Zap, BookOpen, Palette, Globe } from "lucide-react";
+
 export const CLUB_CATEGORIES = ["technical", "cultural", "sports", "academic", "arts", "other"];
 
 export const CLUB_CATEGORY_META = {
   technical: {
-    emoji: "⚙️",
+    Icon: Cpu,
     desc: "Coding, robotics, engineering",
     gradient: "from-cyan-600/20 to-blue-600/20",
     color: "from-cyan-600/20 to-blue-600/20",
@@ -13,18 +15,18 @@ export const CLUB_CATEGORY_META = {
     tabActive: "border-cyan-500 text-cyan-400",
   },
   cultural: {
-    emoji: "🎭",
+    Icon: Drama,
     desc: "Drama, music, festivals",
-    gradient: "from-purple-600/20 to-pink-600/20",
-    color: "from-purple-600/20 to-pink-600/20",
-    badge: "bg-purple-950 text-purple-300 border-purple-800/60",
-    accent: "text-purple-400",
-    heroBg: "from-purple-900/50 via-pink-900/30",
-    ring: "ring-purple-500/20",
-    tabActive: "border-purple-500 text-purple-400",
+    gradient: "from-blue-600/20 to-cyan-600/20",
+    color: "from-blue-600/20 to-cyan-600/20",
+    badge: "bg-blue-950 text-blue-300 border-blue-800/60",
+    accent: "text-blue-400",
+    heroBg: "from-blue-900/50 via-cyan-900/30",
+    ring: "ring-blue-500/20",
+    tabActive: "border-blue-500 text-blue-400",
   },
   sports: {
-    emoji: "⚡",
+    Icon: Zap,
     desc: "Athletics, fitness, competition",
     gradient: "from-emerald-600/20 to-green-600/20",
     color: "from-emerald-600/20 to-green-600/20",
@@ -35,7 +37,7 @@ export const CLUB_CATEGORY_META = {
     tabActive: "border-emerald-500 text-emerald-400",
   },
   academic: {
-    emoji: "📚",
+    Icon: BookOpen,
     desc: "Research, debate, study groups",
     gradient: "from-amber-600/20 to-orange-600/20",
     color: "from-amber-600/20 to-orange-600/20",
@@ -46,18 +48,18 @@ export const CLUB_CATEGORY_META = {
     tabActive: "border-amber-500 text-amber-400",
   },
   arts: {
-    emoji: "🎨",
+    Icon: Palette,
     desc: "Visual arts, design, film",
-    gradient: "from-rose-600/20 to-red-600/20",
-    color: "from-rose-600/20 to-red-600/20",
-    badge: "bg-rose-950 text-rose-300 border-rose-800/60",
-    accent: "text-rose-400",
-    heroBg: "from-rose-900/50 via-red-900/30",
-    ring: "ring-rose-500/20",
-    tabActive: "border-rose-500 text-rose-400",
+    gradient: "from-cyan-600/20 to-blue-600/20",
+    color: "from-cyan-600/20 to-blue-600/20",
+    badge: "bg-cyan-950 text-cyan-300 border-cyan-800/60",
+    accent: "text-cyan-400",
+    heroBg: "from-cyan-900/50 via-blue-900/30",
+    ring: "ring-cyan-500/20",
+    tabActive: "border-cyan-500 text-cyan-400",
   },
   other: {
-    emoji: "🌐",
+    Icon: Globe,
     desc: "Everything else",
     gradient: "from-slate-600/20 to-slate-700/20",
     color: "from-slate-600/20 to-slate-700/20",

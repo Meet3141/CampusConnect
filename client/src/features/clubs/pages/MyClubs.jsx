@@ -9,14 +9,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import { CLUB_CATEGORY_META } from "../../../theme";
 import { listMyClubs } from "../api";
+import ClubCard from "../../../components/data-display/ClubCard";
+import Spinner from "../../../components/feedback/Spinner";
+import EmptyState from "../../../components/feedback/EmptyState";
+import FilterBar from "../../../components/navigation/FilterBar";
+import Button from "../../../components/ui/Button";
 
-const STATUS_META = {
-  active:   { label: "Member",  cls: "bg-emerald-950 text-emerald-300 border-emerald-700" },
-  pending:  { label: "Pending", cls: "bg-yellow-950 text-yellow-300 border-yellow-700"   },
-  rejected: { label: "Rejected",cls: "bg-red-950 text-red-400 border-red-800"            },
-};
+
 
 export default function MyClubs() {
   const { user } = useAuth();
@@ -60,35 +60,10 @@ export default function MyClubs() {
     user?.roles?.includes("clubAdmin") || user?.roles?.includes("orgAdmin");
 
   /* ── Loading ── */
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-          <p className="text-slate-600 text-[11px] tracking-widest uppercase font-mono">
-            Loading your clubs…
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <Spinner.Page message="Loading your clubs…" />;
 
   /* ── Error ── */
-  if (error) {
-    return (
-      <div className="flex items-center justify-center px-4 py-20">
-        <div className="bg-red-950/30 border border-red-900/50 rounded-2xl p-8 text-center max-w-sm">
-          <p className="text-red-400 text-sm">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-5 py-2 bg-red-900/40 hover:bg-red-900/70 border border-red-800 text-red-300 rounded-xl text-sm transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <div className="py-12 px-6"><EmptyState variant="error" title={error} action={{ label: "Retry", onClick: () => window.location.reload() }} /></div>;
 
   return (
     <div className="text-white">
@@ -99,68 +74,42 @@ export default function MyClubs() {
         <div className="absolute -top-12 right-8 w-60 h-60 bg-violet-700/8 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative w-full px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-3">
+          <p className="text-label text-muted font-mono mb-3">
             Dashboard / My Clubs
           </p>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-display-lg">
                 My{" "}
-                <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                   Clubs
                 </span>
               </h1>
-              <p className="text-slate-500 mt-1.5 text-sm">
+              <p className="text-body-sm text-muted mt-1.5">
                 {counts.all} club{counts.all !== 1 ? "s" : ""} you're connected to
               </p>
             </div>
 
             <div className="flex gap-2">
-              <button
-                onClick={() => navigate("/clubs")}
-                className="px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 text-slate-400 hover:text-white text-sm transition-all"
-              >
-                Browse All
-              </button>
+              <Button variant="secondary" size="sm" onClick={() => navigate("/clubs")}>Browse All</Button>
               {canCreateClub && (
-                <button
-                  onClick={() => navigate("/clubs/create")}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
-                >
-                  + New Club
-                </button>
+                <Button variant="primary" size="sm" onClick={() => navigate("/clubs/create")}>+ New Club</Button>
               )}
             </div>
           </div>
 
-          {/* Status filter tabs */}
           {counts.all > 0 && (
-            <div className="flex gap-1 mt-7 border-b border-white/[0.06] -mb-px">
-              {[
-                { key: "all",     label: "All",     count: counts.all },
-                { key: "active",  label: "Active",  count: counts.active },
-                { key: "pending", label: "Pending", count: counts.pending },
-              ].map(({ key, label, count }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveFilter(key)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all ${
-                    activeFilter === key
-                      ? "border-indigo-500 text-white"
-                      : "border-transparent text-slate-500 hover:text-slate-300"
-                  }`}
-                >
-                  {label}
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono tabular-nums ${
-                    activeFilter === key
-                      ? "bg-indigo-600/30 text-indigo-300"
-                      : "bg-white/5 text-slate-600"
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              ))}
+            <div className="mt-7">
+              <FilterBar
+                filters={[
+                  { value: "all", label: `All (${counts.all})` },
+                  { value: "active", label: `Active (${counts.active})` },
+                  { value: "pending", label: `Pending (${counts.pending})` },
+                ]}
+                value={activeFilter}
+                onChange={setActiveFilter}
+              />
             </div>
           )}
         </div>
@@ -168,44 +117,28 @@ export default function MyClubs() {
 
       {/* ── Content ── */}
       <div className="w-full px-5 lg:px-6 py-6">
-
-        {/* Empty: no memberships at all */}
         {counts.all === 0 && (
-          <div className="flex flex-col items-center justify-center py-28 gap-5 text-center">
-            <div className="w-20 h-20 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-4xl">
-              🏛️
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold">No clubs yet</h2>
-              <p className="text-slate-500 text-sm mt-1.5 max-w-xs leading-relaxed">
-                You haven't joined any clubs. Browse the catalogue and find your community.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/clubs")}
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors"
-            >
-              Explore Clubs
-            </button>
-          </div>
+          <EmptyState
+            icon="🏙️"
+            title="No clubs yet"
+            description="You haven't joined any clubs. Browse the catalogue and find your community."
+            action={{ label: "Explore Clubs", onClick: () => navigate("/clubs") }}
+          />
         )}
 
-        {/* Empty: filter has no results */}
         {counts.all > 0 && filtered.length === 0 && (
-          <div className="text-center py-16 text-slate-600 text-sm">
-            No {activeFilter} clubs to show.
-          </div>
+          <EmptyState icon="🔍" title={`No ${activeFilter} clubs to show`} />
         )}
 
-        {/* Club grid */}
         {filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((club, i) => (
-              <MyClubCard
+              <ClubCard
                 key={club._id}
                 club={club}
                 index={i}
-                onClick={() => navigate(`/clubs/${club._id}`)}
+                myStatus={{ status: club.myStatus }}
+                onView={() => navigate(`/clubs/${club._id}`)}
               />
             ))}
           </div>
@@ -237,12 +170,12 @@ function MyClubCard({ club, index, onClick }) {
             className="absolute inset-0 w-full h-full object-cover opacity-40"
           />
         ) : (
-          <span className="text-4xl opacity-70 group-hover:scale-110 transition-transform duration-300 select-none">
-            {meta.emoji}
-          </span>
+          meta.Icon ? (
+            <meta.Icon size={24} className="opacity-70 group-hover:scale-110 transition-transform duration-300 select-none" />
+          ) : null
         )}
         {status && (
-          <span className={`absolute top-2.5 right-2.5 text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border font-semibold ${status.cls}`}>
+          <span className={`absolute top-2.5 right-2.5 text-label px-2 py-0.5 rounded-full border ${status.cls}`}>
             {status.label}
           </span>
         )}
@@ -251,23 +184,23 @@ function MyClubCard({ club, index, onClick }) {
       {/* Body */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-semibold text-cc text-sm leading-snug group-hover:text-indigo-300 transition-colors line-clamp-1">
+          <h3 className="text-body-md font-semibold text-cc leading-snug group-hover:text-indigo-300 transition-colors line-clamp-1">
             {club.name}
           </h3>
-          <span className={`shrink-0 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border font-medium ${meta.badge}`}>
+          <span className={`shrink-0 text-label px-2 py-0.5 rounded-full border ${meta.badge}`}>
             {club.category}
           </span>
         </div>
 
-        <p className="text-cc-muted text-xs line-clamp-2 leading-relaxed">
+        <p className="text-caption text-muted line-clamp-2 text-relaxed">
           {club.description}
         </p>
 
         <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-cc-soft">
-          <span className="text-[11px] text-cc-muted">
+          <span className="text-micro text-muted">
             {club.memberCount ?? 0} member{club.memberCount !== 1 ? "s" : ""}
           </span>
-          <span className="text-[11px] text-indigo-400 font-medium group-hover:translate-x-0.5 transition-transform duration-200">
+          <span className="text-micro text-accent font-semibold group-hover:translate-x-0.5 transition-transform duration-200">
             Open →
           </span>
         </div>

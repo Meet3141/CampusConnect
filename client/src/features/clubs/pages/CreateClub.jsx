@@ -111,15 +111,17 @@ export default function CreateClub() {
     return (
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            Only users with <span className="text-indigo-400">Club Admin</span> or{" "}
-            <span className="text-indigo-400">Org Admin</span> roles can create clubs.
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-800">
+            <span className="text-2xl">🔒</span>
+          </div>
+          <h2 className="text-heading-md text-white mb-2">Access Restricted</h2>
+          <p className="text-body-sm text-muted text-relaxed">
+            Only users with <span className="text-accent">Club Admin</span> or{" "}
+            <span className="text-accent">Org Admin</span> roles can create clubs.
           </p>
           <button
             onClick={() => navigate("/clubs")}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors"
+            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors"
           >
             Back to Clubs
           </button>
@@ -143,7 +145,7 @@ export default function CreateClub() {
         {/* Back */}
         <button
           onClick={() => (step === 1 ? navigate("/clubs") : setStep(1))}
-          className="group flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-10 transition-colors"
+          className="group flex items-center gap-2 text-body-sm text-muted hover:text-white mb-10 transition-colors"
         >
           <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
           {step === 1 ? "Back to Clubs" : "Back to Step 1"}
@@ -151,16 +153,16 @@ export default function CreateClub() {
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-2">
+          <p className="text-label text-muted font-mono mb-2">
             Dashboard / Clubs / New
           </p>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-display-lg">
             Create a{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Club
             </span>
           </h1>
-          <p className="text-slate-500 text-sm mt-2">
+          <p className="text-body-sm text-muted mt-2">
             Build a community around a shared interest.
           </p>
         </div>
@@ -169,7 +171,7 @@ export default function CreateClub() {
         <div className="flex items-center gap-3 mb-9">
           {[1, 2].map((s, idx) => (
             <div key={s} className="flex items-center gap-3">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-caption font-bold transition-all ${
                 step === s
                   ? "bg-indigo-600 text-white"
                   : s < step
@@ -178,7 +180,7 @@ export default function CreateClub() {
               }`}>
                 {s < step ? "✓" : s}
               </div>
-              <span className={`text-xs font-medium ${step === s ? "text-white" : "text-slate-600"}`}>
+              <span className={`text-caption font-semibold ${step === s ? "text-white" : "text-slate-600"}`}>
                 {s === 1 ? "Basics" : "Details"}
               </span>
               {idx < 1 && (
@@ -213,12 +215,12 @@ export default function CreateClub() {
             {/* Category grid */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
+                <label className="text-label text-muted">
                   Category <span className="text-red-400">*</span>
                 </label>
               </div>
               {fieldErrors.category && (
-                <p className="text-red-400 text-[11px] mb-2">{fieldErrors.category}</p>
+                <p className="text-micro text-error mb-2">{fieldErrors.category}</p>
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {CLUB_CATEGORIES.map((cat) => {
@@ -235,11 +237,11 @@ export default function CreateClub() {
                           : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15] hover:bg-white/[0.05]"
                       }`}
                     >
-                      <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">
-                        {cm.emoji}
+                      <div className="flex items-center justify-center w-9 h-9 rounded-xl mb-2 bg-cc-surface group-hover:scale-110 transition-transform">
+                        {cm.Icon && <cm.Icon size={24} className="text-cc-muted" />}
                       </div>
-                      <div className="text-sm font-medium text-white capitalize">{cat}</div>
-                      <div className="text-[11px] text-slate-600 mt-0.5 leading-tight">{cm.desc}</div>
+                      <div className="text-body-sm font-semibold text-white capitalize">{cat}</div>
+                      <div className="text-caption text-muted mt-0.5 leading-tight">{cm.desc}</div>
                     </button>
                   );
                 })}
@@ -249,7 +251,7 @@ export default function CreateClub() {
             <button
               type="button"
               onClick={goNext}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium text-sm transition-colors"
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-body-sm transition-colors"
             >
               Continue →
             </button>
@@ -263,10 +265,12 @@ export default function CreateClub() {
             {/* Preview strip */}
             {selectedCat && (
               <div className={`rounded-xl border border-white/[0.07] overflow-hidden bg-gradient-to-r ${selectedCat.color} p-4 flex items-center gap-3`}>
-                <span className="text-2xl">{selectedCat.emoji}</span>
+                <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10">
+                  {selectedCat.Icon && <selectedCat.Icon size={24} className="text-white/80" />}
+                </span>
                 <div>
-                  <p className="font-semibold text-white text-sm">{form.name || "Club Name"}</p>
-                  <p className="text-[11px] text-slate-400 capitalize">{form.category}</p>
+                  <p className="font-semibold text-white text-body-sm">{form.name || "Club Name"}</p>
+                  <p className="text-caption text-muted capitalize">{form.category}</p>
                 </div>
               </div>
             )}
@@ -315,7 +319,7 @@ export default function CreateClub() {
 
             {/* API error */}
             {apiError && (
-              <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-sm">
+              <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-body-sm">
                 {apiError}
               </div>
             )}
@@ -324,14 +328,14 @@ export default function CreateClub() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-sm transition-all"
+                className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-body-sm transition-all"
               >
                 ← Back
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">

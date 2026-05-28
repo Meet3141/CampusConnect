@@ -130,9 +130,9 @@ export default function EditClub() {
     return (
       <div className="flex items-center justify-center px-4 py-20 text-center">
         <div>
-          <p className="text-red-400 mb-4">{fetchErr}</p>
+          <p className="text-body-sm text-error mb-4">{fetchErr}</p>
           <button onClick={() => navigate(-1)}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors">
             Go Back
           </button>
         </div>
@@ -144,11 +144,11 @@ export default function EditClub() {
     return (
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm">You don't have permission to edit this club.</p>
+          <div className="text-heading-xl mb-5">🔒</div>
+          <h2 className="text-heading-md text-white mb-2">Access Restricted</h2>
+          <p className="text-body-sm text-muted">You don't have permission to edit this club.</p>
           <button onClick={() => navigate(`/clubs/${id}`)}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors">
             Back to Club
           </button>
         </div>
@@ -164,24 +164,24 @@ export default function EditClub() {
           <div className="absolute -top-32 left-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
         </div>
         <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-3">
+          <p className="text-label text-muted font-mono mb-3">
             Admin / Clubs / Edit
           </p>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-display-lg">
                 Edit{" "}
-                <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Club
                 </span>
               </h1>
-              <p className="text-slate-500 text-sm mt-1.5">
+              <p className="text-body-sm text-muted mt-1.5">
                 Changes are reflected immediately for all members.
               </p>
             </div>
             <button
               onClick={() => navigate(`/clubs/${id}`)}
-              className="shrink-0 px-4 py-2 border border-white/[0.08] hover:border-white/[0.15] text-slate-400 hover:text-white rounded-xl text-sm transition-all"
+              className="shrink-0 px-4 py-2 border border-white/[0.08] hover:border-white/[0.15] text-slate-400 hover:text-white rounded-xl text-body-sm transition-all"
             >
               ← Back to Club
             </button>
@@ -206,12 +206,12 @@ export default function EditClub() {
           {/* Category */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-[11px] uppercase tracking-widest text-slate-500 font-medium">
+              <label className="text-label text-muted">
                 Category <span className="text-red-400">*</span>
               </label>
             </div>
             {fieldErrors.category && (
-              <p className="text-red-400 text-[11px] mb-2">{fieldErrors.category}</p>
+              <p className="text-micro text-error mb-2">{fieldErrors.category}</p>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {CLUB_CATEGORIES.map((cat) => {
@@ -224,9 +224,11 @@ export default function EditClub() {
                         ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
                         : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15] hover:bg-white/[0.05]"
                     }`}>
-                    <div className="text-xl mb-1.5 group-hover:scale-110 transition-transform">{cm.emoji}</div>
-                    <div className="text-sm font-medium text-white capitalize">{cat}</div>
-                    <div className="text-[11px] text-slate-600 mt-0.5 leading-tight">{cm.desc}</div>
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg mb-1.5 bg-cc-surface group-hover:scale-110 transition-transform">
+                      {cm.Icon && <cm.Icon size={24} className="text-cc-muted" />}
+                    </div>
+                    <div className="text-body-sm font-semibold text-white capitalize">{cat}</div>
+                    <div className="text-caption text-muted mt-0.5 leading-tight">{cm.desc}</div>
                   </button>
                 );
               })}
@@ -263,25 +265,25 @@ export default function EditClub() {
 
           {/* API error */}
           {apiError && (
-            <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-sm">
+            <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-body-sm">
               {apiError}
             </div>
           )}
 
           {/* Success flash */}
           {saved && (
-            <div className="bg-emerald-950/30 border border-emerald-900/60 rounded-xl p-4 text-emerald-400 text-sm">
+            <div className="bg-emerald-950/30 border border-emerald-900/60 rounded-xl p-4 text-emerald-400 text-body-sm">
               ✓ Changes saved — redirecting…
             </div>
           )}
 
           <div className="flex gap-3">
             <button type="button" onClick={() => navigate(`/clubs/${id}`)}
-              className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-sm transition-all">
+              className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-body-sm transition-all">
               Cancel
             </button>
             <button type="submit" disabled={saving || saved}
-              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
