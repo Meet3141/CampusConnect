@@ -1,0 +1,207 @@
+{
+  "root": "CampusConnect-2",
+  "generatedAt": "2026-05-21",
+  "structure": [
+    {
+      "name": "implementation_plan_debugPhase1",
+      "type": "file_or_folder"
+    },
+    {
+      "name": "package.json",
+      "type": "file"
+    },
+    {
+      "name": "_orphan_backup",
+      "type": "folder",
+      "children": [
+        {
+          "name": "client",
+          "type": "folder",
+          "children": [
+            { "name": "components/BrandLogo.jsx", "type": "file" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "client",
+      "type": "folder",
+      "children": [
+        { "name": "eslint.config.js", "type": "file" },
+        { "name": "index.html", "type": "file" },
+        { "name": "package.json", "type": "file" },
+        { "name": "README.md", "type": "file" },
+        { "name": "vite.config.js", "type": "file" },
+        { "name": "public", "type": "folder" },
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            { "name": "App.css", "type": "file" },
+            { "name": "App.jsx", "type": "file" },
+            { "name": "index.css", "type": "file" },
+            { "name": "main.jsx", "type": "file" },
+            {
+              "name": "components",
+              "type": "folder",
+              "children": [
+                { "name": "layout", "type": "folder" },
+                { "name": "ui", "type": "folder" }
+              ]
+            },
+            {
+              "name": "context",
+              "type": "folder",
+              "children": [
+                { "name": "AuthContext.jsx", "type": "file" },
+                { "name": "ToastContext.jsx", "type": "file" }
+              ]
+            },
+            {
+              "name": "features",
+              "type": "folder",
+              "children": [
+                { "name": "admin", "type": "folder" },
+                { "name": "auth", "type": "folder" },
+                { "name": "chat", "type": "folder" },
+                { "name": "clubs", "type": "folder" },
+                { "name": "common", "type": "folder" },
+                { "name": "dashboard", "type": "folder" },
+                { "name": "events", "type": "folder" },
+                { "name": "users", "type": "folder" },
+                { "name": "volunteers", "type": "folder" }
+              ]
+            },
+            {
+              "name": "hooks",
+              "type": "folder",
+              "children": [
+                { "name": "useParticleCanvas.js", "type": "file" }
+              ]
+            },
+            {
+              "name": "routes",
+              "type": "folder",
+              "children": [
+                { "name": "AdminRoute.jsx", "type": "file" },
+                { "name": "ProtectedRoute.jsx", "type": "file" },
+                { "name": "RoleRoute.jsx", "type": "file" }
+              ]
+            },
+            {
+              "name": "services",
+              "type": "folder",
+              "children": [
+                { "name": "api.js", "type": "file" },
+                { "name": "chatSocket.js", "type": "file" }
+              ]
+            },
+            {
+              "name": "styles",
+              "type": "folder",
+              "children": [
+                { "name": "components.css", "type": "file" }
+              ]
+            },
+            { "name": "theme", "type": "folder" },
+            { "name": "utils", "type": "folder" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "type": "folder",
+      "children": [
+        { "name": "frontendSpecs.json", "type": "file" },
+        { "name": "MASTER_SYSTEM_BLUEPRINT.md", "type": "file" },
+        { "name": "Mod1502.json", "type": "file" },
+        { "name": "PROJECT_SPECIFICATIONS.md", "type": "file" },
+        { "name": "SRS_DOCUMENT.md", "type": "file" }
+      ]
+    },
+    {
+      "name": "server",
+      "type": "folder",
+      "children": [
+        { "name": "docker-compose.yml", "type": "file" },
+        { "name": "Dockerfile", "type": "file" },
+        { "name": "ecosystem.config.cjs", "type": "file" },
+        { "name": "index.js", "type": "file" },
+        { "name": "package.json", "type": "file" },
+        {
+          "name": "config",
+          "type": "folder",
+          "children": [
+            { "name": "db.js", "type": "file" }
+          ]
+        },
+        {
+          "name": "jobs",
+          "type": "folder",
+          "children": [
+            { "name": "cleanupExpiredEvents.js", "type": "file" },
+            { "name": "reconcileMemberCount.js", "type": "file" },
+            { "name": "reconcileRsvpCount.js", "type": "file" },
+            { "name": "scheduler.js", "type": "file" }
+          ]
+        },
+        {
+          "name": "middleware",
+          "type": "folder",
+          "children": [
+            { "name": "asyncHandler.js", "type": "file" },
+            { "name": "auth.js", "type": "file" },
+            { "name": "coordinatorCheck.js", "type": "file" },
+            { "name": "errorHandler.js", "type": "file" },
+            { "name": "logger.js", "type": "file" },
+            { "name": "optionalAuth.js", "type": "file" },
+            { "name": "roleCheck.js", "type": "file" }
+          ]
+        },
+        {
+          "name": "modules",
+          "type": "folder",
+          "children": [
+            { "name": "auth", "type": "folder" },
+            { "name": "bookmarks", "type": "folder" },
+            { "name": "chat", "type": "folder" },
+            { "name": "clubs", "type": "folder" },
+            { "name": "events", "type": "folder" },
+            { "name": "external-events", "type": "folder" },
+            { "name": "notifications", "type": "folder" },
+            { "name": "users", "type": "folder" },
+            { "name": "volunteers", "type": "folder" }
+          ]
+        },
+        {
+          "name": "scripts",
+          "type": "folder",
+          "children": [
+            { "name": "drop-members-field.js", "type": "file" },
+            { "name": "invalidate-tokens.js", "type": "file" },
+            { "name": "migrate-members.js", "type": "file" }
+          ]
+        },
+        {
+          "name": "utils",
+          "type": "folder",
+          "children": [
+            { "name": "cache.js", "type": "file" },
+            { "name": "generateToken.js", "type": "file" },
+            { "name": "httpError.js", "type": "file" },
+            { "name": "processNoShows.js", "type": "file" },
+            { "name": "validation.js", "type": "file" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "folder",
+      "children": [
+        { "name": "attendanceStats.js", "type": "file" }
+      ]
+    }
+  ]
+}
