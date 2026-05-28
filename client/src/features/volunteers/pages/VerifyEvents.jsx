@@ -18,15 +18,16 @@ import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
+import { Code2, Wrench, Mic, Drama, Zap, Landmark, Trophy, Globe, Calendar, MapPin, Lock, University, CheckCircle2 } from "lucide-react";
 
 const CAT_META = {
-  hackathon:   { emoji: "💻", badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
-  workshop:    { emoji: "🛠",  badge: "bg-teal-950 text-teal-300 border-teal-800" },
-  webinar:     { emoji: "🎙",  badge: "bg-sky-950 text-sky-300 border-sky-800" },
-  cultural:    { emoji: "🎭", badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:      { emoji: "⚡", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
-  conference:  { emoji: "🏛",  badge: "bg-amber-950 text-amber-300 border-amber-800" },
-  competition: { emoji: "🏆", badge: "bg-rose-950 text-rose-300 border-rose-800" },
+  hackathon:   { Icon: Code2,    badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
+  workshop:    { Icon: Wrench,   badge: "bg-teal-950 text-teal-300 border-teal-800" },
+  webinar:     { Icon: Mic,      badge: "bg-sky-950 text-sky-300 border-sky-800" },
+  cultural:    { Icon: Drama,    badge: "bg-purple-950 text-purple-300 border-purple-800" },
+  sports:      { Icon: Zap,      badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
+  conference:  { Icon: Landmark, badge: "bg-amber-950 text-amber-300 border-amber-800" },
+  competition: { Icon: Trophy,   badge: "bg-rose-950 text-rose-300 border-rose-800" },
 };
 const catOf = (k) => CAT_META[k] || CAT_META.cultural;
 
@@ -90,7 +91,9 @@ export default function VerifyEvents() {
     return (
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-5">🔒</div>
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-800">
+            <Lock size={16} className="text-slate-400" />
+          </div>
           <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
           <p className="text-slate-500 text-sm">
             Only <span className="text-indigo-400">Editors</span> and{" "}
@@ -110,7 +113,7 @@ export default function VerifyEvents() {
       {/* Header */}
       <div className="relative overflow-hidden border-b border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 left-1/3 w-80 h-80 bg-emerald-700/5 rounded-full blur-3xl" />
+          <div className="absolute -top-24 left-1/3 w-80 h-80 bg-[#004F9F]/5 rounded-full blur-3xl" />
         </div>
         <div className="relative px-5 lg:px-6 pt-6 pb-0">
           <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-3">
@@ -120,7 +123,7 @@ export default function VerifyEvents() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 Verify{" "}
-                <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Events
                 </span>
               </h1>
@@ -147,7 +150,7 @@ export default function VerifyEvents() {
               <button key={key} onClick={() => setTab(key)}
                 className={`px-5 py-3 text-sm font-medium border-b-2 transition-all ${
                   tab === key
-                    ? "border-emerald-500 text-emerald-300"
+                    ? "border-[#1F6BAD] text-[#5BB8E8]"
                     : "border-transparent text-slate-500 hover:text-slate-300"
                 }`}>
                 {label}
@@ -168,7 +171,11 @@ export default function VerifyEvents() {
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-4xl mb-3">{tab === "unverified" ? "✅" : "🌐"}</div>
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-2xl bg-slate-800">
+              {tab === "unverified"
+                ? <CheckCircle2 size={16} className="text-[#5BB8E8]" />
+                : <Globe size={16} className="text-slate-400" />}
+            </div>
             <p className="text-white font-semibold mb-1">
               {tab === "unverified" ? "All clear!" : "No verified events yet"}
             </p>
@@ -193,7 +200,7 @@ export default function VerifyEvents() {
                         {ev.category}
                       </span>
                       {ev.isVerified ? (
-                        <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 font-semibold">
+                        <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#1A4F7F] text-[#5BB8E8] border border-[#2D6A9F] font-semibold">
                           ✓ Verified
                         </span>
                       ) : (
@@ -208,13 +215,14 @@ export default function VerifyEvents() {
                       <h3 className="font-semibold text-white text-sm leading-snug mb-2 line-clamp-2">
                         {ev.title}
                       </h3>
-                      <p className="text-[11px] text-slate-500 mb-0.5">🏫 {ev.universityName}</p>
+                      <p className="text-[11px] text-slate-500 mb-0.5 flex items-center gap-1"><University size={14} className="shrink-0" /> {ev.universityName}</p>
                       {isValidDate(ev.date) && (
-                        <p className="text-[11px] text-slate-500 mb-0.5">
-                          📅 {new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        <p className="text-[11px] text-slate-500 mb-0.5 flex items-center gap-1">
+                          <Calendar size={14} className="shrink-0" />
+                          {new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
                       )}
-                      {ev.venue && <p className="text-[11px] text-slate-500 mb-0.5">📍 {ev.venue}</p>}
+                      {ev.venue && <p className="text-[11px] text-slate-500 mb-0.5 flex items-center gap-1"><MapPin size={14} className="shrink-0" /> {ev.venue}</p>}
                       {ev.description && (
                         <p className="text-[11px] text-slate-600 mt-2 line-clamp-2 leading-relaxed">
                           {ev.description}
@@ -235,10 +243,10 @@ export default function VerifyEvents() {
                       <button
                         onClick={() => handleVerify(ev._id)}
                         disabled={verifyingId === ev._id}
-                        className="w-full py-2.5 bg-emerald-700/30 hover:bg-emerald-700/50 border border-emerald-700/50 hover:border-emerald-600 text-emerald-300 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-1">
+                        className="w-full py-2.5 bg-[#1A4F7F]/60 hover:bg-[#1A4F7F]/80 border border-[#2D6A9F]/70 hover:border-[#1F6BAD] text-[#5BB8E8] rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-1">
                         {verifyingId === ev._id ? (
                           <span className="flex items-center justify-center gap-2">
-                            <span className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                            <span className="w-3.5 h-3.5 border-2 border-[#5BB8E8]/30 border-t-[#5BB8E8] rounded-full animate-spin" />
                             Verifying…
                           </span>
                         ) : (

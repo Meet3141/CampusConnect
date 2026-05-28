@@ -30,16 +30,21 @@ import {
   deleteBookmark,
 } from "../api";
 import { InfoRow, VolunteerPanel } from "../ui";
+import { Code2, Wrench, Mic, Drama, Zap, ClipboardList, Trophy, Landmark } from "lucide-react";
+import { Calendar, Clock, Hourglass, MapPin, Users, Building2, Settings, Trash2, Bookmark, BarChart3 } from "lucide-react";
 
 const EVENT_CAT = {
-  hackathon: { emoji: "💻", bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
-  workshop:  { emoji: "🛠",  bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
-  webinar:   { emoji: "🎙",  bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
-  cultural:  { emoji: "🎭", bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:    { emoji: "⚡", bg: "from-emerald-900/50 to-green-900/30", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
-  meeting:   { emoji: "📋", bg: "from-slate-800/50 to-slate-900/30",   badge: "bg-slate-800 text-slate-300 border-slate-700" },
+  hackathon: { Icon: Code2,         bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
+  workshop:  { Icon: Wrench,        bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
+  webinar:   { Icon: Mic,           bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
+  cultural:  { Icon: Drama,         bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
+  sports:    { Icon: Zap,           bg: "from-emerald-900/50 to-green-900/30", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
+  meeting:   { Icon: ClipboardList, bg: "from-slate-800/50 to-slate-900/30",   badge: "bg-slate-800 text-slate-300 border-slate-700" },
+  competition:{ Icon: Trophy,       bg: "from-rose-900/50 to-pink-900/30",     badge: "bg-rose-950 text-rose-300 border-rose-800" },
+  conference: { Icon: Landmark,     bg: "from-amber-900/50 to-orange-900/30",  badge: "bg-amber-950 text-amber-300 border-amber-800" },
 };
 const catOf = (k) => EVENT_CAT[k] || EVENT_CAT.meeting;
+
 
 const STATUS_BADGE = {
   upcoming:  "bg-indigo-950 text-indigo-300 border-indigo-800",
@@ -324,8 +329,8 @@ export default function EventDetail() {
           </button>
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/7 ring-1 ring-white/10 flex items-center justify-center text-3xl sm:text-4xl shrink-0">
-              {cat.emoji}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/7 ring-1 ring-white/10 flex items-center justify-center shrink-0">
+              {cat.Icon && <cat.Icon size={24} className="text-white/80" />}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -343,18 +348,19 @@ export default function EventDetail() {
               {event.clubId && (
                 <button
                   onClick={() => navigate(`/clubs/${event.clubId._id || event.clubId}`)}
-                  className="text-indigo-400 hover:text-indigo-300 text-sm mt-2 transition-colors"
+                  className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 text-sm mt-2 transition-colors"
                 >
-                  🏛️ {event.clubId.name || "Club"}
+                  <Building2 size={14} className="shrink-0" />
+                  {event.clubId.name || "Club"}
                 </button>
               )}
 
               <div className="flex flex-wrap gap-6 mt-4 text-sm text-slate-400">
-                <span>📅 {dateStr}</span>
-                <span>🕐 {timeStr}</span>
-                {end && durationMs > 0 && <span>⏳ {formatDuration(durationMs)}</span>}
-                <span>📍 {event.venue}</span>
-                {event.maxAttendees && <span>👥 {registeredCount}/{event.maxAttendees} spots</span>}
+                <span className="flex items-center gap-1.5"><Calendar size={14} className="shrink-0" /> {dateStr}</span>
+                <span className="flex items-center gap-1.5"><Clock    size={24} className="shrink-0" /> {timeStr}</span>
+                {end && durationMs > 0 && <span className="flex items-center gap-1.5"><Hourglass size={14} className="shrink-0" /> {formatDuration(durationMs)}</span>}
+                <span className="flex items-center gap-1.5"><MapPin   size={24} className="shrink-0" /> {event.venue}</span>
+                {event.maxAttendees && <span className="flex items-center gap-1.5"><Users size={14} className="shrink-0" /> {registeredCount}/{event.maxAttendees} spots</span>}
               </div>
             </div>
 
@@ -399,8 +405,8 @@ export default function EventDetail() {
                     {actionLoading ? "…" : "↺ Restart Event"}
                   </button>
                   <button onClick={() => navigate(`/events/${id}/attendance`)}
-                    className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap">
-                    📊 View Analytics
+                    className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
+                    <BarChart3 size={16} /> View Analytics
                   </button>
                 </>
               )}
@@ -419,20 +425,21 @@ export default function EventDetail() {
                 <>
                   {(isEventCreator || isClubAdminOfEvent || isOrgAdmin) && (
                     <button onClick={() => navigate(`/events/${id}/edit`)}
-                      className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap">
-                      ⚙️ Manage
+                      className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
+                      <Settings size={16} /> Manage
                     </button>
                   )}
                   <button onClick={toggleBookmark}
-                    className="px-5 py-2.5 bg-white/4 border border-white/8 hover:border-white/15 rounded-xl text-sm transition-all whitespace-nowrap">
-                    {bookmarkId ? "🔖 Bookmarked" : "🔖 Bookmark"}
+                    className="px-5 py-2.5 bg-white/4 border border-white/8 hover:border-white/15 rounded-xl text-sm transition-all whitespace-nowrap flex items-center gap-2">
+                    <Bookmark size={16} className={bookmarkId ? "fill-current" : ""} />
+                    {bookmarkId ? "Bookmarked" : "Bookmark"}
                   </button>
                 </>
               )}
               {canDeleteEvent && (
                 <button onClick={handleDeleteEvent} disabled={actionLoading}
-                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap">
-                  🗑 Delete Event
+                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2">
+                  <Trash2 size={16} /> Delete Event
                 </button>
               )}
             </div>

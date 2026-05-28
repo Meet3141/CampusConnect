@@ -1,138 +1,259 @@
 /**
- * Events.jsx
- * Shows all upcoming events from clubs the user belongs to (or admins).
- * If the user has no clubs, shows an empty-state CTA to join one.
- *
- * API:
- *   GET /api/clubs/mine  → [{ _id, name, category, myStatus, ... }]
- *   GET /api/events?clubId=:id&limit=50 (per club, filtered by active clubs)
+ * Events.jsx — Phase 6: Social Discovery System
+ * - Sort controls: Soonest / Most Popular / Ongoing First
+ * - Trending 🔥 badge on high-capacity events
+ * - Filter pills with live count badges
+ * - Club-grouped section headers
+ * - Light-theme compatible semantic tokens
  */
-
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
-import { EventCard } from "../ui";
 import { useMyClubEvents } from "../hooks";
+import EventCard from "../../../components/data-display/EventCard";
+import SearchBar from "../../../components/navigation/SearchBar";
+import Skeleton from "../../../components/feedback/Skeleton";
+import EmptyState from "../../../components/feedback/EmptyState";
+import { TrendingUp, Clock, Flame, LayoutGrid, CalendarClock, Radio, CheckCircle2 } from "lucide-react";
 
-const STATUS_STYLE = {
-  upcoming:         "bg-indigo-950 text-indigo-300 border-indigo-800",
-  ongoing:          "bg-emerald-950 text-emerald-300 border-emerald-800",
-  completed:        "bg-white/[0.04] text-slate-500 border-white/[0.06]",
-  cancelled:        "bg-red-950 text-red-400 border-red-900",
-  draft:            "bg-slate-900 text-slate-400 border-slate-700",
-  pending_approval: "bg-yellow-950 text-yellow-400 border-yellow-800",
-};
+const STATUSES = ["All", "upcoming", "ongoing", "completed"];
 
-const CATEGORY_ACCENT = {
-  technical: "border-l-cyan-500",
-  cultural:  "border-l-purple-500",
-  sports:    "border-l-emerald-500",
-  academic:  "border-l-amber-500",
-  arts:      "border-l-rose-500",
-  other:     "border-l-slate-500",
-};
+const STATUS_LABEL = { All: "All Events", upcoming: "Upcoming", ongoing: "Ongoing", completed: "Past" };
+const STATUS_ICON  = { All: LayoutGrid, upcoming: CalendarClock, ongoing: Radio, completed: CheckCircle2 };
 
-const FILTERS = ["All", "upcoming", "ongoing", "completed"];
+const SORTS = [
+  { key: "soonest",   label: "Soonest",   Icon: Clock      },
+  { key: "popular",   label: "Popular",   Icon: TrendingUp },
+  { key: "ongoing",   label: "Live First",Icon: Flame      },
+];
+
+function isTrending(ev) {
+  const reg = ev.attendees?.filter((a) => a.status === "registered").length || 0;
+  const cap = ev.maxAttendees || 0;
+  return cap > 0 && reg / cap >= 0.6;
+}
 
 export default function Events() {
-  const navigate        = useNavigate();
-  const { user }        = useAuth();
-
+  const navigate = useNavigate();
   const { myClubs, events, loading } = useMyClubEvents();
-  const [filter,  setFilter]    = useState("All");
-  const [search,  setSearch]    = useState("");
+  const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const [sort,   setSort]   = useState("soonest");
 
-  /* ── Filtered list ── */
+  // Per-status counts for pill badges
+  const countByStatus = useMemo(() => {
+    const counts = {};
+    STATUSES.forEach((s) => {
+      counts[s] = s === "All" ? events.length : events.filter((e) => e.status === s).length;
+    });
+    return counts;
+  }, [events]);
+
   const filtered = useMemo(() => {
     let list = events;
     if (filter !== "All") list = list.filter((e) => e.status === filter);
     if (search.trim())    list = list.filter((e) => e.title.toLowerCase().includes(search.toLowerCase()));
-    return list;
-  }, [events, filter, search]);
 
-  /* ── Empty state: not in any club ── */
+    // Sort
+    if (sort === "soonest") {
+      list = [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (sort === "popular") {
+      list = [...list].sort((a, b) => {
+        const ra = a.attendees?.filter((x) => x.status === "registered").length || 0;
+        const rb = b.attendees?.filter((x) => x.status === "registered").length || 0;
+        return rb - ra;
+      });
+    } else if (sort === "ongoing") {
+      list = [...list].sort((a, b) => {
+        if (a.status === "ongoing" && b.status !== "ongoing") return -1;
+        if (b.status === "ongoing" && a.status !== "ongoing") return 1;
+        return new Date(a.date) - new Date(b.date);
+      });
+    }
+    return list;
+  }, [events, filter, search, sort]);
+
+  // Mixed adaptive layout
+  const heroEvent  = filtered[0] || null;
+  const restEvents = filtered.slice(1);
+
+  // Group rest events by club for section headers
+  const clubNames = useMemo(() => {
+    const map = {};
+    myClubs.forEach((c) => { map[c._id] = c.name; });
+    return map;
+  }, [myClubs]);
+
   if (!loading && myClubs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center">
-        <div className="text-6xl mb-5">🎪</div>
-        <h2 className="text-xl font-bold text-white mb-2">No club events yet</h2>
-        <p className="text-slate-500 text-sm max-w-sm mb-6 leading-relaxed">
-          You're not a member of any club. Join a club to see its events, announcements, and more right here.
-        </p>
-        <button
-          onClick={() => navigate("/clubs")}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-colors"
-        >
-          Discover Clubs →
-        </button>
+      <div className="flex items-center justify-center min-h-[70vh] p-6">
+        <EmptyState
+          icon="🎪"
+          title="No club events yet"
+          description="You're not a member of any club. Join a club to see its events right here."
+          action={{ label: "Discover Clubs", onClick: () => navigate("/clubs") }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-
+    <div className="text-cc">
       {/* ── Page header ── */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-1">Events</h1>
-        <p className="text-slate-500 text-sm">
-          Events from your {myClubs.length} club{myClubs.length !== 1 ? "s" : ""}
-        </p>
-      </div>
-
-      {/* ── Search + filters ── */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        {/* Search */}
-        <div className="relative flex-1">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search events…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-600/50 transition-colors"
-          />
+      <div className="relative overflow-hidden border-b border-cc-soft">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-0 right-1/3 w-96 h-64 bg-accent-soft rounded-full blur-3xl opacity-40" />
         </div>
+        <div className="relative px-5 lg:px-6 pt-5 pb-4">
+          <p className="text-label text-muted font-mono mb-2">Dashboard / Events</p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+              <h1 className="text-display-lg" style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                Events
+              </h1>
+              <p className="text-body-sm text-secondary mt-1">
+                {loading ? "…" : `${events.length} event${events.length !== 1 ? "s" : ""} from your ${myClubs.length} club${myClubs.length !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+          </div>
 
-        {/* Status filter pills */}
-        <div className="flex gap-2 flex-wrap">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-xs font-medium capitalize transition-all ${
-                filter === f
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white/[0.04] text-slate-400 border border-white/[0.07] hover:border-white/[0.15] hover:text-white"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+          {/* ── Search + status pills ── */}
+          <div className="mt-4 space-y-3">
+            <SearchBar value={search} onChange={setSearch} placeholder="Search events…" shortcutHint />
+
+            {/* Status pills with count badges */}
+            <div className="flex flex-wrap gap-2">
+              {STATUSES.map((s) => {
+                const isActive = filter === s;
+                const count = countByStatus[s] || 0;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setFilter(s)}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-semibold border transition-all duration-200 ${
+                      isActive
+                        ? "border-transparent scale-105"
+                        : "bg-cc-surface-weak text-muted border-cc-soft hover:border-cc-strong hover:text-cc hover:scale-105"
+                    }`}
+                    style={isActive ? {
+                      backgroundColor: 'var(--cc-color-brand)',
+                      color: '#fff',
+                      borderColor: 'var(--cc-color-brand)',
+                      boxShadow: '0 2px 8px rgba(0,79,159,0.20)',
+                    } : undefined}
+                  >
+                    {(() => { const Icon = STATUS_ICON[s]; return Icon ? <Icon size={12} className="shrink-0" /> : null; })()}
+                    {STATUS_LABEL[s]}
+                    {count > 0 && (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        isActive ? "bg-white/20" : "bg-cc-surface-hover"
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Sort controls */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-muted font-mono uppercase tracking-wider shrink-0">Sort:</span>
+              {SORTS.map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setSort(key)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all duration-150 ${
+                    sort === key
+                      ? "border-cc-strong"
+                      : "bg-transparent text-muted border-transparent hover:border-cc-soft hover:text-cc"
+                  }`}
+                  style={sort === key ? {
+                    backgroundColor: 'var(--cc-color-primary-soft)',
+                    color: 'var(--cc-color-brand)',
+                  } : undefined}
+                >
+                  <Icon size={11} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ── Content ── */}
-      {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="text-4xl mb-3">📭</div>
-          <p className="text-slate-500 text-sm">
-            {search ? `No events matching "${search}"` : "No events in this category yet."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((ev) => (
-            <EventCard key={ev._id} ev={ev} onClick={() => navigate(`/events/${ev._id}`)} />
-          ))}
-        </div>
-      )}
+      <div className="px-5 lg:px-6 py-6">
+        {loading ? (
+          <div className="space-y-6">
+            <Skeleton.Card className="h-48" />
+            <Skeleton.Grid count={5} renderItem={() => <Skeleton.Card />} />
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            variant={search ? "search" : "default"}
+            searchQuery={search}
+            icon={search ? undefined : "📭"}
+            title={search ? undefined : `No ${filter === "All" ? "" : filter} events`}
+            description={search ? undefined : "Check back later or switch to a different filter."}
+            action={search ? { label: "Clear search", onClick: () => setSearch("") } : undefined}
+          />
+        ) : (
+          <div className="space-y-6">
+            {/* Hero event */}
+            {heroEvent && (
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-3 flex items-center gap-2">
+                  <span className="cc-live-dot cc-live-dot--amber" style={{ width: 6, height: 6 }} />
+                  {filter === "ongoing" ? "Happening now" : filter === "upcoming" ? "Coming up" : "Featured event"}
+                  {isTrending(heroEvent) && <span className="ml-1" style={{ color: 'var(--cc-color-warning)' }}>🔥 Trending</span>}
+                </p>
+                <EventCard
+                  event={heroEvent}
+                  variant="hero"
+                  index={0}
+                  onClick={() => navigate(`/events/${heroEvent._id}`)}
+                />
+              </div>
+            )}
+
+            {/* Rest — compact grid with trending badges */}
+            {restEvents.length > 0 && (
+              <div>
+                {heroEvent && (
+                  <p className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-3 flex items-center gap-2">
+                    <span className="w-4 h-px bg-cc-border-soft" />
+                    More events ({restEvents.length})
+                    <span className="flex-1 h-px bg-cc-border-soft" />
+                  </p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {restEvents.map((ev, i) => (
+                    <div key={ev._id} className="relative">
+                      {isTrending(ev) && (
+                        <span
+                          className="absolute -top-1.5 -right-1.5 z-10 flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full border"
+                          style={{
+                            color: 'var(--cc-color-warning)',
+                            backgroundColor: 'var(--cc-color-surface)',
+                            borderColor: 'var(--cc-color-border-subtle)',
+                          }}
+                        >
+                          🔥 Trending
+                        </span>
+                      )}
+                      <EventCard
+                        event={ev}
+                        index={i + 1}
+                        onClick={() => navigate(`/events/${ev._id}`)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import VolunteerRow from "./VolunteerRow";
+import { HandHelping } from "lucide-react";
 
 export default function VolunteerPanel({
   volunteers = [],
@@ -15,7 +16,7 @@ export default function VolunteerPanel({
     <div className="rounded-2xl border border-indigo-900/40 bg-indigo-950/10 p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">🙋 Volunteer Applications</h3>
+          <h3 className="text-sm font-bold text-white flex items-center gap-2"><HandHelping size={16} /> Volunteer Applications</h3>
           <p className="text-[11px] text-slate-500 mt-0.5">
             {acceptedCount} / {volunteerLimit} accepted
             {volunteerSkillsNeeded?.length > 0 && (

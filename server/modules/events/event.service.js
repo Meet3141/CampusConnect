@@ -171,10 +171,26 @@ export const createEvent = async ({ body, user }) => {
   return event;
 };
 
+const parseDateParam = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
 export const getEvents = async ({ query }) => {
   await syncExpiredUpcomingEvents();
 
-  const { clubId, category, q, status, page = 1, limit = 20 } = query;
+  const {
+    clubId,
+    category,
+    q,
+    status,
+    page = 1,
+    limit = 20,
+    startDate,
+    endDate,
+    includeClub,
+  } = query;
   const filter = {};
 
   if (clubId) filter.clubId = clubId;
@@ -187,15 +203,28 @@ export const getEvents = async ({ query }) => {
     filter.status = { $nin: ["draft", "pending_approval"] };
   }
 
+  const start = parseDateParam(startDate);
+  const end = parseDateParam(endDate);
+  if (start || end) {
+    filter.date = {};
+    if (start) filter.date.$gte = start;
+    if (end) filter.date.$lte = end;
+  }
+
   const pageNumber = Number(page);
   const limitNumber = Math.min(Number(limit) > 0 ? Number(limit) : 20, 50);
   const pageSafe = Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1;
   const skip = (pageSafe - 1) * limitNumber;
-  const events = await Event.find(filter)
+  let queryBuilder = Event.find(filter)
     .sort({ date: 1 })
     .skip(skip)
-    .limit(limitNumber)
-    .lean();
+    .limit(limitNumber);
+
+  if (String(includeClub) === "true") {
+    queryBuilder = queryBuilder.populate("clubId", "name category adminId");
+  }
+
+  const events = await queryBuilder.lean();
   const total = await Event.countDocuments(filter);
 
   return {

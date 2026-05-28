@@ -18,6 +18,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
 import { useVolunteerFeed } from "../hooks";
 import { applyToVolunteer, withdrawVolunteerApplication } from "../api";
+import { HandHelping, Calendar, MapPin, Landmark } from "lucide-react";
 
 const CAT_COLORS = {
   hackathon: "text-indigo-400 bg-indigo-950/60 border-indigo-800/50",
@@ -146,7 +147,7 @@ export default function VolunteerHub() {
           </p>
           <h1 className="text-4xl font-extrabold tracking-tight">
             Volunteer{" "}
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Opportunities
             </span>
           </h1>
@@ -185,7 +186,9 @@ export default function VolunteerHub() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <span className="text-5xl mb-4">🙋</span>
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] mb-4">
+              <HandHelping size={16} className="text-emerald-400" />
+            </div>
             <p className="text-slate-300 text-lg font-semibold">
               {search ? `No events matching "${search}"` : "No open volunteer opportunities right now"}
             </p>
@@ -233,10 +236,10 @@ export default function VolunteerHub() {
                     </h2>
 
                     {/* Meta */}
-                    <div className="space-y-1 text-[12px] text-slate-500 mt-2">
-                      <p>📅 {dateStr}</p>
-                      {ev.venue && <p>📍 {ev.venue}</p>}
-                      {ev.clubId?.name && <p>🏛 {ev.clubId.name}</p>}
+                    <div className="space-y-1.5 text-[12px] text-slate-500 mt-2">
+                      <p className="flex items-center gap-1.5"><Calendar size={14} className="shrink-0" /> {dateStr}</p>
+                      {ev.venue && <p className="flex items-center gap-1.5"><MapPin size={14} className="shrink-0" /> {ev.venue}</p>}
+                      {ev.clubId?.name && <p className="flex items-center gap-1.5"><Landmark size={14} className="shrink-0" /> {ev.clubId.name}</p>}
                     </div>
 
                     {/* Skills needed */}
@@ -300,9 +303,9 @@ export default function VolunteerHub() {
                     ) : (
                       <button
                         onClick={() => setApplyTarget(ev)}
-                        className="w-full py-2.5 bg-emerald-600/90 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold transition-colors"
+                        className="w-full py-2.5 bg-emerald-600/90 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                       >
-                        🙋 Apply to Volunteer
+                        <HandHelping size={16} /> Apply to Volunteer
                       </button>
                     )}
                   </div>

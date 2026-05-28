@@ -12,16 +12,17 @@ import FormField from "../../../components/ui/FormField";
 import { inputCls } from "../../../utils/inputCls";
 import { useToast } from "../../../context/ToastContext";
 import { createExternalEvent as createExternalEventApi, extractExternalEventOcr } from "../api";
+import { Code2, Wrench, Mic, Drama, Zap, Landmark, Trophy, Search } from "lucide-react";
 
 const CATEGORIES = ["hackathon", "workshop", "webinar", "cultural", "sports", "conference", "competition"];
 const CAT_META = {
-  hackathon:   { emoji: "💻" },
-  workshop:    { emoji: "🛠" },
-  webinar:     { emoji: "🎙" },
-  cultural:    { emoji: "🎭" },
-  sports:      { emoji: "⚡" },
-  conference:  { emoji: "🏛" },
-  competition: { emoji: "🏆" },
+  hackathon:   { Icon: Code2    },
+  workshop:    { Icon: Wrench   },
+  webinar:     { Icon: Mic      },
+  cultural:    { Icon: Drama    },
+  sports:      { Icon: Zap      },
+  conference:  { Icon: Landmark },
+  competition: { Icon: Trophy   },
 };
 
 export default function CreateExternalEvent() {
@@ -121,7 +122,7 @@ export default function CreateExternalEvent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">
             Submit{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">External Event</span>
+            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>External Event</span>
           </h1>
           <p className="text-slate-500 text-sm mt-2">Share an event from another university or community.</p>
         </div>
@@ -129,7 +130,7 @@ export default function CreateExternalEvent() {
         {/* ── OCR Extraction Panel ── */}
         <div className="rounded-2xl border border-dashed border-white/[0.12] bg-white/[0.02] p-5 mb-6">
           <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
-            🔍 Auto-fill from poster
+            <Search size={16} className="shrink-0" /> Auto-fill from poster
             <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-violet-950 text-violet-300 border border-violet-800 rounded-full font-medium">OCR</span>
           </h3>
           <p className="text-[11px] text-slate-500 mb-3">Paste a poster image URL and we'll extract event details automatically.</p>
@@ -171,13 +172,16 @@ export default function CreateExternalEvent() {
             <div className="grid grid-cols-4 gap-2">
               {CATEGORIES.map((cat) => {
                 const sel = form.category === cat;
+                const { Icon } = CAT_META[cat] || {};
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-2.5 rounded-xl border text-center transition-all ${
                       sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
                         : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15]"
                     }`}>
-                    <div className="text-lg mb-0.5">{CAT_META[cat]?.emoji}</div>
+                    <div className="flex items-center justify-center h-7 mb-0.5">
+                      {Icon && <Icon size={24} className="text-cc-muted" />}
+                    </div>
                     <div className="text-[11px] font-medium text-white capitalize">{cat}</div>
                   </button>
                 );

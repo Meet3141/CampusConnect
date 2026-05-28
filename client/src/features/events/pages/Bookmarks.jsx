@@ -11,21 +11,11 @@ import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
 import { useToast } from "../../../context/ToastContext";
 import Button from "../../../components/ui/Button";
+import { CLUB_CATEGORY_META } from "../../../theme";
+import { EVENT_CATEGORY_META } from "../../../theme";
+import { Bookmark, MapPin } from "lucide-react";
 
-const CAT_META = {
-  hackathon:   { emoji: "💻", badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
-  workshop:    { emoji: "🛠",  badge: "bg-teal-950 text-teal-300 border-teal-800" },
-  webinar:     { emoji: "🎙",  badge: "bg-sky-950 text-sky-300 border-sky-800" },
-  cultural:    { emoji: "🎭", badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:      { emoji: "⚡", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
-  conference:  { emoji: "🏛",  badge: "bg-amber-950 text-amber-300 border-amber-800" },
-  competition: { emoji: "🏆", badge: "bg-rose-950 text-rose-300 border-rose-800" },
-  technical:   { emoji: "⚙️", badge: "bg-cyan-950 text-cyan-300 border-cyan-800" },
-  academic:    { emoji: "📚", badge: "bg-amber-950 text-amber-300 border-amber-800" },
-  arts:        { emoji: "🎨", badge: "bg-rose-950 text-rose-300 border-rose-800" },
-  meeting:     { emoji: "📋", badge: "bg-slate-800 text-slate-300 border-slate-700" },
-};
-const catOf = (k) => CAT_META[k] || CAT_META.meeting;
+const catOf = (k) => CLUB_CATEGORY_META[k] || EVENT_CATEGORY_META[k] || CLUB_CATEGORY_META.other;
 
 const styles = {
   page: "text-cc",
@@ -48,7 +38,7 @@ const styles = {
   bookmarkRow:
     "group flex items-center gap-4 p-4 rounded-xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all cursor-pointer",
   bookmarkIcon:
-    "w-10 h-10 rounded-xl bg-cc-surface-weak flex items-center justify-center text-xl shrink-0",
+    "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0",
   bookmarkTitle: "text-sm font-medium text-cc group-hover:text-indigo-300 transition-colors truncate",
   bookmarkMeta: "text-[11px] text-cc-muted",
   eventTypeBadge:
@@ -95,7 +85,7 @@ export default function Bookmarks() {
       {/* Header */}
       <div className={styles.header}>
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-32 right-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
+          <div className="absolute -top-32 right-0 w-80 h-80 bg-blue-700/6 rounded-full blur-3xl" />
         </div>
         <div className={styles.headerInner}>
           <p className={styles.headerKicker}>
@@ -103,7 +93,7 @@ export default function Bookmarks() {
           </p>
           <h1 className={styles.headerTitle}>
             My{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Bookmarks</span>
+            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Bookmarks</span>
           </h1>
           <p className={styles.headerCount}>
             {bookmarks.length} saved event{bookmarks.length !== 1 ? "s" : ""}
@@ -118,11 +108,11 @@ export default function Bookmarks() {
               ].map(({ key, label, count }) => (
                 <button key={key} onClick={() => setFilter(key)}
                   className={`${styles.tabButton} ${
-                    filter === key ? "border-indigo-500 text-cc" : "border-transparent text-cc-muted hover:text-cc"
+                    filter === key ? "border-blue-500 text-cc" : "border-transparent text-cc-muted hover:text-cc"
                   }`}>
                   {label}
                   <span className={`${styles.tabCount} ${
-                    filter === key ? "bg-indigo-600/30 text-indigo-300" : "bg-cc-surface-weak text-cc-muted"
+                    filter === key ? "bg-blue-600/30 text-blue-300" : "bg-cc-surface-weak text-cc-muted"
                   }`}>{count}</span>
                 </button>
               ))}
@@ -141,7 +131,9 @@ export default function Bookmarks() {
           </div>
         ) : filtered.length === 0 ? (
           <div className={styles.emptyState}>
-            <span className="text-4xl">🔖</span>
+            <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-cc-surface-weak">
+              <Bookmark size={16} className="text-cc-muted" />
+            </span>
             <div>
               <h2 className={styles.emptyTitle}>No bookmarks</h2>
               <p className={styles.emptyMeta}>Bookmark events to find them quickly later.</p>
@@ -169,8 +161,8 @@ export default function Bookmarks() {
                   onClick={() => {
                     if (bk.eventType === "internal") navigate(`/events/${bk.eventId}`);
                   }}>
-                  <div className={styles.bookmarkIcon}>
-                    {cat.emoji}
+                  <div className={`${styles.bookmarkIcon} ${cat.gradient || "from-slate-800 to-slate-700"}`}>
+                    {cat.Icon ? <cat.Icon size={24} className="opacity-70" /> : null}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={styles.bookmarkTitle}>
@@ -178,12 +170,12 @@ export default function Bookmarks() {
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`{styles.eventTypeBadge} ${
-                        bk.eventType === "external" ? "bg-violet-950 text-violet-300 border-violet-800" : "bg-indigo-950 text-indigo-300 border-indigo-800"
+                        bk.eventType === "external" ? "bg-cyan-950 text-cyan-300 border-cyan-800" : "bg-blue-950 text-blue-300 border-blue-800"
                       }`}>
                         {bk.eventType}
                       </span>
                       {dateLabel && <span className="text-[11px] text-cc-muted">{dateLabel}</span>}
-                      {ev?.venue && <span className="text-[11px] text-cc-muted">📍 {ev.venue}</span>}
+                      {ev?.venue && <span className="text-[11px] text-cc-muted flex items-center gap-1"><MapPin size={14} className="shrink-0" /> {ev.venue}</span>}
                     </div>
                   </div>
                   <button

@@ -16,13 +16,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import FormField from "../../../components/ui/FormField";
-import { inputCls } from "../../../utils/inputCls";
-import {
-  EVENT_CATEGORIES,
-  EVENT_CATEGORY_META,
-} from "../../../theme";
+import { EVENT_CATEGORIES, EVENT_CATEGORY_META } from "../../../theme";
 import { fetchEventById, updateEvent } from "../api";
+import Input from "../../../components/forms/Input";
+import Textarea from "../../../components/forms/Textarea";
+import Checkbox from "../../../components/forms/Checkbox";
+import Switch from "../../../components/forms/Switch";
+import Button from "../../../components/ui/Button";
+import Alert from "../../../components/feedback/Alert";
+import Spinner from "../../../components/feedback/Spinner";
 
 
 /* Convert ISO date to datetime-local input format */
@@ -167,13 +169,7 @@ export default function EditEvent() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-9 h-9 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <Spinner.Page message="Loading event…" />;
 
   if (fetchErr) {
     return (
@@ -219,7 +215,7 @@ export default function EditEvent() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 Edit{" "}
-                <span className="bg-linear-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Event
                 </span>
               </h1>
@@ -240,15 +236,18 @@ export default function EditEvent() {
         <form onSubmit={handleSubmit} className="max-w-xl space-y-5">
 
           {/* Title */}
-          <FormField label="Event Title" required error={fieldErrors.title}>
-            <input type="text" value={form.title}
-              onChange={(e) => set("title", e.target.value)}
-              maxLength={200} placeholder="e.g. Spring Hackathon 2026"
-              className={inputCls(!!fieldErrors.title)} />
-          </FormField>
+          <Input
+            label="Event Title" required
+            placeholder="e.g. Spring Hackathon 2026"
+            value={form.title} onChange={(e) => set("title", e.target.value)}
+            maxLength={200} error={fieldErrors.title}
+          />
 
           {/* Category */}
-          <FormField label="Category" required error={fieldErrors.category}>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] uppercase tracking-widest text-cc-muted font-medium">
+              Category <span className="text-red-400">*</span>
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {EVENT_CATEGORIES.map((cat) => {
                 const m   = EVENT_CATEGORY_META[cat];
@@ -256,42 +255,32 @@ export default function EditEvent() {
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-3 rounded-xl border text-left transition-all ${
-                      sel
-                        ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/2 border-white/7 hover:border-white/15"
+                      sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
+                        : "bg-cc-surface-weak border-cc-soft hover:border-cc-strong"
                     }`}>
-                    <div className="text-xl mb-1">{m.emoji}</div>
-                    <div className="text-xs font-medium text-white capitalize">{cat}</div>
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg mb-2 bg-cc-surface">
+                      {m.Icon && <m.Icon size={24} className="text-cc-muted" />}
+                    </div>
+                    <div className="text-xs font-medium text-cc capitalize">{cat}</div>
                   </button>
                 );
               })}
             </div>
-          </FormField>
+            {fieldErrors.category && <p className="text-red-400 text-[11px]">⚠ {fieldErrors.category}</p>}
+          </div>
 
           {/* Date & Venue */}
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Date & Time" required error={fieldErrors.date}>
-              <input type="datetime-local" value={form.date}
-                onChange={(e) => set("date", e.target.value)}
-                className={inputCls(!!fieldErrors.date)} />
-            </FormField>
-            <FormField label="Venue" required error={fieldErrors.venue}>
-              <input type="text" value={form.venue}
-                onChange={(e) => set("venue", e.target.value)}
-                placeholder="e.g. Hall A, Block 3"
-                className={inputCls(!!fieldErrors.venue)} />
-            </FormField>
+            <Input label="Date &amp; Time" required type="datetime-local"
+              value={form.date} onChange={(e) => set("date", e.target.value)} error={fieldErrors.date} />
+            <Input label="Venue" required
+              placeholder="e.g. Hall A, Block 3"
+              value={form.venue} onChange={(e) => set("venue", e.target.value)} error={fieldErrors.venue} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="End Date & Time" error={fieldErrors.endDate}>
-              <input
-                type="datetime-local"
-                value={form.endDate}
-                onChange={(e) => set("endDate", e.target.value)}
-                className={inputCls(!!fieldErrors.endDate)}
-              />
-            </FormField>
+            <Input label="End Date &amp; Time" type="datetime-local"
+              value={form.endDate} onChange={(e) => set("endDate", e.target.value)} error={fieldErrors.endDate} />
             <div className="flex items-end">
               {form.date && form.endDate && new Date(form.endDate) > new Date(form.date) && (
                 <div className="rounded-xl border border-white/7 bg-white/2 px-4 py-3 text-sm text-slate-300 w-full">
@@ -302,116 +291,61 @@ export default function EditEvent() {
           </div>
 
           {/* Description */}
-          <FormField label="Description" required error={fieldErrors.description}>
-            <textarea value={form.description}
-              onChange={(e) => set("description", e.target.value)}
-              rows={4} maxLength={2000} placeholder="Describe the event…"
-              className={`${inputCls(!!fieldErrors.description)} resize-none`} />
-          </FormField>
+          <Textarea
+            label="Description" required rows={4} maxLength={2000}
+            placeholder="Describe the event…"
+            value={form.description} onChange={(e) => set("description", e.target.value)}
+            error={fieldErrors.description}
+          />
 
           {/* Optional */}
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Max Attendees" hint="Optional">
-              <input type="number" value={form.maxAttendees}
-                onChange={(e) => set("maxAttendees", e.target.value)}
-                placeholder="Unlimited" min={1}
-                className={inputCls(false)} />
-            </FormField>
-            <FormField label="Image URL" hint="Optional">
-              <input type="url" value={form.image}
-                onChange={(e) => set("image", e.target.value)}
-                placeholder="https://…"
-                className={inputCls(false)} />
-            </FormField>
+            <Input label="Max Attendees" hint="Optional" type="number" min={1}
+              placeholder="Unlimited" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)} />
+            <Input label="Image URL" hint="Optional" type="url"
+              placeholder="https://…" value={form.image} onChange={(e) => set("image", e.target.value)} />
           </div>
 
           {/* Volunteer Settings */}
           <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
-            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">
-              Volunteer Settings
-            </p>
-            
-            <div>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.showOnVolunteerHub}
-                  onChange={(e) => set("showOnVolunteerHub", e.target.checked)}
-                  className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
-                <span className="text-sm font-medium text-slate-300">Show on Volunteer Hub</span>
-              </label>
-              <p className="text-xs text-slate-500 mt-1.5 ml-8">
-                Allow users to apply as volunteers for this event
-              </p>
-            </div>
-
+            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">Volunteer Settings</p>
+            <Switch
+              label="Show on Volunteer Hub"
+              description="Allow users to apply as volunteers for this event"
+              checked={form.showOnVolunteerHub}
+              onChange={(v) => set("showOnVolunteerHub", v)}
+            />
             {form.showOnVolunteerHub && (
               <>
-                <FormField label="Volunteer Spots Needed" hint="Optional">
-                  <input type="number" value={form.volunteerLimit}
-                    onChange={(e) => set("volunteerLimit", e.target.value)}
-                    placeholder="Unlimited" min={1}
-                    className={inputCls(false)} />
-                </FormField>
-                <FormField label="Skills Needed" hint="Comma-separated (e.g. Photography, MC, Setup)">
-                  <input type="text" value={form.volunteerSkillsNeeded}
-                    onChange={(e) => set("volunteerSkillsNeeded", e.target.value)}
-                    placeholder="e.g. Photography, Stage Setup, MCing"
-                    className={inputCls(false)} />
-                </FormField>
+                <Input label="Volunteer Spots Needed" hint="Optional" type="number" min={1}
+                  placeholder="Unlimited" value={form.volunteerLimit}
+                  onChange={(e) => set("volunteerLimit", e.target.value)} />
+                <Input label="Skills Needed" hint="Comma-separated"
+                  placeholder="e.g. Photography, Stage Setup, MCing"
+                  value={form.volunteerSkillsNeeded} onChange={(e) => set("volunteerSkillsNeeded", e.target.value)} />
               </>
             )}
           </div>
 
-            <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
-              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">
-                Attendance Policy
-              </p>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
-                <span className="text-sm font-medium text-slate-300">Count Warnings</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
-                <span className="text-sm font-medium text-slate-300">Allow Grace Review</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-white/5 accent-indigo-500" />
-                <span className="text-sm font-medium text-slate-300">Strict Attendance</span>
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label="No-show Threshold" hint="Misses before warning/review">
-                  <input type="number" value={form.noShowThreshold} min={1} onChange={(e) => set("noShowThreshold", e.target.value)} className={inputCls(false)} />
-                </FormField>
-                <FormField label="Warning Limit" hint="Warnings before block">
-                  <input type="number" value={form.warningLimit} min={1} onChange={(e) => set("warningLimit", e.target.value)} className={inputCls(false)} />
-                </FormField>
-              </div>
+          <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
+            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">Attendance Policy</p>
+            <Checkbox label="Count Warnings" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} />
+            <Checkbox label="Allow Grace Review" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} />
+            <Checkbox label="Strict Attendance" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="No-show Threshold" hint="Misses before warning" type="number" min={1}
+                value={form.noShowThreshold} onChange={(e) => set("noShowThreshold", e.target.value)} />
+              <Input label="Warning Limit" hint="Warnings before block" type="number" min={1}
+                value={form.warningLimit} onChange={(e) => set("warningLimit", e.target.value)} />
             </div>
+          </div>
 
-          {apiError && (
-            <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-sm">
-              {apiError}
-            </div>
-          )}
-          {saved && (
-            <div className="bg-emerald-950/30 border border-emerald-900/60 rounded-xl p-4 text-emerald-400 text-sm">
-              ✓ Changes saved — redirecting…
-            </div>
-          )}
+          {apiError && <Alert variant="error" title={apiError} />}
+          {saved && <Alert variant="success" title="✓ Changes saved — redirecting…" />}
 
           <div className="flex gap-3">
-            <button type="button" onClick={() => navigate(`/events/${id}`)}
-              className="flex-1 py-3 border border-white/10 hover:border-white/18 text-slate-400 hover:text-white rounded-xl text-sm transition-all">
-              Cancel
-            </button>
-            <button type="submit" disabled={saving || saved}
-              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving…
-                </span>
-              ) : "Save Changes"}
-            </button>
+            <Button type="button" variant="secondary" className="flex-1" onClick={() => navigate(`/events/${id}`)}>Cancel</Button>
+            <Button type="submit" variant="primary" className="flex-1" loading={saving} disabled={saving || saved}>Save Changes</Button>
           </div>
         </form>
       </div>

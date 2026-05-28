@@ -16,6 +16,12 @@ const inferCategory = (text) => {
   return "cultural";
 };
 
+const parseDateParam = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
 export const extractFromPoster = async (req, res) => {
   const { imageUrl, imageHash, rawText, title, date, venue, description, category } = req.body || {};
   requireFields(req.body, ["imageUrl"]);
@@ -41,11 +47,18 @@ export const createExternalEvent = async (req, res) => {
 };
 
 export const getExternalEvents = async (req, res) => {
-  const { category, universityName, verified, page = 1, limit = 20 } = req.query;
+  const { category, universityName, verified, page = 1, limit = 20, startDate, endDate } = req.query;
   const filter = {};
   if (category) filter.category = category;
   if (universityName) filter.universityName = { $regex: universityName, $options: "i" };
   filter.isVerified = verified !== undefined ? verified === "true" : true;
+  const start = parseDateParam(startDate);
+  const end = parseDateParam(endDate);
+  if (start || end) {
+    filter.date = {};
+    if (start) filter.date.$gte = start;
+    if (end) filter.date.$lte = end;
+  }
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
   const skip = (pageNumber - 1) * limitNumber;

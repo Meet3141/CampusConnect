@@ -13,11 +13,16 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { listClubs } from "../../clubs/api";
 import { useAuth } from "../../../context/AuthContext";
-import FormField from "../../../components/ui/FormField";
-import { inputCls } from "../../../utils/inputCls";
 import { useToast } from "../../../context/ToastContext";
 import { EVENT_CATEGORIES, EVENT_CATEGORY_META } from "../../../theme";
 import { createEvent as createEventApi } from "../api";
+import Input from "../../../components/forms/Input";
+import Textarea from "../../../components/forms/Textarea";
+import Select from "../../../components/forms/Select";
+import Checkbox from "../../../components/forms/Checkbox";
+import Switch from "../../../components/forms/Switch";
+import Button from "../../../components/ui/Button";
+import Alert from "../../../components/feedback/Alert";
 
 // Helper: format duration in ms to human readable string
 const formatDuration = (ms) => {
@@ -36,7 +41,9 @@ export default function CreateEvent() {
   const [searchParams] = useSearchParams();
   const preClubId = searchParams.get("clubId") || "";
 
-  const canCreate = user?.roles?.includes("clubAdmin") || user?.roles?.includes("orgAdmin");
+  const isAdminRole = user?.roles?.includes("clubAdmin") || user?.roles?.includes("orgAdmin");
+  // Coordinators come in from ClubDetail with a pre-filled clubId — allow them through
+  const canCreate = isAdminRole || !!preClubId;
 
   const [clubs, setClubs] = useState([]);
   const [form, setForm] = useState({
@@ -63,9 +70,18 @@ export default function CreateEvent() {
       try {
         const res = await listClubs({ limit: 200 });
         const all = res.data.data || [];
-        const adminClubs = all.filter(
-          (c) => String(c.adminId?._id || c.adminId) === String(user?._id)
-        );
+        let adminClubs;
+        if (isAdminRole) {
+          // clubAdmin / orgAdmin: show only clubs they directly admin
+          adminClubs = all.filter(
+            (c) => String(c.adminId?._id || c.adminId) === String(user?._id)
+          );
+        } else if (preClubId) {
+          // Coordinator: pre-filtered to the specific club they came from
+          adminClubs = all.filter((c) => String(c._id) === preClubId);
+        } else {
+          adminClubs = [];
+        }
         setClubs(adminClubs);
       } catch (err) {
         toast.error(err.response?.data?.message || "Failed to load clubs.");
@@ -137,21 +153,6 @@ export default function CreateEvent() {
     }
   };
 
-  if (!canCreate) {
-    return (
-      <div className="flex items-center justify-center px-4 py-20">
-        <div className="text-center max-w-sm">
-          <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-cc mb-2">Access Restricted</h2>
-          <p className="text-cc-muted text-sm">Only club admins can create events.</p>
-          <button onClick={() => navigate(-1)} className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="text-cc">
       <div className="max-w-xl mx-auto px-5 py-8">
@@ -162,31 +163,31 @@ export default function CreateEvent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">
             Create an{" "}
-            <span className="bg-linear-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Event</span>
+            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Event</span>
           </h1>
           <p className="text-cc-muted text-sm mt-2">Plan and schedule a new event for your club.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Club selector */}
-          <FormField label="Club" required error={errors.clubId}>
-            <select value={form.clubId} onChange={(e) => set("clubId", e.target.value)}
-              className={inputCls(!!errors.clubId) + " cursor-pointer"}>
-              <option value="" className="bg-cc-surface">Select a club…</option>
-              {clubs.map((c) => (
-                <option key={c._id} value={c._id} className="bg-cc-surface">{c.name}</option>
-              ))}
-            </select>
-          </FormField>
+          <Select label="Club" required error={errors.clubId} value={form.clubId} onChange={(e) => set("clubId", e.target.value)}>
+            <option value="" className="bg-cc-surface">Select a club…</option>
+            {clubs.map((c) => <option key={c._id} value={c._id} className="bg-cc-surface">{c.name}</option>)}
+          </Select>
 
           {/* Title */}
-          <FormField label="Event Title" required error={errors.title}>
-            <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)}
-              placeholder="e.g. Spring Hackathon 2026" maxLength={200} className={inputCls(!!errors.title)} />
-          </FormField>
+          <Input
+            label="Event Title" required
+            placeholder="e.g. Spring Hackathon 2026"
+            value={form.title} onChange={(e) => set("title", e.target.value)}
+            maxLength={200} error={errors.title}
+          />
 
           {/* Category */}
-          <FormField label="Category" required error={errors.category}>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] uppercase tracking-widest text-cc-muted font-medium">
+              Category <span className="text-red-400">*</span>
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {EVENT_CATEGORIES.map((cat) => {
                 const m = EVENT_CATEGORY_META[cat];
@@ -195,159 +196,101 @@ export default function CreateEvent() {
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-cc-surface-weak border-cc-soft hover-border-cc-strong"
+                        : "bg-cc-surface-weak border-cc-soft hover:border-cc-strong"
                     }`}>
-                    <div className="text-xl mb-1">{m.emoji}</div>
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg mb-2 bg-cc-surface">
+                      {m.Icon && <m.Icon size={24} className="text-cc-muted" />}
+                    </div>
                     <div className="text-xs font-medium text-cc capitalize">{cat}</div>
                   </button>
                 );
               })}
             </div>
-          </FormField>
+            {errors.category && <p className="text-red-400 text-[11px]">⚠ {errors.category}</p>}
+          </div>
 
           {/* Date & Venue */}
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Date & Time" required error={errors.date}>
-              <input type="datetime-local" value={form.date} onChange={(e) => set("date", e.target.value)}
-                className={inputCls(!!errors.date)} />
-            </FormField>
-            <FormField label="Venue" required error={errors.venue}>
-              <input type="text" value={form.venue} onChange={(e) => set("venue", e.target.value)}
-                placeholder="e.g. Hall A, Block 3" className={inputCls(!!errors.venue)} />
-            </FormField>
+            <Input label="Date &amp; Time" required type="datetime-local"
+              value={form.date} onChange={(e) => set("date", e.target.value)} error={errors.date} />
+            <Input label="Venue" required
+              placeholder="e.g. Hall A, Block 3"
+              value={form.venue} onChange={(e) => set("venue", e.target.value)} error={errors.venue} />
           </div>
 
-          {/* End time + duration display */}
+          {/* End time + duration */}
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="End Date & Time" error={errors.endDate}>
-              <input type="datetime-local" value={form.endDate} onChange={(e) => set("endDate", e.target.value)}
-                className={inputCls(!!errors.endDate)} />
-            </FormField>
-            <div className="flex items-center">
+            <Input label="End Date &amp; Time" type="datetime-local"
+              value={form.endDate} onChange={(e) => set("endDate", e.target.value)} error={errors.endDate} />
+            <div className="flex items-end pb-2">
               {form.date && form.endDate && new Date(form.endDate) > new Date(form.date) && (
-                <div className="text-sm text-cc-muted">
-                  Duration: {formatDuration(new Date(form.endDate) - new Date(form.date))}
-                </div>
+                <p className="text-sm text-cc-muted">Duration: {formatDuration(new Date(form.endDate) - new Date(form.date))}</p>
               )}
             </div>
           </div>
 
           {/* Description */}
-          <FormField label="Description" required error={errors.description}>
-            <textarea value={form.description} onChange={(e) => set("description", e.target.value)}
-              rows={4} maxLength={2000} placeholder="Describe the event…"
-              className={inputCls(!!errors.description) + " resize-none"} />
-          </FormField>
+          <Textarea
+            label="Description" required rows={4} maxLength={2000}
+            placeholder="Describe the event…"
+            value={form.description} onChange={(e) => set("description", e.target.value)}
+            error={errors.description}
+          />
 
-          {/* Optional: Max Attendees + Image */}
+          {/* Max Attendees + Image */}
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Max Attendees" hint="Optional">
-              <input type="number" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)}
-                placeholder="Unlimited" min={1} className={inputCls(false)} />
-            </FormField>
-            <FormField label="Image URL" hint="Optional">
-              <input type="url" value={form.image} onChange={(e) => set("image", e.target.value)}
-                placeholder="https://..." className={inputCls(false)} />
-            </FormField>
+            <Input label="Max Attendees" hint="Optional" type="number" min={1}
+              placeholder="Unlimited" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)} />
+            <Input label="Image URL" hint="Optional" type="url"
+              placeholder="https://…" value={form.image} onChange={(e) => set("image", e.target.value)} />
           </div>
 
-          {/* ── Volunteer Programme ── */}
+          {/* Volunteer Programme */}
           <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-cc">🙋 Volunteer Opportunities</p>
-                <p className="text-[11px] text-cc-muted mt-0.5">
-                  List this event on the Volunteer Hub so students can apply to help out.
-                </p>
-              </div>
-              {/* Toggle button */}
-              <button
-                type="button"
-                onClick={() => set("showOnVolunteerHub", !form.showOnVolunteerHub)}
-                className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${
-                  form.showOnVolunteerHub ? "bg-indigo-600" : "bg-cc-surface"
-                }`}
-              >
-                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                  form.showOnVolunteerHub ? "left-7" : "left-1"
-                }`} />
-              </button>
-            </div>
-
+            <Switch
+              label="Volunteer Opportunities"
+              description="List this event on the Volunteer Hub so students can apply to help out."
+              checked={form.showOnVolunteerHub}
+              onChange={(v) => set("showOnVolunteerHub", v)}
+            />
             {form.showOnVolunteerHub && (
               <div className="space-y-4 pt-1 border-t border-cc-soft">
                 <div className="grid grid-cols-2 gap-3">
-                  <FormField label="Volunteer Limit" required error={errors.volunteerLimit}>
-                    <input
-                      type="number"
-                      value={form.volunteerLimit}
-                      onChange={(e) => set("volunteerLimit", e.target.value)}
-                      placeholder="e.g. 10"
-                      min={1}
-                      className={inputCls(!!errors.volunteerLimit)}
-                    />
-                  </FormField>
+                  <Input label="Volunteer Limit" required type="number" min={1}
+                    placeholder="e.g. 10" value={form.volunteerLimit}
+                    onChange={(e) => set("volunteerLimit", e.target.value)} error={errors.volunteerLimit} />
                 </div>
-                <FormField label="Preferred Skills" hint="comma-separated, optional">
-                  <input
-                    type="text"
-                    value={form.volunteerSkillsNeeded}
-                    onChange={(e) => set("volunteerSkillsNeeded", e.target.value)}
-                    placeholder="e.g. Photography, Stage Setup, MCing, Design"
-                    className={inputCls(false)}
-                  />
-                  <p className="text-[11px] text-slate-600 mt-1.5">
-                    These are shown to applicants so they know what you're looking for.
-                  </p>
-                </FormField>
+                <Input label="Preferred Skills" hint="comma-separated, optional"
+                  placeholder="e.g. Photography, Stage Setup"
+                  value={form.volunteerSkillsNeeded} onChange={(e) => set("volunteerSkillsNeeded", e.target.value)} />
               </div>
             )}
           </div>
 
+          {/* Attendance Policy */}
           <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
             <div>
               <p className="text-sm font-semibold text-cc">🎯 Attendance Policy</p>
               <p className="text-[11px] text-cc-muted mt-0.5">Control warning and review behavior for this event.</p>
             </div>
-            <label className="flex items-center gap-3 text-sm text-cc cursor-pointer">
-              <input type="checkbox" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} />
-              Count Warnings
-            </label>
-            <label className="flex items-center gap-3 text-sm text-cc cursor-pointer">
-              <input type="checkbox" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} />
-              Allow Grace Review
-            </label>
-            <label className="flex items-center gap-3 text-sm text-cc cursor-pointer">
-              <input type="checkbox" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} />
-              Strict Attendance
-            </label>
+            <Checkbox label="Count Warnings" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} />
+            <Checkbox label="Allow Grace Review" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} />
+            <Checkbox label="Strict Attendance" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} />
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="No-show Threshold" hint="Misses before warning/review">
-                <input type="number" min={1} value={form.noShowThreshold} onChange={(e) => set("noShowThreshold", e.target.value)} className={inputCls(false)} />
-              </FormField>
-              <FormField label="Warning Limit" hint="Warnings before block">
-                <input type="number" min={1} value={form.warningLimit} onChange={(e) => set("warningLimit", e.target.value)} className={inputCls(false)} />
-              </FormField>
+              <Input label="No-show Threshold" hint="Misses before warning" type="number" min={1}
+                value={form.noShowThreshold} onChange={(e) => set("noShowThreshold", e.target.value)} />
+              <Input label="Warning Limit" hint="Warnings before block" type="number" min={1}
+                value={form.warningLimit} onChange={(e) => set("warningLimit", e.target.value)} />
             </div>
           </div>
 
-          {apiError && (
-            <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-sm">{apiError}</div>
-          )}
+          {apiError && <Alert variant="error" title={apiError} />}
 
-          <button type="submit" disabled={submitting}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50">
-            {submitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Creating…
-              </span>
-            ) : "Create Event 🚀"}
-          </button>
+          <Button type="submit" variant="primary" size="lg" loading={submitting} className="w-full">
+            Create Event 🚀
+          </Button>
         </form>
       </div>
     </div>
   );
 }
-
-// Using shared FormField and inputCls utilities from components and utils

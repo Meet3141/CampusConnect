@@ -17,15 +17,16 @@ import {
   deleteBookmark as deleteBookmarkApi,
 } from "../api";
 import { InfoRow } from "../ui";
+import { Code2, Wrench, Mic, Drama, Zap, Landmark, Trophy, Calendar, Clock, MapPin, University, Bookmark } from "lucide-react";
 
 const CAT_META = {
-  hackathon:   { emoji: "💻", bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
-  workshop:    { emoji: "🛠",  bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
-  webinar:     { emoji: "🎙",  bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
-  cultural:    { emoji: "🎭", bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:      { emoji: "⚡", bg: "from-emerald-900/50 to-green-900/30", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
-  conference:  { emoji: "🏛",  bg: "from-amber-900/50 to-orange-900/30", badge: "bg-amber-950 text-amber-300 border-amber-800" },
-  competition: { emoji: "🏆", bg: "from-rose-900/50 to-red-900/30",     badge: "bg-rose-950 text-rose-300 border-rose-800" },
+  hackathon:   { Icon: Code2,    bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
+  workshop:    { Icon: Wrench,   bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
+  webinar:     { Icon: Mic,      bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
+  cultural:    { Icon: Drama,    bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
+  sports:      { Icon: Zap,      bg: "from-emerald-900/50 to-green-900/30", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
+  conference:  { Icon: Landmark, bg: "from-amber-900/50 to-orange-900/30", badge: "bg-amber-950 text-amber-300 border-amber-800" },
+  competition: { Icon: Trophy,   bg: "from-rose-900/50 to-red-900/30",     badge: "bg-rose-950 text-rose-300 border-rose-800" },
 };
 const catOf = (k) => CAT_META[k] || CAT_META.conference;
 
@@ -123,8 +124,8 @@ export default function ExternalEventDetail() {
           </button>
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/[0.07] ring-1 ring-white/[0.1] flex items-center justify-center text-3xl sm:text-4xl shrink-0">
-              {cat.emoji}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/[0.07] ring-1 ring-white/[0.1] flex items-center justify-center shrink-0">
+              {cat.Icon && <cat.Icon size={24} className="text-white/80" />}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -143,12 +144,12 @@ export default function ExternalEventDetail() {
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{event.title}</h1>
-              <p className="text-indigo-400/80 text-sm mt-2">🏫 {event.universityName}</p>
+              <p className="text-indigo-400/80 text-sm mt-2 flex items-center gap-1.5"><University size={14} className="shrink-0" /> {event.universityName}</p>
 
               <div className="flex flex-wrap gap-6 mt-4 text-sm text-slate-400">
-                {dateStr && <span>📅 {dateStr}</span>}
-                {timeStr && <span>🕐 {timeStr}</span>}
-                {event.venue && <span>📍 {event.venue}</span>}
+                {dateStr && <span className="flex items-center gap-1.5"><Calendar size={14} className="shrink-0" /> {dateStr}</span>}
+                {timeStr && <span className="flex items-center gap-1.5"><Clock    size={24} className="shrink-0" /> {timeStr}</span>}
+                {event.venue && <span className="flex items-center gap-1.5"><MapPin size={14} className="shrink-0" /> {event.venue}</span>}
               </div>
             </div>
 
@@ -169,8 +170,9 @@ export default function ExternalEventDetail() {
               )}
               {user && (
                 <button onClick={toggleBookmark}
-                  className="px-5 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-sm transition-all whitespace-nowrap">
-                  {bookmarkId ? "🔖 Bookmarked" : "🔖 Bookmark"}
+                  className="px-5 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-sm transition-all whitespace-nowrap flex items-center gap-2">
+                  <Bookmark size={16} className={bookmarkId ? "fill-current" : ""} />
+                  {bookmarkId ? "Bookmarked" : "Bookmark"}
                 </button>
               )}
             </div>
