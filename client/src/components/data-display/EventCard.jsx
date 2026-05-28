@@ -246,7 +246,7 @@ export default function EventCard({ event: ev, onClick, compact = false, variant
       {!compact && (
         <div className="space-y-1">
           <p className="text-cc-muted text-[11px] flex items-center gap-1.5">
-            <Calendar size={11} c cc-event-metadatalassName="shrink-0 opacity-60" />
+            <Calendar size={11} className="shrink-0 opacity-60" />
             <span>{dateLabel}</span>
           </p>
           {ev.venue && (

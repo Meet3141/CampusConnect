@@ -175,7 +175,7 @@ export default function MonthlyCalendar({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-cc-soft bg-cc-surface/80 backdrop-blur-xl shadow-overlay p-3">
+      <div className="rounded-2xl border border-cc-soft bg-cc-surface shadow-overlay p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="h-5 w-32 cc-skeleton rounded-md" />
           <div className="h-4 w-12 cc-skeleton rounded-md" />
@@ -192,7 +192,7 @@ export default function MonthlyCalendar({
   return (
     <div
       ref={containerRef}
-      className="rounded-2xl border border-cc-soft bg-cc-surface/80 backdrop-blur-xl shadow-overlay p-3 overflow-visible"
+      className="rounded-2xl border border-cc-soft bg-cc-surface shadow-overlay p-3 overflow-visible"
     >
       <div className="flex items-center justify-between mb-2">
         <div>
@@ -240,7 +240,10 @@ export default function MonthlyCalendar({
           return (
             <div
               key={cell.key}
-              className="relative h-10 flex flex-col items-center justify-start"
+              className={cn(
+                "relative h-10 flex flex-col items-center justify-start",
+                isActive && hasEvents && "z-[1000]"
+              )}
               onMouseEnter={() => handleMouseEnter(dayKey, hasEvents)}
               onMouseLeave={handleMouseLeave}
             >
@@ -279,7 +282,7 @@ export default function MonthlyCalendar({
               {isActive && hasEvents && (
                 <div
                   className={cn(
-                    "absolute z-dropdown w-[280px]",
+                    "absolute z-[1000] w-[280px]",
                     alignClass,
                     verticalClass
                   )}
@@ -296,6 +299,10 @@ export default function MonthlyCalendar({
                     variant="elevated"
                     padding="sm"
                     className="border border-cc-soft bg-cc-surface shadow-overlay"
+                    style={{
+                      backgroundColor: "var(--cc-color-surface)",
+                      boxShadow: "var(--cc-shadow-overlay)",
+                    }}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -317,7 +324,7 @@ export default function MonthlyCalendar({
                           className={cn(
                             "w-full text-left flex items-start justify-between gap-3",
                             "border border-cc-soft rounded-xl p-2",
-                            "bg-cc-surface-weak hover:bg-cc-surface-hover",
+                            "bg-cc-surface hover:bg-cc-surface hover:border-cc-strong",
                             "transition-colors"
                           )}
                         >

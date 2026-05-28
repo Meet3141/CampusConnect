@@ -94,7 +94,8 @@ export default function EmptyState({
         )}
         aria-hidden="true"
       >
-        {typeof resolvedIcon === "function"
+        {typeof resolvedIcon === "function" ||
+        (resolvedIcon && typeof resolvedIcon === "object" && "render" in resolvedIcon)
           ? React.createElement(resolvedIcon, {
               size:      compact ? 24 : 36,
               className: iconColor,

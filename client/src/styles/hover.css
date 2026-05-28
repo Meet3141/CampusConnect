@@ -173,12 +173,15 @@
  * Highlights event importance
  */
 .cc-event-card {
+  background-color: var(--cc-color-surface);
   transition: border-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
+    background-color var(--cc-motion-normal) var(--cc-motion-ease-standard),
     box-shadow var(--cc-motion-normal) var(--cc-motion-ease-standard),
     transform var(--cc-motion-normal) var(--cc-motion-ease-standard);
 }
 
 .cc-event-card:hover {
+  background-color: var(--cc-color-surface);
   border-color: var(--cc-accent);
   box-shadow: var(--cc-shadow-elevation-soft);
   transform: translateY(-2px);
