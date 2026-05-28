@@ -9,6 +9,7 @@ import {
   fetchDashboardChats,
   fetchDashboardBookmarks,
 } from "./api";
+import { listEvents, listExternalEvents } from "../events/api";
 
 /**
  * Fetches all dashboard data in a safe, sequential-then-parallel strategy:
@@ -122,4 +123,113 @@ export const useDashboardData = (user) => {
   }, [myClubs, events, ongoingEvents, chats, bookmarks]);
 
   return { myClubs, events, ongoingEvents, chats, bookmarks, loading, stats };
+};
+
+const toStartOfMonth = (base) =>
+  new Date(base.getFullYear(), base.getMonth(), 1, 0, 0, 0, 0);
+
+const toEndOfMonth = (base) =>
+  new Date(base.getFullYear(), base.getMonth() + 1, 0, 23, 59, 59, 999);
+
+const parseDateValue = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const toTimestamp = (value) => {
+  const d = parseDateValue(value);
+  return d ? d.getTime() : null;
+};
+
+const normalizeInternalEvent = (ev) => ({
+  id: ev._id,
+  title: ev.title || "Untitled event",
+  date: ev.date,
+  timestamp: toTimestamp(ev.date),
+  category: ev.category || "meeting",
+  organizerLabel: ev.clubId?.name || ev._clubName || "Club event",
+  registeredCount: Number(ev.registeredCount ?? ev.rsvpCount ?? 0),
+  source: "internal",
+});
+
+const normalizeExternalEvent = (ev) => ({
+  id: ev._id,
+  title: ev.title || "Untitled event",
+  date: ev.date,
+  timestamp: toTimestamp(ev.date),
+  category: ev.category || "conference",
+  organizerLabel: ev.universityName || "External host",
+  registeredCount: 0,
+  source: "external",
+});
+
+const withinRange = (ts, start, end) =>
+  typeof ts === "number" && ts >= start.getTime() && ts <= end.getTime();
+
+/**
+ * Aggregates internal + external events for the current month.
+ * Uses optional date filters on the API to keep payloads small.
+ */
+export const useMonthlyCalendarEvents = () => {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [referenceDate] = useState(() => new Date());
+
+  const monthStart = useMemo(() => toStartOfMonth(referenceDate), [referenceDate]);
+  const monthEnd = useMemo(() => toEndOfMonth(referenceDate), [referenceDate]);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const fetchPaged = async (fetcher, params) => {
+          const limit = 50;
+          const maxPages = 10;
+          const collected = [];
+          let page = 1;
+          let total = null;
+
+          while (page <= maxPages) {
+            const res = await fetcher({ ...params, page, limit });
+            const data = res?.data?.data || [];
+            const meta = res?.data?.meta || {};
+            if (typeof meta.total === "number") total = meta.total;
+            collected.push(...data);
+            if (data.length < limit) break;
+            if (total !== null && collected.length >= total) break;
+            page += 1;
+          }
+          return collected;
+        };
+
+        const startIso = monthStart.toISOString();
+        const endIso = monthEnd.toISOString();
+
+        const [internalRes, externalRes] = await Promise.allSettled([
+          fetchPaged(listEvents, { startDate: startIso, endDate: endIso, includeClub: "true" }),
+          fetchPaged(listExternalEvents, { startDate: startIso, endDate: endIso, verified: "true" }),
+        ]);
+
+        const internalRaw = internalRes.status === "fulfilled" ? internalRes.value : [];
+        const externalRaw = externalRes.status === "fulfilled" ? externalRes.value : [];
+
+        const normalized = [
+          ...internalRaw.map(normalizeInternalEvent),
+          ...externalRaw.map(normalizeExternalEvent),
+        ].filter((ev) => withinRange(ev.timestamp, monthStart, monthEnd));
+
+        setEvents(normalized);
+      } catch (err) {
+        console.error("Calendar: failed to load events:", err);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [monthStart, monthEnd]);
+
+  return { events, loading, monthStart, monthEnd, referenceDate };
 };

@@ -7,26 +7,41 @@
  * Access: orgAdmin or clubAdmin (clubAdmins see limited stats)
  */
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useAdminStats } from "../hooks";
+import StatsCard from "../../../components/data-display/StatsCard";
+import Spinner from "../../../components/feedback/Spinner";
+import Button from "../../../components/ui/Button";
+import { Building2, Calendar, Globe, CheckCircle2, MessageCircle, Bookmark } from "lucide-react";
 
+/* Neutral operational chart palette — calm, non-neon, works on light and dark */
 const CATEGORY_COLORS = {
-  technical: "#06b6d4", cultural: "#a855f7", sports: "#10b981",
-  academic:  "#f59e0b", arts:     "#f43f5e", other:  "#6b7280",
-  hackathon: "#6366f1", workshop: "#14b8a6", webinar: "#0ea5e9",
-  cultural2: "#a855f7", sports2:  "#10b981", meeting: "#64748b",
-  conference: "#d97706", competition: "#e11d48",
+  technical:   "var(--cc-color-brand)",        // brand blue
+  cultural:    "#7C6FCD",                       // muted violet
+  sports:      "var(--cc-color-success)",       // semantic green
+  academic:    "var(--cc-color-warning)",       // semantic amber
+  arts:        "#C05E7A",                       // muted rose
+  other:       "var(--cc-color-text-muted)",    // muted grey
+  hackathon:   "#5A7FD0",                       // steel blue
+  workshop:    "#3DA9A0",                       // teal
+  webinar:     "var(--cc-color-accent)",        // sky surge
+  cultural2:   "#7C6FCD",
+  sports2:     "var(--cc-color-success)",
+  meeting:     "var(--cc-color-text-disabled)",
+  conference:  "var(--cc-color-warning)",
+  competition: "var(--cc-color-error)",
 };
 
+/* Semantic stat card themes — light/dark compatible via CSS vars */
 const STAT_CARD_THEMES = [
-  { label: "Total Clubs",     icon: "🏛️", accent: "text-indigo-400",  ring: "ring-indigo-500/20", bg: "bg-indigo-950/30" },
-  { label: "Total Events",    icon: "📅", accent: "text-violet-400",  ring: "ring-violet-500/20", bg: "bg-violet-950/30" },
-  { label: "External Events", icon: "🌐", accent: "text-teal-400",    ring: "ring-teal-500/20",   bg: "bg-teal-950/30"   },
-  { label: "Verified",        icon: "✅", accent: "text-emerald-400", ring: "ring-emerald-500/20",bg: "bg-emerald-950/30"},
-  { label: "Active Chats",    icon: "💬", accent: "text-sky-400",     ring: "ring-sky-500/20",    bg: "bg-sky-950/30"    },
-  { label: "Bookmarks",       icon: "🔖", accent: "text-rose-400",    ring: "ring-rose-500/20",   bg: "bg-rose-950/30"   },
+  { label: "Total Clubs",     Icon: Building2,    accent: "text-primary",  ring: "ring-primary-border",   bg: "bg-primary-soft"  },
+  { label: "Total Events",    Icon: Calendar,     accent: "text-primary",  ring: "ring-primary-border",   bg: "bg-primary-soft"  },
+  { label: "External Events", Icon: Globe,        accent: "text-accent",   ring: "ring-accent-border",    bg: "bg-accent-soft"   },
+  { label: "Verified",        Icon: CheckCircle2, accent: "text-success",  ring: "ring-success/20",       bg: "bg-success/8"     },
+  { label: "Active Chats",    Icon: MessageCircle,accent: "text-info",     ring: "ring-info/20",          bg: "bg-info/8"        },
+  { label: "Bookmarks",       Icon: Bookmark,     accent: "text-warning",  ring: "ring-warning/20",       bg: "bg-warning/8"     },
 ];
 
 /* Simple inline bar chart — no external deps */
@@ -38,18 +53,18 @@ function BarChart({ data, colorMap }) {
   return (
     <div className="space-y-2.5">
       {data.map(({ key, count }) => (
-        <div key={key} className="flex items-center gap-3">
+        <div key={key} className="flex items-center gap-3 group px-2 py-1 -mx-2 rounded-lg hover:bg-cc-surface-hover transition-colors">
           <span className="text-[11px] text-cc-muted capitalize w-24 shrink-0 truncate">{key}</span>
           <div className="flex-1 h-2 bg-cc-soft rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-700"
+              className="h-full rounded-full transition-all duration-1000 ease-out"
               style={{
                 width: `${Math.round((count / max) * 100)}%`,
                 backgroundColor: colorMap[key] || "#6366f1",
               }}
             />
           </div>
-          <span className="text-[11px] text-cc-muted tabular-nums w-8 text-right">{count}</span>
+          <span className="text-[11px] text-cc-muted tabular-nums w-8 text-right font-medium">{count}</span>
         </div>
       ))}
     </div>
@@ -65,19 +80,41 @@ function RingCard({ value, total, label, color }) {
   return (
     <div className="flex items-center gap-4 p-4 rounded-2xl border border-cc-soft bg-cc-surface-weak">
       <svg width="72" height="72" viewBox="0 0 72 72" className="shrink-0">
-        <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="var(--cc-color-border-subtle)" strokeWidth="6" />
         <circle cx="36" cy="36" r={radius} fill="none" stroke={color} strokeWidth="6"
           strokeDasharray={`${dash} ${circ - dash}`}
           strokeLinecap="round"
+          className="transition-all duration-1000 ease-out"
           transform="rotate(-90 36 36)" />
-        <text x="36" y="40" textAnchor="middle" fill="white" fontSize="14" fontWeight="600">{pct}%</text>
+        <text x="36" y="40" textAnchor="middle" fill="var(--cc-color-text-primary)" fontSize="14" fontWeight="600">{pct}%</text>
       </svg>
       <div>
-        <p className="text-xl font-semibold text-cc tabular-nums">{value}</p>
+        <CountUp target={value} className="text-xl font-semibold text-cc tabular-nums" />
         <p className="text-[11px] text-cc-muted mt-0.5 leading-snug">{label}</p>
       </div>
     </div>
   );
+}
+
+function CountUp({ target, className }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const duration = 1500;
+    const stepTime = 30;
+    const increment = Math.ceil(target / (duration / stepTime));
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(start);
+      }
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [target]);
+  return <span className={className}>{count}</span>;
 }
 
 export default function AdminStats() {
@@ -138,7 +175,7 @@ export default function AdminStats() {
           <h2 className="text-xl font-semibold text-cc mb-2">Access Restricted</h2>
           <p className="text-cc-muted text-sm">Analytics are available to club and org admins only.</p>
           <button onClick={() => navigate("/dashboard")}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            className="mt-6 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm transition-colors">
             Back to Dashboard
           </button>
         </div>
@@ -146,20 +183,14 @@ export default function AdminStats() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-9 h-9 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-          <p className="text-cc-muted text-xs tracking-widest uppercase font-mono">Crunching numbers…</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <Spinner.Page message="Crunching numbers…" />;
 
   const a = analytics;
   const STATUS_COLORS = {
-    upcoming: "#6366f1", ongoing: "#10b981", completed: "#64748b", cancelled: "#ef4444",
+    upcoming:  "var(--cc-color-brand)",
+    ongoing:   "var(--cc-color-success)",
+    completed: "var(--cc-color-text-muted)",
+    cancelled: "var(--cc-color-error)",
   };
 
   return (
@@ -167,20 +198,26 @@ export default function AdminStats() {
       {/* Header */}
       <div className="relative overflow-hidden border-b border-cc-soft">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 left-0 w-96 h-80 bg-violet-700/5 rounded-full blur-3xl" />
-          <div className="absolute top-0 right-0 w-60 h-60 bg-indigo-700/5 rounded-full blur-3xl" />
+          <div className="absolute -top-24 left-0 w-96 h-80 bg-blue-700/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-60 h-60 bg-cyan-700/5 rounded-full blur-3xl" />
         </div>
         <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3">
-            Admin / Analytics
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <div className="flex items-center justify-between mb-3">
+             <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono">
+               Admin / Analytics
+             </p>
+             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] uppercase font-bold tracking-wider">
+               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+               Live
+             </span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-cc">
             Platform{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
+            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Analytics
             </span>
           </h1>
-          <p className="text-slate-500 text-sm mt-1.5">
+          <p className="text-cc-muted text-sm mt-1.5">
             Live snapshot — data pulled from the live database.
           </p>
         </div>
@@ -190,23 +227,12 @@ export default function AdminStats() {
 
         {/* ── Stat cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {[
-            { value: a.clubTotal,     ...STAT_CARD_THEMES[0], sub: `${a.totalActiveMembers} total members` },
-            { value: a.eventTotal,    ...STAT_CARD_THEMES[1], sub: `${a.upcomingCount} upcoming` },
-            { value: a.extTotal,      ...STAT_CARD_THEMES[2], sub: "cross-university" },
-            { value: a.extVerif,      ...STAT_CARD_THEMES[3], sub: `${a.extTotal - a.extVerif} still pending` },
-            { value: a.chatTotal,     ...STAT_CARD_THEMES[4], sub: "club + event chats" },
-            { value: a.bookmarkTotal, ...STAT_CARD_THEMES[5], sub: "saved by you" },
-          ].map(({ value, label, icon, accent, ring, bg, sub }) => (
-            <div key={label} className={`rounded-2xl border border-cc-soft ${bg} p-5`}>
-              <div className={`w-9 h-9 rounded-xl ${bg} ring-1 ${ring} flex items-center justify-center text-xl mb-3`}>
-                {icon}
-              </div>
-              <p className={`text-3xl font-bold tabular-nums ${accent}`}>{value}</p>
-              <p className="text-xs text-cc-muted mt-1">{label}</p>
-              <p className="text-[11px] text-cc-muted mt-0.5">{sub}</p>
-            </div>
-          ))}
+          <StatsCard icon={Building2}     value={<CountUp target={a.clubTotal} />} label="Total Clubs"      sub={`${a.totalActiveMembers} total members`}  accent="indigo"  />
+          <StatsCard icon={Calendar}      value={<CountUp target={a.eventTotal} />}    label="Total Events"     sub={`${a.upcomingCount} upcoming`}             accent="violet"  />
+          <StatsCard icon={Globe}         value={<CountUp target={a.extTotal} />}      label="External Events" sub="cross-university"                           accent="teal"    />
+          <StatsCard icon={CheckCircle2}  value={<CountUp target={a.extVerif} />}      label="Verified"        sub={`${a.extTotal - a.extVerif} still pending`}  accent="emerald" />
+          <StatsCard icon={MessageCircle} value={<CountUp target={a.chatTotal} />}     label="Active Chats"    sub="club + event chats"                        accent="sky"     />
+          <StatsCard icon={Bookmark}      value={<CountUp target={a.bookmarkTotal} />} label="Bookmarks"       sub="saved by users"                            accent="rose"    />
         </div>
 
         {/* ── Charts row ── */}
@@ -233,30 +259,25 @@ export default function AdminStats() {
 
         {/* ── Ring stats row ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <RingCard value={a.extVerif} total={a.extTotal} label="External events verified" color="#10b981" />
-          <RingCard value={a.upcomingCount} total={a.eventTotal} label="Events that are upcoming" color="#6366f1" />
-          <RingCard value={a.extTotal - a.extVerif} total={a.extTotal} label="External events pending review" color="#f59e0b" />
+          <RingCard value={a.extVerif}     total={a.extTotal}   label="External events verified"         color="var(--cc-color-success)" />
+          <RingCard value={a.upcomingCount} total={a.eventTotal} label="Events that are upcoming"           color="var(--cc-color-brand)"   />
+          <RingCard value={a.extTotal - a.extVerif} total={a.extTotal} label="External events pending review" color="var(--cc-color-warning)" />
         </div>
 
         {/* ── Quick actions ── */}
         {isOrgAdmin && (
           <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5">
-            <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">
-              Quick Actions
-            </h3>
+            <h3 className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-4">Quick Actions</h3>
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => navigate("/admin")}
-                className="px-4 py-2 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-700/40 text-amber-300 rounded-xl text-sm transition-colors">
-                🏛️ Manage Clubs
-              </button>
-              <button onClick={() => navigate("/admin/verify")}
-                className="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-700/40 text-emerald-300 rounded-xl text-sm transition-colors">
+              <Button variant="warning" size="sm" onClick={() => navigate("/admin")}>
+                🏙️ Manage Clubs
+              </Button>
+              <Button variant="success" size="sm" onClick={() => navigate("/admin/verify")}>
                 ✓ Verify Events {a.extTotal - a.extVerif > 0 && `(${a.extTotal - a.extVerif})`}
-              </button>
-              <button onClick={() => navigate("/clubs/create")}
-                className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-700/40 text-indigo-300 rounded-xl text-sm transition-colors">
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/clubs/create")}>
                 + New Club
-              </button>
+              </Button>
             </div>
           </div>
         )}

@@ -21,6 +21,7 @@ import { useToast } from "../../../context/ToastContext";
 import { CLUB_CATEGORY_META } from "../../../theme";
 import { deleteClub } from "../api";
 import { useAdminClubs, useAdminPendingCounts } from "../hooks";
+import { Lock, Landmark, CheckCircle2 } from "lucide-react";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -57,7 +58,9 @@ export default function AdminPanel() {
     return (
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-5">🔒</div>
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-800">
+            <Lock size={16} className="text-slate-400" />
+          </div>
           <h2 className="text-xl font-semibold text-cc mb-2">Org Admin Only</h2>
           <p className="text-cc-muted text-sm">This panel is restricted to Organisation Admins.</p>
           <button onClick={() => navigate("/dashboard")}
@@ -93,7 +96,7 @@ export default function AdminPanel() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 Admin{" "}
-                <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Panel
                 </span>
               </h1>
@@ -145,7 +148,9 @@ export default function AdminPanel() {
               </div>
             ) : clubs.length === 0 ? (
               <div className="text-center py-16">
-                <div className="text-4xl mb-3">🏛️</div>
+                <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-2xl bg-cc-surface-weak">
+                  <Landmark size={24} className="text-cc-muted" />
+                </div>
                 <p className="text-cc-muted text-sm">No clubs yet.</p>
               </div>
             ) : (
@@ -168,8 +173,8 @@ export default function AdminPanel() {
 
                         {/* Club info */}
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-cc-surface flex items-center justify-center text-sm shrink-0">
-                            {catMeta.emoji}
+                          <div className="w-8 h-8 rounded-lg bg-cc-surface flex items-center justify-center shrink-0">
+                            {catMeta.Icon && <catMeta.Icon size={24} className="opacity-60" />}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-cc truncate">{club.name}</p>
@@ -243,7 +248,9 @@ export default function AdminPanel() {
               </div>
             ) : pendingClubs.length === 0 ? (
               <div className="text-center py-16">
-                <div className="text-4xl mb-3">✅</div>
+                <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-2xl bg-cc-surface-weak">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                </div>
                 <p className="text-cc font-semibold mb-1">All caught up</p>
                 <p className="text-cc-muted text-sm">No pending member requests across any club.</p>
               </div>
@@ -254,7 +261,9 @@ export default function AdminPanel() {
                     {/* Club header */}
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-cc-soft">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{(CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other).emoji}</span>
+                        <div className="w-8 h-8 rounded-lg bg-cc-surface flex items-center justify-center shrink-0">
+                          {(() => { const m = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other; return m.Icon ? <m.Icon size={24} className="opacity-60" /> : null; })()}
+                        </div>
                         <div>
                           <p className="text-sm font-semibold text-cc">{club.name}</p>
                           <p className="text-[11px] text-cc-muted">
