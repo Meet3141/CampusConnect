@@ -372,6 +372,21 @@
     max-width: 1080px;
   }
 
+  .cc-dashboard-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--cc-space-5);
+    align-items: start;
+    width: 100%;
+  }
+
+  .cc-dashboard-overview-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-5);
+    min-width: 0;
+  }
+
   /* Legacy aliases */
   .u-grid   { display: grid; gap: var(--cc-space-6); }
   .u-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cc-space-6); }
@@ -503,6 +518,10 @@
   }
 
   .cc-dashboard-triple {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-dashboard-overview-grid {
     grid-template-columns: 1fr;
   }
 

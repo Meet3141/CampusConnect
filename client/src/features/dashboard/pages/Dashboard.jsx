@@ -5,19 +5,18 @@
  * Structure:
  *   1. Page header (animated greeting + quick-action strip)
  *   2. Activity pulse strip (live campus stats)
- *   3. KPI stat cards (sparkline + count-up)
- *   4. My Clubs (staggered, horizontal scroll on mobile, latest event sub-line)
- *   5. "You might like" recommended events row
- *   6. Dashboard split: events (with live indicator + capacity bar) + chats/bookmarks
+ *   3. My Clubs (staggered, horizontal scroll on mobile, latest event sub-line)
+ *   4. "You might like" recommended events row
+ *   5. Dashboard split: events (with live indicator + capacity bar) + chats/bookmarks
  */
 
 import { useNavigate } from "react-router-dom";
+import { Bookmark, Building2, CalendarDays, MessageCircle, Radio } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { useDashboardData, useMonthlyCalendarEvents } from "../hooks";
 import { styles } from "../ui/styles";
 import {
   Section,
-  StatCard,
   ClubMiniCard,
   EventRow,
   ChatRow,
@@ -125,30 +124,6 @@ export default function Dashboard() {
       {/* ── Body: consistent horizontal padding via cc-content-wrapper ── */}
       <div className="cc-content-wrapper stack-lg">
 
-        {/* ── KPI stat cards ── */}
-        <div className={styles.statGrid}>
-          <StatCard
-            accent="clubs" label="Clubs joined" value={stats.activeClubs}
-            sub={stats.pendingClubs > 0 ? `${stats.pendingClubs} pending` : "all active"}
-            subHighlight={stats.pendingClubs > 0}
-            onClick={() => navigate("/my-clubs")}
-          />
-          <StatCard
-            accent="events" label="Upcoming events" value={stats.events}
-            sub="next 5 soonest" onClick={() => navigate("/events")}
-          />
-          <StatCard
-            accent="chats" label="Active chats" value={chats.length}
-            sub={stats.unreadChats > 0 ? `${stats.unreadChats} with messages` : "no new messages"}
-            onClick={() => navigate("/chats")}
-          />
-          <StatCard
-            accent="bookmarks" label="Bookmarks" value={stats.totalBk}
-            sub={`${stats.internalBk} internal · ${stats.externalBk} external`}
-            onClick={() => navigate("/bookmarks")}
-          />
-        </div>
-
         {/* ── My Clubs + Recommended — grouped surface ── */}
         <div className="cc-section-group stack-md">
           {/* ── My Clubs ── */}
@@ -159,7 +134,7 @@ export default function Dashboard() {
             onLink={() => navigate("/clubs")}
           >
             {myClubs.length === 0 ? (
-              <EmptyState icon="🏙️" message="You haven't joined any clubs yet." action="Explore Clubs" onAction={() => navigate("/clubs")} />
+              <EmptyState icon={Building2} message="You haven't joined any clubs yet." action="Explore Clubs" onAction={() => navigate("/clubs")} />
             ) : (
               /* Mobile: horizontal scroll / Desktop: grid */
               <div className="cc-horizontal-scroll sm:grid sm:grid-cols-2 xl:grid-cols-3 sm:gap-3">
@@ -182,8 +157,9 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* ── Upcoming events + Recent chats ── */}
-        <div className="cc-dashboard-pair">
+        {/* ── Dashboard widgets ── */}
+        <div className="cc-dashboard-overview-grid">
+          <div className="cc-dashboard-overview-column">
           <Section
             title="Upcoming events"
             count={events.length}
@@ -191,7 +167,7 @@ export default function Dashboard() {
             onLink={() => navigate("/events")}
           >
             {events.length === 0 ? (
-              <EmptyState icon="📅" message="No upcoming events found." />
+              <EmptyState icon={CalendarDays} message="No upcoming events found." />
             ) : (
               <div className="space-y-2">
                 {heroEvent && (
@@ -219,38 +195,13 @@ export default function Dashboard() {
           </Section>
 
           <Section
-            title="Recent chats"
-            count={chats.length}
-            linkLabel="Open →"
-            onLink={() => navigate("/chats")}
-          >
-            {chats.length === 0 ? (
-              <EmptyState icon="💬" message="No chats yet." />
-            ) : (
-              <div className={styles.eventList}>
-                {chats.slice(0, 4).map((chat, i) => (
-                  <ChatRow
-                    key={chat._id}
-                    chat={chat}
-                    last={i === Math.min(chats.length, 4) - 1}
-                    onClick={() => navigate(`/chats/${chat._id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </Section>
-        </div>
-
-        {/* ── Ongoing + Bookmarks + Calendar ── */}
-        <div className="cc-dashboard-triple">
-          <Section
             title="Ongoing events"
             count={ongoingEvents.length}
             linkLabel="See all →"
             onLink={() => navigate("/events")}
           >
             {ongoingEvents.length === 0 ? (
-              <EmptyState icon="🟢" message="No ongoing events right now." />
+              <EmptyState icon={Radio} message="No ongoing events right now." />
             ) : (
               <div className={styles.eventList}>
                 {ongoingEvents.map((ev, i) => (
@@ -264,7 +215,30 @@ export default function Dashboard() {
               </div>
             )}
           </Section>
+          </div>
 
+          <div className="cc-dashboard-overview-column">
+          <Section
+            title="Recent chats"
+            count={chats.length}
+            linkLabel="Open →"
+            onLink={() => navigate("/chats")}
+          >
+            {chats.length === 0 ? (
+              <EmptyState icon={MessageCircle} message="No chats yet." />
+            ) : (
+              <div className={styles.eventList}>
+                {chats.slice(0, 4).map((chat, i) => (
+                  <ChatRow
+                    key={chat._id}
+                    chat={chat}
+                    last={i === Math.min(chats.length, 4) - 1}
+                    onClick={() => navigate(`/chats/${chat._id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </Section>
           <Section
             title="Bookmarks"
             count={bookmarks.length}
@@ -272,7 +246,7 @@ export default function Dashboard() {
             onLink={() => navigate("/bookmarks")}
           >
             {bookmarks.length === 0 ? (
-              <EmptyState icon="🔖" message="No bookmarks saved." />
+              <EmptyState icon={Bookmark} message="No bookmarks saved." />
             ) : (
               <div className={styles.eventList}>
                 {bookmarks.slice(0, 4).map((bk, i) => (
@@ -285,7 +259,9 @@ export default function Dashboard() {
               </div>
             )}
           </Section>
+          </div>
 
+          <div className="cc-dashboard-overview-column">
           <Section
             title="Monthly calendar"
             count={calendarEvents.length}
@@ -301,8 +277,13 @@ export default function Dashboard() {
               }}
             />
           </Section>
+          </div>
+
         </div>
       </div>
     </div>
   );
 }
+
+
+

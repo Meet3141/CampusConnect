@@ -313,10 +313,16 @@ export function ActivityStrip({ stats = {} }) {
 
 /* ── Empty state (inline / local) ── */
 export function EmptyState({ icon, message, action, onAction }) {
+  const Icon =
+    typeof icon === "function" ||
+    (icon && typeof icon === "object" && "render" in icon)
+      ? icon
+      : null;
+
   return (
     <div className={styles.emptyState}>
-      <span className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-sky-500/10 ring-1 ring-inset ring-indigo-500/15 text-2xl mb-1" aria-hidden="true">
-        {icon}
+      <span className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-sky-500/10 ring-1 ring-inset ring-indigo-500/15 text-accent mb-1" aria-hidden="true">
+        {Icon ? <Icon size={24} strokeWidth={1.8} /> : icon}
       </span>
       <p className="text-body-sm font-semibold text-cc">{message}</p>
       {action && (
