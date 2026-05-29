@@ -66,20 +66,20 @@ function NavItem({ label, path, icon, pathname, onNavigate, collapsed }) {
         onClick={() => onNavigate(path)}
         className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200"
         style={{
-          background: active ? 'var(--cc-color-sidebar-active, rgba(0,79,159,0.08))' : 'transparent',
-          color: active ? 'var(--cc-color-sidebar-text-active, var(--cc-color-brand))' : 'var(--cc-color-sidebar-text, var(--cc-color-text-muted))',
+          background: active ? 'var(--cc-color-sidebar-active)' : 'transparent',
+          color: active ? 'var(--cc-color-sidebar-text-active)' : 'var(--cc-color-sidebar-text)',
           fontWeight: active ? 600 : 500,
         }}
         onMouseEnter={e => {
           if (!active) {
-            e.currentTarget.style.background = 'var(--cc-color-sidebar-hover, rgba(0,188,235,0.06))';
+            e.currentTarget.style.background = 'var(--cc-color-sidebar-hover)';
             e.currentTarget.style.color = 'var(--cc-color-text-primary)';
           }
         }}
         onMouseLeave={e => {
           if (!active) {
             e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = 'var(--cc-color-sidebar-text, var(--cc-color-text-muted))';
+            e.currentTarget.style.color = 'var(--cc-color-sidebar-text)';
           }
         }}
       >

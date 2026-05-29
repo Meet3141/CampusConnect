@@ -171,7 +171,7 @@ export default function EditClub() {
             <div>
               <h1 className="text-display-lg">
                 Edit{" "}
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span className="cc-text-gradient">
                   Club
                 </span>
               </h1>

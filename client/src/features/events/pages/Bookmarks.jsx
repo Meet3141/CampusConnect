@@ -93,7 +93,7 @@ export default function Bookmarks() {
           </p>
           <h1 className={styles.headerTitle}>
             My{" "}
-            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Bookmarks</span>
+            <span className="cc-text-gradient">Bookmarks</span>
           </h1>
           <p className={styles.headerCount}>
             {bookmarks.length} saved event{bookmarks.length !== 1 ? "s" : ""}

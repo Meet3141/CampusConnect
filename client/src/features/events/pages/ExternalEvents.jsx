@@ -92,7 +92,7 @@ export default function ExternalEvents() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 External{" "}
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Events</span>
+                <span className="cc-text-gradient">Events</span>
               </h1>
               <p className="text-cc-muted mt-1.5 text-sm">
                 Discover events from other universities and communities.

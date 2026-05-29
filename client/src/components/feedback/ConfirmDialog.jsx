@@ -46,24 +46,24 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-backdrop backdrop-blur-sm animate-fade-in"
         onClick={onCancel}
         aria-hidden="true"
       />
       {/* Panel */}
       <div className={cn(
-        "relative z-10 w-full max-w-sm rounded-2xl border border-cc-soft bg-cc-surface/95 backdrop-blur-xl p-6 shadow-2xl",
+        "relative z-10 w-full max-w-sm rounded-2xl border border-border-subtle bg-surface/95 backdrop-blur-xl p-6 shadow-2xl",
         "animate-slide-up"
       )}>
-        <h2 id="confirm-title" className="text-heading-sm font-semibold text-cc mb-2">{title}</h2>
-        {description && <p className="text-body-sm text-muted mb-5">{description}</p>}
+        <h2 id="confirm-title" className="text-heading-sm font-semibold text-text-primary mb-2">{title}</h2>
+        {description && <p className="text-body-sm text-text-muted mb-5">{description}</p>}
         <div className="flex items-center justify-end gap-2 mt-5">
           <Button variant="ghost" size="md" onClick={onCancel} disabled={loading}>
             {cancelLabel}

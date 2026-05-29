@@ -1,11 +1,11 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
 
     --cc-brand-steel-azure: #004F9F;
     --cc-brand-bright-snow: #F8F9FA;
-    --cc-brand-sky-surge: #00BCEB;
+    --cc-brand-sky-surge: #06B6D4;
     --cc-brand-white: #FFFFFF;
     --cc-brand-graphite: #333333;
 
@@ -14,6 +14,17 @@
     --cc-neutral-850: #141C2B;
     --cc-neutral-800: #1C2433;
 
+    --cc-color-primary-50:  #F2F6FA;
+    --cc-color-primary-100: #E6EDF5;
+    --cc-color-primary-200: #CCDBEB;
+    --cc-color-primary-300: #B3CAE2;
+    --cc-color-primary-400: #99B9D9;
+    --cc-color-primary-500: #004F9F;
+    --cc-color-primary-600: #00478F;
+    --cc-color-primary-700: #003F7F;
+    --cc-color-primary-800: #00376F;
+    --cc-color-primary-900: #002F5F;
+
     --cc-color-brand-steel-azure: var(--cc-brand-steel-azure);
     --cc-color-brand-bright-snow: var(--cc-brand-bright-snow);
     --cc-color-brand-sky-surge: var(--cc-brand-sky-surge);
@@ -21,27 +32,71 @@
     --cc-color-brand-graphite: var(--cc-brand-graphite);
     --cc-color-brand-primary: var(--cc-brand-steel-azure);
     --cc-color-brand-accent: var(--cc-brand-sky-surge);
-    --cc-color-brand: var(--cc-color-brand-primary);
-    --cc-color-brand-hover: #0A63C7;
-    --cc-color-background: var(--cc-neutral-950);
-    --cc-color-surface: var(--cc-neutral-900);
-    --cc-color-surface-elevated: var(--cc-neutral-850);
-    --cc-color-surface-hover: rgba(248, 249, 250, 0.06);
-    --cc-color-surface-weak: rgba(248, 249, 250, 0.03);
-    --cc-color-surface-overlay: rgba(10, 15, 26, 0.88);
-    --cc-color-text-primary: var(--cc-brand-bright-snow);
-    --cc-color-text-secondary: #C7D2E0;
-    --cc-color-text-muted: #94A3B8;
-    --cc-color-border: rgba(248, 249, 250, 0.12);
-    --cc-color-border-subtle: rgba(248, 249, 250, 0.08);
-    --cc-color-border-strong: rgba(248, 249, 250, 0.22);
-    --cc-color-accent: var(--cc-brand-sky-surge);
-    --cc-color-accent-soft: rgba(0, 188, 235, 0.35);
-    --cc-color-success: #22C55E;
-    --cc-color-warning: #F59E0B;
-    --cc-color-error: #EF4444;
-    --cc-color-info: #38BDF8;
-    --cc-color-focus: var(--cc-color-accent);
+    --cc-color-brand: #004F9F;
+    --cc-color-brand-hover: #0062C4;
+    --cc-color-primary-soft: rgba(0, 79, 159, 0.08);
+    --cc-color-primary-border: rgba(0, 79, 159, 0.14);
+
+    --cc-color-accent: #06B6D4;
+    --cc-color-accent-soft: rgba(6, 182, 212, 0.08);
+    --cc-color-accent-border: rgba(6, 182, 212, 0.18);
+
+    --cc-color-background: #F5F7FA;
+    --cc-color-surface: #FFFFFF;
+    --cc-color-surface-elevated: #FFFFFF;
+    --cc-color-surface-secondary: #EEF2F7;
+    --cc-color-surface-grouped: #F0F3F8;
+    --cc-color-surface-hover: rgba(0, 79, 159, 0.04);
+    --cc-color-surface-active: rgba(0, 79, 159, 0.06);
+    --cc-color-surface-weak: rgba(15, 23, 42, 0.025);
+    --cc-color-surface-overlay: rgba(255, 255, 255, 0.96);
+
+    --cc-color-text-primary: #1A1D23;
+    --cc-color-text-secondary: #4A5568;
+    --cc-color-text-muted: #718096;
+    --cc-color-text-disabled: #A0AEC0;
+
+    --cc-color-border: rgba(0, 79, 159, 0.12);
+    --cc-color-border-subtle: rgba(0, 79, 159, 0.08);
+    --cc-color-border-strong: rgba(0, 79, 159, 0.20);
+    --cc-color-border-hover: rgba(0, 79, 159, 0.16);
+    --cc-color-border-focus: rgba(0, 79, 159, 0.28);
+
+    --cc-color-on-brand: #FFFFFF;
+    --cc-color-backdrop: rgba(15, 23, 42, 0.45);
+    --cc-color-shine: rgba(255, 255, 255, 0.14);
+
+    --cc-color-sidebar-bg: #FFFFFF;
+    --cc-color-sidebar-border: rgba(0, 79, 159, 0.08);
+    --cc-color-sidebar-active: rgba(0, 79, 159, 0.08);
+    --cc-color-sidebar-hover: rgba(6, 182, 212, 0.06);
+    --cc-color-sidebar-text: #4A5568;
+    --cc-color-sidebar-text-active: #004F9F;
+
+    --cc-stat-accent-clubs: #004F9F;
+    --cc-stat-accent-events: #06B6D4;
+    --cc-stat-accent-chats: #00C27A;
+    --cc-stat-accent-bookmarks: #FFB020;
+
+    --cc-color-success: #00C27A;
+    --cc-color-warning: #E5A000;
+    --cc-color-error: #E53E5C;
+    --cc-color-info: #3B8DD4;
+    --cc-color-success-soft: rgba(0, 194, 122, 0.12);
+    --cc-color-warning-soft: rgba(229, 160, 0, 0.12);
+    --cc-color-error-soft: rgba(229, 62, 92, 0.12);
+    --cc-color-info-soft: rgba(59, 141, 212, 0.12);
+    --cc-color-focus: #004F9F;
+
+    --cc-color-category-cultural: #7C6FCD;
+    --cc-color-category-cultural-soft: rgba(124, 111, 205, 0.12);
+    --cc-color-category-cultural-border: rgba(124, 111, 205, 0.24);
+    --cc-color-category-arts: #C05E7A;
+    --cc-color-category-arts-soft: rgba(192, 94, 122, 0.12);
+    --cc-color-category-arts-border: rgba(192, 94, 122, 0.24);
+    --cc-color-category-workshop: #3DA9A0;
+    --cc-color-category-workshop-soft: rgba(61, 169, 160, 0.12);
+    --cc-color-category-workshop-border: rgba(61, 169, 160, 0.24);
 
     --cc-bg: var(--cc-color-background);
     --cc-surface: var(--cc-color-surface);
@@ -86,6 +141,7 @@
     --cc-font-weight-medium: 500;
     --cc-font-weight-semibold: 600;
     --cc-font-weight-bold: 700;
+    --cc-font-weight-extrabold: 800;
 
     --cc-font-size-display-xl: clamp(2.75rem, 2.2rem + 2.4vw, 4rem);
     --cc-font-size-display-lg: clamp(2.25rem, 1.9rem + 1.8vw, 3.25rem);
@@ -133,23 +189,18 @@
     --cc-letter-spacing-caption: 0.01em;
     --cc-letter-spacing-micro: 0.02em;
 
-    --cc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
-    --cc-shadow-md: 0 8px 20px rgba(0, 0, 0, 0.32);
-    --cc-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.36);
-    --cc-shadow-xl: 0 28px 60px rgba(0, 0, 0, 0.4);
-    /* Hover-specific shadows — softer lift feel */
-    --cc-shadow-hover-sm: 0 4px 12px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.14);
-    --cc-shadow-hover-md: 0 8px 24px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.16);
-    /* Card depth — surfaces layered above background */
-    --cc-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.20), 0 4px 12px rgba(0, 0, 0, 0.12);
-    /* ── Semantic shadow aliases ── */
-    --cc-shadow-soft:    var(--cc-shadow-card);     /* flat card depth */
-    --cc-shadow-overlay: var(--cc-shadow-lg);        /* dropdown/modal depth */
-    /* ── Composite transition shorthands ── */
+    --cc-shadow-sm: 0 1px 2px rgba(0, 40, 80, 0.05);
+    --cc-shadow-md: 0 2px 8px rgba(0, 40, 80, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --cc-shadow-lg: 0 4px 16px rgba(0, 40, 80, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --cc-shadow-xl: 0 8px 32px rgba(0, 40, 80, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05);
+    --cc-shadow-hover-sm: 0 2px 8px rgba(0, 40, 80, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --cc-shadow-hover-md: 0 4px 16px rgba(0, 40, 80, 0.10), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --cc-shadow-card: 0 1px 3px rgba(0, 40, 80, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+    --cc-shadow-soft: var(--cc-shadow-card);
+    --cc-shadow-overlay: var(--cc-shadow-lg);
     --cc-transition-premium: all var(--cc-motion-normal) var(--cc-motion-ease-emphasized);
-    --cc-transition-fast:    all var(--cc-motion-fast) var(--cc-motion-ease-standard);
-    --cc-transition-spring:  all var(--cc-motion-spring) var(--cc-motion-ease-spring);
-
+    --cc-transition-fast: all var(--cc-motion-fast) var(--cc-motion-ease-standard);
+    --cc-transition-spring: all var(--cc-motion-spring) var(--cc-motion-ease-spring);
 
     --cc-radius-sm: 6px;
     --cc-radius-md: 10px;
@@ -167,18 +218,16 @@
     --cc-motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     --cc-motion-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
 
-    /* Hover Motion Timing */
     --cc-hover-duration-fast: 120ms;
     --cc-hover-duration-normal: 180ms;
     --cc-hover-duration-slow: 240ms;
     --cc-hover-easing-standard: ease-out;
     --cc-hover-easing-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* Hover Elevation Shadows */
     --cc-shadow-hover-elevation-subtle: 0 2px 8px rgba(0, 79, 159, 0.08);
     --cc-shadow-hover-elevation-soft: 0 4px 16px rgba(0, 79, 159, 0.12);
     --cc-shadow-hover-elevation-elevated: 0 8px 24px rgba(0, 79, 159, 0.16);
-    --cc-shadow-hover-elevation-focus: 0 4px 12px rgba(0, 188, 235, 0.15);
+    --cc-shadow-hover-elevation-focus: 0 4px 12px rgba(6, 182, 212, 0.15);
 
     --cc-z-base: 0;
     --cc-z-dropdown: 1000;
@@ -188,10 +237,12 @@
     --cc-z-toast: 1400;
     --cc-z-tooltip: 1500;
 
-    /* Focus ring */
-    --cc-focus-ring-color: rgba(99, 102, 241, 0.40);
+    --cc-focus-ring-color: rgba(0, 79, 159, 0.24);
     --cc-focus-ring: 0 0 0 3px var(--cc-focus-ring-color);
     --cc-focus-ring-offset: 2px;
+
+    --cc-scrollbar-thumb: rgba(0, 79, 159, 0.18);
+    --cc-scrollbar-thumb-hover: rgba(0, 79, 159, 0.30);
 
     --cc-breakpoint-xs: 360px;
     --cc-breakpoint-sm: 480px;
@@ -202,7 +253,6 @@
 
     --cc-line-length-default: 68ch;
 
-    /* ── Layout structural vars ── */
     --cc-sidebar-expanded: 220px;
     --cc-sidebar-collapsed: 56px;
     --cc-topbar-height: 56px;
@@ -212,119 +262,100 @@
     --cc-page-max-width: 1280px;
     --cc-page-wide-max-width: 1440px;
     --cc-page-reading-max-width: 720px;
-    /* ── Surface depth tokens (layered hierarchy) ── */
+
+    --cc-surface-depth-0: #F5F7FA;
+    --cc-surface-depth-1: #FFFFFF;
+    --cc-surface-depth-2: #EEF2F7;
+    --cc-surface-depth-3: rgba(0, 79, 159, 0.04);
+  }
+
+  :root[data-theme="dark"],
+  :root.dark {
+    color-scheme: dark;
+
+    --cc-color-background: var(--cc-neutral-950);
+    --cc-color-surface: var(--cc-neutral-900);
+    --cc-color-surface-elevated: var(--cc-neutral-850);
+    --cc-color-surface-secondary: var(--cc-neutral-800);
+    --cc-color-surface-grouped: rgba(248, 249, 250, 0.05);
+    --cc-color-surface-hover: rgba(248, 249, 250, 0.06);
+    --cc-color-surface-active: rgba(248, 249, 250, 0.10);
+    --cc-color-surface-weak: rgba(248, 249, 250, 0.03);
+    --cc-color-surface-overlay: rgba(10, 15, 26, 0.90);
+
+    --cc-color-text-primary: var(--cc-brand-bright-snow);
+    --cc-color-text-secondary: #C7D2E0;
+    --cc-color-text-muted: #94A3B8;
+    --cc-color-text-disabled: rgba(148, 163, 184, 0.65);
+
+    --cc-color-border: rgba(248, 249, 250, 0.12);
+    --cc-color-border-subtle: rgba(248, 249, 250, 0.08);
+    --cc-color-border-strong: rgba(248, 249, 250, 0.22);
+    --cc-color-border-hover: rgba(6, 182, 212, 0.32);
+    --cc-color-border-focus: rgba(6, 182, 212, 0.48);
+
+    --cc-color-primary-soft: rgba(0, 79, 159, 0.22);
+    --cc-color-primary-border: rgba(0, 79, 159, 0.38);
+
+    --cc-color-accent: #06B6D4;
+    --cc-color-accent-soft: rgba(6, 182, 212, 0.20);
+    --cc-color-accent-border: rgba(6, 182, 212, 0.40);
+
+    --cc-color-success: #22C55E;
+    --cc-color-warning: #F59E0B;
+    --cc-color-error: #EF4444;
+    --cc-color-info: #38BDF8;
+    --cc-color-success-soft: rgba(34, 197, 94, 0.18);
+    --cc-color-warning-soft: rgba(245, 158, 11, 0.18);
+    --cc-color-error-soft: rgba(239, 68, 68, 0.18);
+    --cc-color-info-soft: rgba(56, 189, 248, 0.18);
+    --cc-color-focus: var(--cc-color-accent);
+
+    --cc-color-backdrop: rgba(3, 6, 12, 0.65);
+    --cc-color-shine: rgba(255, 255, 255, 0.12);
+
+    --cc-color-sidebar-bg: var(--cc-color-surface);
+    --cc-color-sidebar-border: rgba(248, 249, 250, 0.12);
+    --cc-color-sidebar-active: rgba(0, 79, 159, 0.22);
+    --cc-color-sidebar-hover: rgba(6, 182, 212, 0.12);
+    --cc-color-sidebar-text: var(--cc-color-text-secondary);
+    --cc-color-sidebar-text-active: var(--cc-color-brand);
+
+    --cc-stat-accent-clubs: var(--cc-color-brand);
+    --cc-stat-accent-events: var(--cc-color-accent);
+    --cc-stat-accent-chats: #00C27A;
+    --cc-stat-accent-bookmarks: #FFB020;
+
+    --cc-color-category-cultural-soft: rgba(124, 111, 205, 0.18);
+    --cc-color-category-cultural-border: rgba(124, 111, 205, 0.36);
+    --cc-color-category-arts-soft: rgba(192, 94, 122, 0.18);
+    --cc-color-category-arts-border: rgba(192, 94, 122, 0.36);
+    --cc-color-category-workshop-soft: rgba(61, 169, 160, 0.18);
+    --cc-color-category-workshop-border: rgba(61, 169, 160, 0.36);
+
+    --cc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --cc-shadow-md: 0 8px 20px rgba(0, 0, 0, 0.32);
+    --cc-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.36);
+    --cc-shadow-xl: 0 28px 60px rgba(0, 0, 0, 0.40);
+    --cc-shadow-hover-sm: 0 4px 12px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.14);
+    --cc-shadow-hover-md: 0 8px 24px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.16);
+    --cc-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.20), 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    --cc-focus-ring-color: rgba(6, 182, 212, 0.35);
+    --cc-focus-ring: 0 0 0 3px var(--cc-focus-ring-color);
+
+    --cc-scrollbar-thumb: rgba(248, 249, 250, 0.14);
+    --cc-scrollbar-thumb-hover: rgba(248, 249, 250, 0.24);
+
     --cc-surface-depth-0: var(--cc-color-background);
     --cc-surface-depth-1: var(--cc-color-surface);
     --cc-surface-depth-2: var(--cc-color-surface-elevated);
     --cc-surface-depth-3: rgba(248, 249, 250, 0.07);
   }
 
-  :root[data-theme="light"] {
+  :root[data-theme="light"],
+  :root.light {
     color-scheme: light;
-
-    /* ── Brand ── */
-    --cc-color-brand:              #004F9F;
-    --cc-color-brand-hover:        #0062C4;
-
-    /* ── Primary interaction tokens ── */
-    --cc-color-primary-soft:       rgba(0, 79, 159, 0.08);
-    --cc-color-primary-border:     rgba(0, 79, 159, 0.14);
-
-    /* ── Accent tokens ── */
-    --cc-color-accent:             #00BCEB;
-    --cc-color-accent-soft:        rgba(0, 188, 235, 0.08);
-    --cc-color-accent-border:      rgba(0, 188, 235, 0.18);
-
-    /* ── Surface hierarchy (reconstructed) ── */
-    /* depth-0: calm operational canvas */
-    --cc-color-background:         #F5F7FA;
-    /* depth-1: card/panel base — pure white for contrast against canvas */
-    --cc-color-surface:            #FFFFFF;
-    /* depth-2: slight elevation */
-    --cc-color-surface-elevated:   #FFFFFF;
-    /* depth-3: grouped section background — visible contrast */
-    --cc-color-surface-secondary:  #EEF2F7;
-    /* grouped surface — for section-group containers */
-    --cc-color-surface-grouped:    #F0F3F8;
-    /* interaction states */
-    --cc-color-surface-hover:      rgba(0, 79, 159, 0.04);
-    --cc-color-surface-active:     rgba(0, 79, 159, 0.06);
-    --cc-color-surface-weak:       rgba(15, 23, 42, 0.025);
-    --cc-color-surface-overlay:    rgba(255, 255, 255, 0.96);
-
-    /* ── Text hierarchy — ensured dark/visible on light backgrounds ── */
-    --cc-color-text-primary:       #1A1D23;
-    --cc-color-text-secondary:     #4A5568;
-    --cc-color-text-muted:         #718096;
-    --cc-color-text-disabled:      #A0AEC0;
-
-    /* ── Border tokens ── */
-    --cc-color-border:             rgba(0, 79, 159, 0.12);
-    --cc-color-border-subtle:      rgba(0, 79, 159, 0.08);
-    --cc-color-border-strong:      rgba(0, 79, 159, 0.20);
-    --cc-color-border-hover:       rgba(0, 79, 159, 0.16);
-    --cc-color-border-focus:       rgba(0, 79, 159, 0.28);
-
-    /* ── Sidebar tokens ── */
-    --cc-color-sidebar-bg:         #FFFFFF;
-    --cc-color-sidebar-border:     rgba(0, 79, 159, 0.08);
-    --cc-color-sidebar-active:     rgba(0, 79, 159, 0.08);
-    --cc-color-sidebar-hover:      rgba(0, 188, 235, 0.06);
-    --cc-color-sidebar-text:       #4A5568;
-    --cc-color-sidebar-text-active:#004F9F;
-
-    /* ── Stat accent tokens ── */
-    --cc-stat-accent-clubs:        #004F9F;
-    --cc-stat-accent-events:       #00BCEB;
-    --cc-stat-accent-chats:        #00C27A;
-    --cc-stat-accent-bookmarks:    #FFB020;
-
-    /* ── Feedback ── */
-    --cc-color-success:            #00C27A;
-    --cc-color-warning:            #E5A000;
-    --cc-color-error:              #E53E5C;
-    --cc-color-info:               #3B8DD4;
-    --cc-color-focus:              #004F9F;
-
-    /* ── Shadows — tight, brand-tinted, no floating-card feel ── */
-    --cc-shadow-sm:        0 1px 2px rgba(0, 40, 80, 0.05);
-    --cc-shadow-md:        0 2px 8px rgba(0, 40, 80, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
-    --cc-shadow-lg:        0 4px 16px rgba(0, 40, 80, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-    --cc-shadow-xl:        0 8px 32px rgba(0, 40, 80, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05);
-    --cc-shadow-hover-sm:  0 2px 8px rgba(0, 40, 80, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-    --cc-shadow-hover-md:  0 4px 16px rgba(0, 40, 80, 0.10), 0 2px 6px rgba(0, 0, 0, 0.04);
-    --cc-shadow-card:      0 1px 3px rgba(0, 40, 80, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-
-    /* ── Focus ring ── */
-    --cc-focus-ring-color: rgba(0, 79, 159, 0.24);
-    --cc-focus-ring:       0 0 0 3px var(--cc-focus-ring-color);
-
-    /* ── Scrollbar ── */
-    --cc-scrollbar-thumb:  rgba(0, 79, 159, 0.18);
-    --cc-scrollbar-thumb-hover: rgba(0, 79, 159, 0.30);
-
-    /* ── Surface depth map ── */
-    --cc-surface-depth-0:  #F5F7FA;
-    --cc-surface-depth-1:  #FFFFFF;
-    --cc-surface-depth-2:  #EEF2F7;
-    --cc-surface-depth-3:  rgba(0, 79, 159, 0.04);
-
-    /* ── Font weight extension ── */
-    --cc-font-weight-extrabold:    800;
-
-    /* ── Alias shortcuts ── */
-    --cc-bg:               var(--cc-color-background);
-    --cc-surface:          var(--cc-color-surface);
-    --cc-text:             var(--cc-color-text-primary);
-    --cc-muted:            var(--cc-color-text-muted);
-    --cc-border-soft:      var(--cc-color-border-subtle);
-    --cc-border-strong:    var(--cc-color-border-strong);
-    --cc-brand:            var(--cc-color-brand);
-    --cc-brand-hover:      var(--cc-color-brand-hover);
-    --cc-accent:           var(--cc-color-accent);
-    --cc-surface-weak:     var(--cc-color-surface-weak);
-    --cc-surface-hover:    var(--cc-color-surface-hover);
-    --cc-surface-overlay:  var(--cc-color-surface-overlay);
   }
 
 

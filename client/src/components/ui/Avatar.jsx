@@ -27,13 +27,13 @@ const SIZES = {
  */
 const PALETTES = [
   "bg-primary-soft   text-primary   ring-primary-border",
-  "bg-[#7C6FCD]/12   text-[#7C6FCD] ring-[#7C6FCD]/25",
+  "bg-category-cultural-soft text-category-cultural ring-category-cultural",
   "bg-success/10     text-success    ring-success/20",
   "bg-accent-soft    text-accent     ring-accent-border",
   "bg-warning/10     text-warning    ring-warning/20",
   "bg-error/10       text-error      ring-error/20",
-  "bg-[#3DA9A0]/10   text-[#3DA9A0] ring-[#3DA9A0]/20",
-  "bg-[#C05E7A]/10   text-[#C05E7A] ring-[#C05E7A]/20",
+  "bg-category-workshop-soft text-category-workshop ring-category-workshop",
+  "bg-category-arts-soft text-category-arts ring-category-arts",
 ];
 
 function hashName(name = "") {

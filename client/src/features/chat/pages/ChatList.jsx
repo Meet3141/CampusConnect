@@ -69,7 +69,7 @@ export default function ChatList() {
           <div className="flex items-end justify-between gap-3">
             <div>
               <h1 className="text-display-lg font-heading">
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Chats</span>
+                <span className="cc-text-gradient">Chats</span>
               </h1>
               <p className="text-caption text-muted mt-1">
                 {loading ? "…" : `${chats.length} conversation${chats.length !== 1 ? "s" : ""}`}

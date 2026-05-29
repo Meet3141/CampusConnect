@@ -122,7 +122,7 @@ export default function CreateExternalEvent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">
             Submit{" "}
-            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>External Event</span>
+            <span className="cc-text-gradient">External Event</span>
           </h1>
           <p className="text-slate-500 text-sm mt-2">Share an event from another university or community.</p>
         </div>

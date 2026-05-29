@@ -64,14 +64,14 @@ export default function Modal({ open, onClose, title, size = "md", children, cla
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-backdrop backdrop-blur-sm animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -79,18 +79,18 @@ export default function Modal({ open, onClose, title, size = "md", children, cla
       <div
         ref={panelRef}
         className={cn(
-          "relative z-10 w-full rounded-2xl border border-cc-soft bg-cc-surface/95 backdrop-blur-xl shadow-2xl animate-slide-up overflow-hidden",
+          "relative z-10 w-full rounded-2xl border border-border-subtle bg-surface/95 backdrop-blur-xl shadow-2xl animate-slide-up overflow-hidden",
           SIZES[size] ?? SIZES.md,
           className
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-cc-soft">
-            <h2 id="modal-title" className="text-heading-sm font-semibold text-cc">{title}</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
+            <h2 id="modal-title" className="text-heading-sm font-semibold text-text-primary">{title}</h2>
             <button
               onClick={onClose}
               aria-label="Close modal"
-              className="text-muted hover:text-cc transition-colors p-1 rounded-lg hover:bg-cc-surface-weak"
+              className="text-text-muted hover:text-text-primary transition-colors p-1 rounded-lg hover:bg-surface-hover"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -110,7 +110,7 @@ Modal.Body = function ModalBody({ className, children }) {
 
 Modal.Footer = function ModalFooter({ className, children }) {
   return (
-    <div className={cn("flex items-center justify-end gap-2 px-6 py-4 border-t border-cc-soft bg-cc-surface-weak/50", className)}>
+    <div className={cn("flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle bg-surface-weak/60", className)}>
       {children}
     </div>
   );

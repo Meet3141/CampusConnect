@@ -33,11 +33,11 @@ export default function Drawer({ open, onClose, title, side = "right", size = "m
   const s = SIDE_CLS[side] ?? SIDE_CLS.right;
 
   return (
-    <div className={cn("fixed inset-0 z-[100]", !open && "pointer-events-none")}>
+    <div className={cn("fixed inset-0 z-overlay", !open && "pointer-events-none")}>
       {/* Backdrop */}
       <div
         className={cn(
-          "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
+          "absolute inset-0 bg-backdrop backdrop-blur-sm transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0"
         )}
         onClick={onClose}
@@ -49,7 +49,7 @@ export default function Drawer({ open, onClose, title, side = "right", size = "m
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "absolute flex flex-col bg-cc-surface border-cc-soft shadow-2xl transition-transform duration-300",
+          "absolute flex flex-col bg-surface border-border-subtle shadow-2xl transition-transform duration-300",
           s.panel,
           side !== "bottom" && cn("w-full", SIZES[size]),
           side === "left" && "border-r",
@@ -60,9 +60,9 @@ export default function Drawer({ open, onClose, title, side = "right", size = "m
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-5 py-4 border-b border-cc-soft shrink-0">
-            <h2 className="text-heading-sm font-semibold text-cc">{title}</h2>
-            <button onClick={onClose} aria-label="Close" className="text-muted hover:text-cc transition-colors p-1">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle shrink-0">
+            <h2 className="text-heading-sm font-semibold text-text-primary">{title}</h2>
+            <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-primary transition-colors p-1">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>

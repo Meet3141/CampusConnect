@@ -127,7 +127,7 @@ export default function Login() {
                 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "2.2rem", lineHeight: 1.1, color: "#333333" }}
               >
                 Welcome<br />
-                <span style={{ background: "linear-gradient(135deg, #004F9F, #00BCEB)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                <span className="cc-text-gradient">
                   back.
                 </span>
               </h1>

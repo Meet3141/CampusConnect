@@ -119,7 +119,7 @@ export default function ClubList() {
             <div>
               <h1 className="text-display-lg text-cc">
                 Discover{" "}
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Clubs</span>
+                <span className="cc-text-gradient">Clubs</span>
               </h1>
               <p className="text-body-sm text-secondary mt-1.5">
                 {loading ? "…" : `${meta.total} club${meta.total !== 1 ? "s" : ""} on campus`}

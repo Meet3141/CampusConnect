@@ -213,7 +213,7 @@ export default function AdminStats() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-cc">
             Platform{" "}
-            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span className="cc-text-gradient">
               Analytics
             </span>
           </h1>

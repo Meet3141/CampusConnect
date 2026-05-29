@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+// Connection event logs help diagnose intermittent disconnects.
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err?.message || err);
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.warn("MongoDB disconnected");
+});
+
 const connectDB = async () => {
   if (!process.env.MONGO_URI) {
     console.error("MongoDB connection failed: MONGO_URI is not set");

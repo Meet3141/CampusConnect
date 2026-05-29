@@ -17,6 +17,7 @@ import { Building2, Calendar, MessageCircle, Bookmark, MapPin, Zap, ArrowRight, 
 import { CLUB_CATEGORY_META } from "../../../theme";
 import { EVENT_CATEGORY_META } from "../../../theme";
 import Skeleton from "../../../components/feedback/Skeleton";
+import { cn } from "../../../utils/cn";
 export { default as MonthlyCalendar } from "./MonthlyCalendar";
 
 /* ── Section: re-export from global layout primitive ── */
@@ -24,10 +25,10 @@ export { default as Section } from "../../../components/layout/Section";
 
 /* ── Stat card accent config (semantic tokens for light theme) ── */
 const STAT_ACCENT = {
-  clubs:     { color: 'var(--cc-stat-accent-clubs, #004F9F)',     iconBg: 'rgba(0,79,159,0.08)',  iconColor: '#004F9F', Icon: Building2  },
-  events:    { color: 'var(--cc-stat-accent-events, #00BCEB)',    iconBg: 'rgba(0,188,235,0.08)', iconColor: '#00BCEB', Icon: Calendar   },
-  chats:     { color: 'var(--cc-stat-accent-chats, #00C27A)',     iconBg: 'rgba(0,194,122,0.08)', iconColor: '#00C27A', Icon: MessageCircle},
-  bookmarks: { color: 'var(--cc-stat-accent-bookmarks, #FFB020)', iconBg: 'rgba(255,176,32,0.10)',iconColor: '#E5A000', Icon: Bookmark   },
+  clubs:     { color: "var(--cc-stat-accent-clubs)",     iconBg: "var(--cc-color-primary-soft)",  iconColor: "var(--cc-stat-accent-clubs)",     Icon: Building2  },
+  events:    { color: "var(--cc-stat-accent-events)",    iconBg: "var(--cc-color-accent-soft)",   iconColor: "var(--cc-stat-accent-events)",    Icon: Calendar   },
+  chats:     { color: "var(--cc-stat-accent-chats)",     iconBg: "var(--cc-color-success-soft)",  iconColor: "var(--cc-stat-accent-chats)",     Icon: MessageCircle},
+  bookmarks: { color: "var(--cc-stat-accent-bookmarks)", iconBg: "var(--cc-color-warning-soft)",  iconColor: "var(--cc-stat-accent-bookmarks)", Icon: Bookmark   },
 };
 
 /* ── Sparkline mini bars ── */
@@ -108,26 +109,17 @@ export function StatCard({ label, value, sub, subHighlight, onClick, accent = "c
 /* ── Quick actions strip ── */
 export function QuickActions({ onCreateEvent, onBrowseClubs, onOpenChats }) {
   const actions = [
-    { label: "New Event",   icon: Plus,         onClick: onCreateEvent, color: 'var(--cc-stat-accent-clubs, #004F9F)',  bg: 'rgba(0,79,159,0.06)' },
-    { label: "Browse Clubs",icon: Building2,     onClick: onBrowseClubs, color: 'var(--cc-stat-accent-events, #00BCEB)', bg: 'rgba(0,188,235,0.06)' },
-    { label: "Open Chats",  icon: MessageCircle, onClick: onOpenChats,   color: 'var(--cc-stat-accent-chats, #00C27A)',  bg: 'rgba(0,194,122,0.06)' },
+    { label: "New Event",   icon: Plus,          onClick: onCreateEvent, accent: "clubs" },
+    { label: "Browse Clubs",icon: Building2,     onClick: onBrowseClubs, accent: "events" },
+    { label: "Open Chats",  icon: MessageCircle, onClick: onOpenChats,   accent: "chats" },
   ];
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      {actions.map(({ label, icon: Icon, onClick, color, bg }) => (
+      {actions.map(({ label, icon: Icon, onClick, accent }) => (
         <button
           key={label}
           onClick={onClick}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-cc-soft text-[11px] font-semibold transition-all duration-150"
-          style={{ color }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = bg;
-            e.currentTarget.style.borderColor = 'var(--cc-color-border-strong)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.borderColor = '';
-          }}
+          className={cn("cc-quick-action", `cc-quick-action--${accent}`)}
         >
           <Icon size={12} />
           {label}

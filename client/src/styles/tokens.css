@@ -19,8 +19,3 @@
   --cc-surface-hover:  var(--cc-color-surface-hover);
   --cc-surface-overlay:var(--cc-color-surface-overlay);
 }
-
-body {
-  background-color: var(--cc-color-background);
-  color:            var(--cc-color-text-primary);
-}

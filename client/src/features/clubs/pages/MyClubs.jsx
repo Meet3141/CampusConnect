@@ -82,7 +82,7 @@ export default function MyClubs() {
             <div>
               <h1 className="text-display-lg">
                 My{" "}
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                <span className="cc-text-gradient">
                   Clubs
                 </span>
               </h1>

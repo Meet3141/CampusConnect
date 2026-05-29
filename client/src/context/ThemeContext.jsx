@@ -49,8 +49,11 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     try {
-      document.documentElement.setAttribute("data-theme", theme);
-      document.documentElement.style.colorScheme = theme;
+      const root = document.documentElement;
+      root.setAttribute("data-theme", theme);
+      root.classList.toggle("dark", theme === "dark");
+      root.classList.toggle("light", theme === "light");
+      root.style.colorScheme = theme;
     } catch (e) {}
   }, [theme]);
 

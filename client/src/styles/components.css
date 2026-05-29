@@ -64,6 +64,7 @@
 .bg-cc-surface-hover   { background-color: var(--cc-surface-hover)   !important; }
 .bg-cc-surface-overlay { background-color: var(--cc-surface-overlay) !important; }
 .bg-cc-brand           { background-color: var(--cc-brand)           !important; }
+.bg-backdrop           { background-color: var(--cc-color-backdrop)  !important; }
 
 /* New semantic backgrounds */
 .bg-primary-soft       { background-color: var(--cc-color-primary-soft)      !important; }
@@ -81,6 +82,25 @@
 .border-cc-strong      { border-color: var(--cc-border-strong) !important; }
 .bg-cc-border-soft     { background-color: var(--cc-border-soft) !important; }
 
+/* ── Category colors (semantic tokens) ── */
+.bg-category-cultural      { background-color: var(--cc-color-category-cultural) !important; }
+.bg-category-cultural-soft { background-color: var(--cc-color-category-cultural-soft) !important; }
+.text-category-cultural    { color: var(--cc-color-category-cultural) !important; }
+.border-category-cultural  { border-color: var(--cc-color-category-cultural-border) !important; }
+.ring-category-cultural    { --tw-ring-color: var(--cc-color-category-cultural-border) !important; }
+
+.bg-category-arts          { background-color: var(--cc-color-category-arts) !important; }
+.bg-category-arts-soft     { background-color: var(--cc-color-category-arts-soft) !important; }
+.text-category-arts        { color: var(--cc-color-category-arts) !important; }
+.border-category-arts      { border-color: var(--cc-color-category-arts-border) !important; }
+.ring-category-arts        { --tw-ring-color: var(--cc-color-category-arts-border) !important; }
+
+.bg-category-workshop      { background-color: var(--cc-color-category-workshop) !important; }
+.bg-category-workshop-soft { background-color: var(--cc-color-category-workshop-soft) !important; }
+.text-category-workshop    { color: var(--cc-color-category-workshop) !important; }
+.border-category-workshop  { border-color: var(--cc-color-category-workshop-border) !important; }
+.ring-category-workshop    { --tw-ring-color: var(--cc-color-category-workshop-border) !important; }
+
 /* New semantic borders */
 .border-subtle  { border-color: var(--cc-color-border-subtle)  !important; }
 .border-hover   { border-color: var(--cc-color-border-hover)   !important; }
@@ -90,8 +110,17 @@
 .hover-bg-cc-surface:hover      { background-color: var(--cc-surface-hover)   !important; }
 .hover-border-cc-strong:hover   { border-color:     var(--cc-border-strong)   !important; }
 
+/* ── Gradient text utility ── */
+.cc-text-gradient {
+  background: linear-gradient(120deg, var(--cc-color-brand), var(--cc-color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
 /* ── Button semantic helpers ── */
-.btn-cc-primary       { background-color: var(--cc-brand); color: #fff; border-radius: var(--cc-radius-lg); padding: var(--cc-space-2) var(--cc-space-4); }
+.btn-cc-primary       { background-color: var(--cc-brand); color: var(--cc-color-on-brand); border-radius: var(--cc-radius-lg); padding: var(--cc-space-2) var(--cc-space-4); }
 .btn-cc-primary:hover { background-color: var(--cc-brand-hover); }
 
 /* ── Badge helper ── */
@@ -320,6 +349,40 @@
   border: 1px solid var(--cc-color-success);
   opacity: 0;
   animation: cc-pulse-ring 2s ease-out infinite;
+}
+
+/* ── Quick action buttons (dashboard) ── */
+.cc-quick-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  padding: var(--cc-space-2) var(--cc-space-3);
+  border-radius: var(--cc-radius-xl);
+  border: 1px solid var(--cc-color-border-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-quick-action-color);
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.cc-quick-action:hover {
+  background-color: var(--cc-quick-action-bg);
+  border-color: var(--cc-color-border-strong);
+}
+
+.cc-quick-action--clubs {
+  --cc-quick-action-color: var(--cc-stat-accent-clubs);
+  --cc-quick-action-bg: var(--cc-color-primary-soft);
+}
+
+.cc-quick-action--events {
+  --cc-quick-action-color: var(--cc-stat-accent-events);
+  --cc-quick-action-bg: var(--cc-color-accent-soft);
+}
+
+.cc-quick-action--chats {
+  --cc-quick-action-color: var(--cc-stat-accent-chats);
+  --cc-quick-action-bg: var(--cc-color-success-soft);
 }
 
 /* ── Sidebar Navigation Hierarchy ── */

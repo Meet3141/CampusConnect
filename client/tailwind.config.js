@@ -1,4 +1,5 @@
 export default {
+  darkMode: ["class", '[data-theme="dark"]'],
   content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -10,6 +11,16 @@ export default {
         "primary-hover":     "var(--cc-color-brand-hover)",
         "primary-soft":      "var(--cc-color-primary-soft)",
         "primary-border":    "var(--cc-color-primary-border)",
+        "primary-50":        "var(--cc-color-primary-50)",
+        "primary-100":       "var(--cc-color-primary-100)",
+        "primary-200":       "var(--cc-color-primary-200)",
+        "primary-300":       "var(--cc-color-primary-300)",
+        "primary-400":       "var(--cc-color-primary-400)",
+        "primary-500":       "var(--cc-color-primary-500)",
+        "primary-600":       "var(--cc-color-primary-600)",
+        "primary-700":       "var(--cc-color-primary-700)",
+        "primary-800":       "var(--cc-color-primary-800)",
+        "primary-900":       "var(--cc-color-primary-900)",
 
         /* ── Surfaces ── */
         background:          "var(--cc-color-background)",
@@ -26,6 +37,7 @@ export default {
         "text-secondary":    "var(--cc-color-text-secondary)",
         "text-muted":        "var(--cc-color-text-muted)",
         "text-disabled":     "var(--cc-color-text-disabled)",
+        "on-brand":          "var(--cc-color-on-brand)",
 
         /* ── Borders ── */
         border:              "var(--cc-color-border)",

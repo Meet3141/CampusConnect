@@ -163,7 +163,7 @@ export default function CreateEvent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">
             Create an{" "}
-            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Event</span>
+            <span className="cc-text-gradient">Event</span>
           </h1>
           <p className="text-cc-muted text-sm mt-2">Plan and schedule a new event for your club.</p>
         </div>

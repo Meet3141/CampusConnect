@@ -215,7 +215,7 @@ export default function EditEvent() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 Edit{" "}
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span className="cc-text-gradient">
                   Event
                 </span>
               </h1>

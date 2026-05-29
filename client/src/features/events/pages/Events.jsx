@@ -107,7 +107,7 @@ export default function Events() {
           <p className="text-label text-muted font-mono mb-2">Dashboard / Events</p>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-              <h1 className="text-display-lg" style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <h1 className="text-display-lg cc-text-gradient">
                 Events
               </h1>
               <p className="text-body-sm text-secondary mt-1">

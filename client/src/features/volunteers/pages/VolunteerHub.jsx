@@ -147,7 +147,7 @@ export default function VolunteerHub() {
           </p>
           <h1 className="text-4xl font-extrabold tracking-tight">
             Volunteer{" "}
-            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span className="cc-text-gradient">
               Opportunities
             </span>
           </h1>

@@ -96,7 +96,7 @@ export default function AdminPanel() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 Admin{" "}
-                <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span className="cc-text-gradient">
                   Panel
                 </span>
               </h1>

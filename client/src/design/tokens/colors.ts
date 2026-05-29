@@ -8,9 +8,23 @@
 export const brandColors = {
   steelAzure:  "#004F9F",   // Primary authority blue
   brightSnow:  "#F8F9FA",   // Light background base
-  skySurge:    "#00BCEB",   // Accent / interaction energy
+  skySurge:    "#06B6D4",   // Accent / interaction energy
   white:       "#FFFFFF",
   graphite:    "#333333",   // Body text on light
+} as const;
+
+/* ── Primary scale (50-900) ── */
+export const primaryScale = {
+  50:  "#F2F6FA",
+  100: "#E6EDF5",
+  200: "#CCDBEB",
+  300: "#B3CAE2",
+  400: "#99B9D9",
+  500: "#004F9F",
+  600: "#00478F",
+  700: "#003F7F",
+  800: "#00376F",
+  900: "#002F5F",
 } as const;
 
 /* ── Primitive neutral scale (dark theme surfaces) ── */
@@ -28,9 +42,9 @@ export const lightSemanticSpec = {
   primaryHover:    "#0062C4",
   primarySoft:     "rgba(0, 79, 159, 0.08)",
   primaryBorder:   "rgba(0, 79, 159, 0.14)",
-  accent:          "#00BCEB",
-  accentSoft:      "rgba(0, 188, 235, 0.08)",
-  accentBorder:    "rgba(0, 188, 235, 0.18)",
+  accent:          "#06B6D4",
+  accentSoft:      "rgba(6, 182, 212, 0.08)",
+  accentBorder:    "rgba(6, 182, 212, 0.18)",
   background:      "#F8F9FA",
   surface:         "#FFFFFF",
   surfaceSecondary:"#F3F6F9",

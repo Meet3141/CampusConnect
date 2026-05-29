@@ -11,11 +11,11 @@ export default function ThemeToggle({ className = "" }) {
         onClick={() => setPreference(nextTheme)}
         title={`Switch to ${nextTheme} mode`}
         aria-label={`Switch to ${nextTheme} mode`}
-        className="flex items-center justify-center w-9 h-9 rounded-lg border border-transparent hover:border-cc-soft hover:bg-cc-surface-weak transition-all"
+        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border-subtle hover:border-border-hover hover:bg-surface-hover transition-all"
       >
         {theme === "dark"
-          ? <Moon size={16} className="text-slate-400 hover:text-white transition-colors" />
-          : <Sun  size={24} className="text-amber-400" />}
+          ? <Moon size={16} className="text-text-muted hover:text-text-primary transition-colors" />
+          : <Sun  size={22} className="text-warning" />}
       </button>
     </div>
   );

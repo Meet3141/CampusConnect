@@ -9,6 +9,8 @@ import rateLimit from "express-rate-limit";
 import http from "http";
 import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
+import path from "path";
+import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import clubRoutes from "./modules/clubs/club.routes.js";
@@ -24,8 +26,11 @@ import logger from "./middleware/logger.js";
 import { startScheduler } from "./jobs/scheduler.js";
 
 // ── Must run before anything that depends on env vars ──
-dotenv.config();
-connectDB();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, ".env") });
+
+// Ensure DB is connected before starting server or background jobs.
+// We'll start the server inside an async startup function that awaits connectDB().
 
 const app = express();
 const server = http.createServer(app);
@@ -205,9 +210,18 @@ io.on("connection", (socket) => {
 app.use(errorHandler);
 
 // ── Background Jobs ──
-startScheduler();
+const startServer = async () => {
+  await connectDB();
+  // Start background jobs after DB is ready
+  startScheduler();
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`);
+  const PORT = process.env.PORT || 5000;
+  server.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`);
+  });
+};
+
+startServer().catch((err) => {
+  logger.error("Failed to start server:", err);
+  process.exit(1);
 });

@@ -1,13 +1,51 @@
 import { useEffect } from "react";
 
-/* ── Brand primary colour palette (matches --cc-color-brand = #004F9F) ── */
-const BRAND       = "rgba(0,79,159,0.85)";   // particle core
-const BRAND_GLOW  = "rgba(0,79,159,0.38)";   // inner glow
-const BRAND_FADE  = "rgba(0,79,159,0)";       // outer glow edge
-const BRAND_LINK  = "rgba(0,188,235,";        // connection lines (accent)
+const COLOR_FALLBACKS = {
+  brand: "#004F9F",
+  accent: "#06B6D4",
+};
+
+const readCssVar = (name, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+};
+
+const parseColor = (value) => {
+  const raw = value.trim();
+  if (raw.startsWith("#")) {
+    const hex = raw.slice(1);
+    const normalized = hex.length === 3
+      ? hex.split("").map((c) => c + c).join("")
+      : hex.padEnd(6, "0");
+    const int = parseInt(normalized, 16);
+    return {
+      r: (int >> 16) & 255,
+      g: (int >> 8) & 255,
+      b: int & 255,
+    };
+  }
+
+  const match = raw.match(/rgba?\(([^)]+)\)/i);
+  if (match) {
+    const [r, g, b] = match[1].split(",").map((part) => parseFloat(part.trim()));
+    return { r: r ?? 0, g: g ?? 0, b: b ?? 0 };
+  }
+
+  return { r: 0, g: 0, b: 0 };
+};
+
+const toRgba = (rgb, alpha) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
 
 export default function useParticleCanvas(canvasRef) {
   useEffect(() => {
+    const brandRgb  = parseColor(readCssVar("--cc-color-brand", COLOR_FALLBACKS.brand));
+    const accentRgb = parseColor(readCssVar("--cc-color-accent", COLOR_FALLBACKS.accent));
+    const BRAND      = toRgba(brandRgb, 0.85);
+    const BRAND_GLOW = toRgba(brandRgb, 0.38);
+    const BRAND_FADE = toRgba(brandRgb, 0);
+    const BRAND_LINK = `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b},`;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -92,7 +130,7 @@ export default function useParticleCanvas(canvasRef) {
         /* Solid particle core */
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, pulse, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,79,159,0.88)";
+        ctx.fillStyle = toRgba(brandRgb, 0.88);
         ctx.fill();
 
         /* Connection lines — accent (sky-surge) tint */

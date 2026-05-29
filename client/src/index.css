@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./design/globals/reset.css";
 @import "./design/globals/base.css";
+@import "./styles/tokens.css";
 @import "./design/globals/typography.css";
 @import "./design/globals/layout.css";
 @import "./design/globals/accessibility.css";

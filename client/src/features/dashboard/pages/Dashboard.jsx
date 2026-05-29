@@ -63,7 +63,7 @@ function DashboardPageHeader({ name, onCreateEvent, onBrowseClubs, onOpenChats }
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="text-display-lg font-heading text-cc leading-tight animate-text-reveal" style={{ animationDelay: "60ms" }}>
             {getGreeting()},{" "}
-            <span style={{ background: 'linear-gradient(120deg, #004F9F, #00BCEB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <span className="cc-text-gradient">
               {firstName || "there"}
             </span>
           </h1>
