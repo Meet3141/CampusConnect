@@ -21,7 +21,6 @@ import Textarea from "../../../components/forms/Textarea";
 import Select from "../../../components/forms/Select";
 import Checkbox from "../../../components/forms/Checkbox";
 import Switch from "../../../components/forms/Switch";
-import Button from "../../../components/ui/Button";
 import Alert from "../../../components/feedback/Alert";
 
 // Helper: format duration in ms to human readable string
@@ -88,7 +87,7 @@ export default function CreateEvent() {
       }
     };
     if (user) fetchClubs();
-  }, [user]);
+  }, [user, isAdminRole, preClubId, toast]);
 
   const set = (key, value) => {
     setForm((p) => ({ ...p, [key]: value }));
@@ -154,99 +153,156 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="text-cc">
-      <div className="max-w-xl mx-auto px-5 py-8">
-        <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-cc-muted hover:text-cc text-sm mb-8 transition-colors">
-          <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span> Back
+    <div className="relative text-white">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-violet-700/6 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative max-w-xl mx-auto px-5 py-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="group flex items-center gap-2 text-body-sm text-muted hover:text-white mb-10 transition-colors"
+        >
+          <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
+          Back
         </button>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Create an{" "}
-            <span className="cc-text-gradient">Event</span>
+          <p className="text-label text-muted font-mono mb-2">Dashboard / Events / New</p>
+          <h1 className="text-display-lg">
+            Create an <span className="cc-text-gradient">Event</span>
           </h1>
-          <p className="text-cc-muted text-sm mt-2">Plan and schedule a new event for your club.</p>
+          <p className="text-body-sm text-muted mt-2">Plan and schedule a new event for your club.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Club selector */}
-          <Select label="Club" required error={errors.clubId} value={form.clubId} onChange={(e) => set("clubId", e.target.value)}>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Select
+            label="Club"
+            required
+            error={errors.clubId}
+            value={form.clubId}
+            onChange={(e) => set("clubId", e.target.value)}
+          >
             <option value="" className="bg-cc-surface">Select a club…</option>
-            {clubs.map((c) => <option key={c._id} value={c._id} className="bg-cc-surface">{c.name}</option>)}
+            {clubs.map((c) => (
+              <option key={c._id} value={c._id} className="bg-cc-surface">
+                {c.name}
+              </option>
+            ))}
           </Select>
 
-          {/* Title */}
           <Input
-            label="Event Title" required
+            label="Event Title"
+            required
             placeholder="e.g. Spring Hackathon 2026"
-            value={form.title} onChange={(e) => set("title", e.target.value)}
-            maxLength={200} error={errors.title}
+            value={form.title}
+            onChange={(e) => set("title", e.target.value)}
+            maxLength={200}
+            error={errors.title}
           />
 
-          {/* Category */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] uppercase tracking-widest text-cc-muted font-medium">
-              Category <span className="text-red-400">*</span>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-label text-muted">
+                Category <span className="text-red-400">*</span>
+              </label>
+            </div>
+            {errors.category && <p className="text-micro text-error mb-2">{errors.category}</p>}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {EVENT_CATEGORIES.map((cat) => {
                 const m = EVENT_CATEGORY_META[cat];
                 const sel = form.category === cat;
                 return (
-                  <button key={cat} type="button" onClick={() => set("category", cat)}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-cc-surface-weak border-cc-soft hover:border-cc-strong"
-                    }`}>
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg mb-2 bg-cc-surface">
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => set("category", cat)}
+                    className={`p-4 rounded-xl border text-left transition-all group ${
+                      sel
+                        ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
+                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15] hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-center w-9 h-9 rounded-xl mb-2 bg-cc-surface group-hover:scale-110 transition-transform">
                       {m.Icon && <m.Icon size={24} className="text-cc-muted" />}
                     </div>
-                    <div className="text-xs font-medium text-cc capitalize">{cat}</div>
+                    <div className="text-body-sm font-semibold text-white capitalize">{cat}</div>
+                    <div className="text-caption text-muted mt-0.5 leading-tight">{m.desc}</div>
                   </button>
                 );
               })}
             </div>
-            {errors.category && <p className="text-red-400 text-[11px]">⚠ {errors.category}</p>}
           </div>
 
-          {/* Date & Venue */}
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Date &amp; Time" required type="datetime-local"
-              value={form.date} onChange={(e) => set("date", e.target.value)} error={errors.date} />
-            <Input label="Venue" required
+            <Input
+              label="Date &amp; Time"
+              required
+              type="datetime-local"
+              value={form.date}
+              onChange={(e) => set("date", e.target.value)}
+              error={errors.date}
+            />
+            <Input
+              label="Venue"
+              required
               placeholder="e.g. Hall A, Block 3"
-              value={form.venue} onChange={(e) => set("venue", e.target.value)} error={errors.venue} />
+              value={form.venue}
+              onChange={(e) => set("venue", e.target.value)}
+              error={errors.venue}
+            />
           </div>
 
-          {/* End time + duration */}
           <div className="grid grid-cols-2 gap-3">
-            <Input label="End Date &amp; Time" type="datetime-local"
-              value={form.endDate} onChange={(e) => set("endDate", e.target.value)} error={errors.endDate} />
+            <Input
+              label="End Date &amp; Time"
+              type="datetime-local"
+              value={form.endDate}
+              onChange={(e) => set("endDate", e.target.value)}
+              error={errors.endDate}
+            />
             <div className="flex items-end pb-2">
               {form.date && form.endDate && new Date(form.endDate) > new Date(form.date) && (
-                <p className="text-sm text-cc-muted">Duration: {formatDuration(new Date(form.endDate) - new Date(form.date))}</p>
+                <p className="text-sm text-cc-muted">
+                  Duration: {formatDuration(new Date(form.endDate) - new Date(form.date))}
+                </p>
               )}
             </div>
           </div>
 
-          {/* Description */}
           <Textarea
-            label="Description" required rows={4} maxLength={2000}
+            label="Description"
+            required
+            rows={4}
+            maxLength={2000}
             placeholder="Describe the event…"
-            value={form.description} onChange={(e) => set("description", e.target.value)}
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
             error={errors.description}
           />
 
-          {/* Max Attendees + Image */}
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Max Attendees" hint="Optional" type="number" min={1}
-              placeholder="Unlimited" value={form.maxAttendees} onChange={(e) => set("maxAttendees", e.target.value)} />
-            <Input label="Image URL" hint="Optional" type="url"
-              placeholder="https://…" value={form.image} onChange={(e) => set("image", e.target.value)} />
+            <Input
+              label="Max Attendees"
+              hint="Optional"
+              type="number"
+              min={1}
+              placeholder="Unlimited"
+              value={form.maxAttendees}
+              onChange={(e) => set("maxAttendees", e.target.value)}
+            />
+            <Input
+              label="Image URL"
+              hint="Optional"
+              type="url"
+              placeholder="https://…"
+              value={form.image}
+              onChange={(e) => set("image", e.target.value)}
+            />
           </div>
 
-          {/* Volunteer Programme */}
-          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 space-y-4">
             <Switch
               label="Volunteer Opportunities"
               description="List this event on the Volunteer Hub so students can apply to help out."
@@ -254,41 +310,79 @@ export default function CreateEvent() {
               onChange={(v) => set("showOnVolunteerHub", v)}
             />
             {form.showOnVolunteerHub && (
-              <div className="space-y-4 pt-1 border-t border-cc-soft">
+              <div className="space-y-4 pt-1 border-t border-white/[0.07]">
                 <div className="grid grid-cols-2 gap-3">
-                  <Input label="Volunteer Limit" required type="number" min={1}
-                    placeholder="e.g. 10" value={form.volunteerLimit}
-                    onChange={(e) => set("volunteerLimit", e.target.value)} error={errors.volunteerLimit} />
+                  <Input
+                    label="Volunteer Limit"
+                    required
+                    type="number"
+                    min={1}
+                    placeholder="e.g. 10"
+                    value={form.volunteerLimit}
+                    onChange={(e) => set("volunteerLimit", e.target.value)}
+                    error={errors.volunteerLimit}
+                  />
                 </div>
-                <Input label="Preferred Skills" hint="comma-separated, optional"
+                <Input
+                  label="Preferred Skills"
+                  hint="comma-separated, optional"
                   placeholder="e.g. Photography, Stage Setup"
-                  value={form.volunteerSkillsNeeded} onChange={(e) => set("volunteerSkillsNeeded", e.target.value)} />
+                  value={form.volunteerSkillsNeeded}
+                  onChange={(e) => set("volunteerSkillsNeeded", e.target.value)}
+                />
               </div>
             )}
           </div>
 
-          {/* Attendance Policy */}
-          <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5 space-y-4">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 space-y-4">
             <div>
-              <p className="text-sm font-semibold text-cc">🎯 Attendance Policy</p>
-              <p className="text-[11px] text-cc-muted mt-0.5">Control warning and review behavior for this event.</p>
+              <p className="text-sm font-semibold text-white">Attendance Policy</p>
+              <p className="text-[11px] text-muted mt-0.5">Control warning and review behavior for this event.</p>
             </div>
-            <Checkbox label="Count Warnings" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} />
-            <Checkbox label="Allow Grace Review" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} />
-            <Checkbox label="Strict Attendance" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} />
+            <Checkbox
+              label="Count Warnings"
+              checked={form.countWarnings}
+              onChange={(e) => set("countWarnings", e.target.checked)}
+            />
+            <Checkbox
+              label="Allow Grace Review"
+              checked={form.allowGraceReview}
+              onChange={(e) => set("allowGraceReview", e.target.checked)}
+            />
+            <Checkbox
+              label="Strict Attendance"
+              checked={form.strictAttendance}
+              onChange={(e) => set("strictAttendance", e.target.checked)}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <Input label="No-show Threshold" hint="Misses before warning" type="number" min={1}
-                value={form.noShowThreshold} onChange={(e) => set("noShowThreshold", e.target.value)} />
-              <Input label="Warning Limit" hint="Warnings before block" type="number" min={1}
-                value={form.warningLimit} onChange={(e) => set("warningLimit", e.target.value)} />
+              <Input
+                label="No-show Threshold"
+                hint="Misses before warning"
+                type="number"
+                min={1}
+                value={form.noShowThreshold}
+                onChange={(e) => set("noShowThreshold", e.target.value)}
+              />
+              <Input
+                label="Warning Limit"
+                hint="Warnings before block"
+                type="number"
+                min={1}
+                value={form.warningLimit}
+                onChange={(e) => set("warningLimit", e.target.value)}
+              />
             </div>
           </div>
 
           {apiError && <Alert variant="error" title={apiError} />}
 
-          <Button type="submit" variant="primary" size="lg" loading={submitting} className="w-full">
-            Create Event 🚀
-          </Button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {submitting ? "Creating…" : "Create Event"}
+          </button>
         </form>
       </div>
     </div>
