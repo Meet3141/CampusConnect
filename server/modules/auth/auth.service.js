@@ -33,7 +33,7 @@ export const issueRefreshToken = async (userId) => {
 };
 
 export const register = async (body) => {
-  const { name, email, password } = body || {};
+  let { name, email, password } = body || {};
   if (!name || !email || !password) {
     const err = new Error("Name, email, and password are required"); err.statusCode = 400; throw err;
   }
@@ -41,6 +41,7 @@ export const register = async (body) => {
     const err = new Error("Password must be 8+ characters with uppercase, lowercase, and number");
     err.statusCode = 400; throw err;
   }
+  email = email.toLowerCase();
   const exists = await User.findOne({ email });
   if (exists) { const err = new Error("User already exists"); err.statusCode = 409; throw err; }
 
@@ -51,10 +52,11 @@ export const register = async (body) => {
 };
 
 export const login = async (body) => {
-  const { email, password } = body || {};
+  let { email, password } = body || {};
   if (!email || !password) {
     const err = new Error("Email and password are required"); err.statusCode = 400; throw err;
   }
+  email = email.toLowerCase();
   const user = await User.findOne({ email }).select("+password");
   if (!user || !(await user.comparePassword(password))) {
     const err = new Error("Invalid credentials"); err.statusCode = 401; throw err;
