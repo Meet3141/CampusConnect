@@ -25,6 +25,8 @@ import Switch from "../../../components/forms/Switch";
 import Button from "../../../components/ui/Button";
 import Alert from "../../../components/feedback/Alert";
 import Spinner from "../../../components/feedback/Spinner";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 
 /* Convert ISO date to datetime-local input format */
@@ -175,8 +177,8 @@ export default function EditEvent() {
     return (
       <div className="flex items-center justify-center px-4 py-20 text-center">
         <div>
-          <p className="text-red-400 mb-4">{fetchErr}</p>
-          <button onClick={() => navigate(-1)} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+          <p className="text-[var(--cc-color-danger)] mb-4">{fetchErr}</p>
+          <button onClick={() => navigate(-1)} className="px-5 py-2 btn-primary rounded-xl text-sm transition-colors">
             Go Back
           </button>
         </div>
@@ -189,10 +191,10 @@ export default function EditEvent() {
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
           <div className="text-5xl mb-5">🔒</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Restricted</h2>
-          <p className="text-slate-500 text-sm">Only the event creator, the club admin, or Org Admins can edit events.</p>
+          <h2 className="text-xl font-semibold text-[var(--cc-color-text-primary)] mb-2">Access Restricted</h2>
+          <p className="text-[var(--cc-color-text-muted)] text-sm">Only the event creator, the club admin, or Org Admins can edit events.</p>
           <button onClick={() => navigate(`/events/${id}`)}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            className="mt-6 px-5 py-2.5 btn-primary rounded-xl text-sm transition-colors">
             Back to Event
           </button>
         </div>
@@ -201,39 +203,24 @@ export default function EditEvent() {
   }
 
   return (
-    <div className="text-white">
-      {/* Header */}
-      <div className="relative overflow-hidden border-b border-white/6">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-32 right-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
-        </div>
-        <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-[11px] tracking-widest text-slate-600 uppercase font-mono mb-3">
-            Admin / Events / Edit
-          </p>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Edit{" "}
-                <span className="cc-text-gradient">
-                  Event
-                </span>
-              </h1>
-              <p className="text-slate-500 text-sm mt-1.5 truncate max-w-sm">
-                {event?.title}
-              </p>
-            </div>
-            <button onClick={() => navigate(`/events/${id}`)}
-              className="shrink-0 px-4 py-2 border border-white/8 hover:border-white/15 text-slate-400 hover:text-white rounded-xl text-sm transition-all">
-              ← Back to Event
-            </button>
-          </div>
-        </div>
+    <div className="w-full">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-32 right-0 w-80 h-80 bg-[var(--cc-color-brand)]/[0.06] rounded-full blur-3xl" />
       </div>
 
-      {/* Form */}
-      <div className="px-5 lg:px-6 py-6">
-        <form onSubmit={handleSubmit} className="max-w-xl space-y-5">
+      <PageHeader
+        breadcrumb="Admin / Events / Edit"
+        title={<>Edit <span className="cc-text-gradient">Event</span></>}
+        subtitle={event?.title}
+        actions={
+          <button onClick={() => navigate(`/events/${id}`)} className="px-4 py-2 text-sm font-medium rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface-hover text-cc transition-colors">
+            Back to Event
+          </button>
+        }
+      />
+
+      <PageContainer className="py-6 max-w-xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-5">
 
           {/* Title */}
           <Input
@@ -246,7 +233,7 @@ export default function EditEvent() {
           {/* Category */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] uppercase tracking-widest text-cc-muted font-medium">
-              Category <span className="text-red-400">*</span>
+              Category <span className="text-[var(--cc-color-danger)]">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {EVENT_CATEGORIES.map((cat) => {
@@ -255,7 +242,7 @@ export default function EditEvent() {
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-3 rounded-xl border text-left transition-all ${
-                      sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
+                      sel ? "bg-[var(--cc-color-brand)]/20 border-[var(--cc-color-brand)]/60 ring-1 ring-[var(--cc-color-brand)]/20"
                         : "bg-cc-surface-weak border-cc-soft hover:border-cc-strong"
                     }`}>
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg mb-2 bg-cc-surface">
@@ -266,7 +253,7 @@ export default function EditEvent() {
                 );
               })}
             </div>
-            {fieldErrors.category && <p className="text-red-400 text-[11px]">⚠ {fieldErrors.category}</p>}
+            {fieldErrors.category && <p className="text-[var(--cc-color-danger)] text-[11px]">⚠ {fieldErrors.category}</p>}
           </div>
 
           {/* Date & Venue */}
@@ -283,8 +270,8 @@ export default function EditEvent() {
               value={form.endDate} onChange={(e) => set("endDate", e.target.value)} error={fieldErrors.endDate} />
             <div className="flex items-end">
               {form.date && form.endDate && new Date(form.endDate) > new Date(form.date) && (
-                <div className="rounded-xl border border-white/7 bg-white/2 px-4 py-3 text-sm text-slate-300 w-full">
-                  Duration: <span className="text-white font-medium">{formatDuration(new Date(form.endDate) - new Date(form.date))}</span>
+                <div className="rounded-xl surface-primary px-4 py-3 text-sm text-[var(--cc-color-text-primary)] w-full">
+                  Duration: <span className="text-[var(--cc-color-text-primary)] font-medium">{formatDuration(new Date(form.endDate) - new Date(form.date))}</span>
                 </div>
               )}
             </div>
@@ -307,8 +294,8 @@ export default function EditEvent() {
           </div>
 
           {/* Volunteer Settings */}
-          <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
-            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">Volunteer Settings</p>
+          <div className="rounded-2xl surface-primary p-4 space-y-4">
+            <p className="text-[11px] uppercase tracking-widest text-[var(--cc-color-text-secondary)] font-semibold">Volunteer Settings</p>
             <Switch
               label="Show on Volunteer Hub"
               description="Allow users to apply as volunteers for this event"
@@ -327,8 +314,8 @@ export default function EditEvent() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-white/7 bg-white/2 p-4 space-y-4">
-            <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">Attendance Policy</p>
+          <div className="rounded-2xl surface-primary p-4 space-y-4">
+            <p className="text-[11px] uppercase tracking-widest text-[var(--cc-color-text-secondary)] font-semibold">Attendance Policy</p>
             <Checkbox label="Count Warnings" checked={form.countWarnings} onChange={(e) => set("countWarnings", e.target.checked)} />
             <Checkbox label="Allow Grace Review" checked={form.allowGraceReview} onChange={(e) => set("allowGraceReview", e.target.checked)} />
             <Checkbox label="Strict Attendance" checked={form.strictAttendance} onChange={(e) => set("strictAttendance", e.target.checked)} />
@@ -348,7 +335,7 @@ export default function EditEvent() {
             <Button type="submit" variant="primary" className="flex-1" loading={saving} disabled={saving || saved}>Save Changes</Button>
           </div>
         </form>
-      </div>
+      </PageContainer>
     </div>
   );
 }

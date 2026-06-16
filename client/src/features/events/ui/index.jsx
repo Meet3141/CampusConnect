@@ -14,8 +14,8 @@ export function StatusPill({ status }) {
 export function InfoRow({ label, value }) {
   return (
     <div className="flex justify-between items-baseline">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-white font-medium text-right max-w-[60%] truncate">{value}</dd>
+      <dt className="text-[var(--cc-color-text-muted)]">{label}</dt>
+      <dd className="text-[var(--cc-color-text-primary)] font-medium text-right max-w-[60%] truncate">{value}</dd>
     </div>
   );
 }
@@ -41,21 +41,21 @@ export function EventCard({ ev, onClick }) {
   return (
     <div
       onClick={() => onClick && onClick(ev)}
-      className={`group rounded-2xl border border-white/7 border-l-2 ${accent} bg-white/2 hover:bg-white/5 hover:border-white/14 p-5 cursor-pointer transition-all`}
+      className={`group rounded-2xl border border-[var(--cc-color-border)] border-l-2 ${accent} bg-[var(--cc-color-surface)] hover:bg-[var(--cc-color-surface-hover)] hover:border-[var(--cc-color-border-strong)] p-5 cursor-pointer transition-all`}
     >
       <div className="flex items-center justify-between mb-3 gap-2">
         <StatusPill status={ev.status} />
-        <span className="text-[10px] text-slate-600 truncate max-w-[40%]" title={ev._clubName}>
+        <span className="text-[10px] text-[var(--cc-color-text-secondary)] truncate max-w-[40%]" title={ev._clubName}>
           {ev._clubName}
         </span>
       </div>
 
-      <h3 className="font-semibold text-white text-sm group-hover:text-indigo-300 transition-colors line-clamp-2 mb-3">
+      <h3 className="font-semibold text-[var(--cc-color-text-primary)] text-sm group-hover:text-[var(--cc-color-brand)] transition-colors line-clamp-2 mb-3">
         {ev.title}
       </h3>
 
       <div className="space-y-1">
-        <p className="text-slate-500 text-[11px] flex items-center gap-1.5">
+        <p className="text-[var(--cc-color-text-muted)] text-[11px] flex items-center gap-1.5">
           <span>📅</span>
           <span>
             {ev.status === "completed" && isValidDate(endObj)
@@ -64,13 +64,13 @@ export function EventCard({ ev, onClick }) {
           </span>
         </p>
         {ev.venue && (
-          <p className="text-slate-500 text-[11px] flex items-center gap-1.5">
+          <p className="text-[var(--cc-color-text-muted)] text-[11px] flex items-center gap-1.5">
             <span>📍</span>
             <span className="truncate">{ev.venue}</span>
           </p>
         )}
         {ev.maxAttendees && (
-          <p className="text-slate-500 text-[11px] flex items-center gap-1.5">
+          <p className="text-[var(--cc-color-text-muted)] text-[11px] flex items-center gap-1.5">
             <span>👥</span>
             <span>{ev.attendees?.filter(a => a.status === "registered").length || 0} / {ev.maxAttendees} registered</span>
           </p>

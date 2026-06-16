@@ -1,7 +1,7 @@
 /**
  * Alert.jsx — Inline alert banner for form errors, success messages
  * Semantic Token Migration: Layer B — semantic tokens matching Badge pattern.
- * Replaces hardcoded bg-red-950/30 border-red-900/50 patterns (dark-only).
+ * Replaces hardcoded bg-[var(--cc-color-danger)]/10 border-[var(--cc-color-danger)]/50 patterns (dark-only).
  *
  * Usage:
  *   <Alert variant="error" title="Failed to create event" />

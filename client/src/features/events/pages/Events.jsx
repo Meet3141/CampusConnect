@@ -13,31 +13,25 @@ import EventCard from "../../../components/data-display/EventCard";
 import SearchBar from "../../../components/navigation/SearchBar";
 import Skeleton from "../../../components/feedback/Skeleton";
 import EmptyState from "../../../components/feedback/EmptyState";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 import { TrendingUp, Clock, Flame, LayoutGrid, CalendarClock, Radio, CheckCircle2 } from "lucide-react";
 
 const STATUSES = ["All", "upcoming", "ongoing", "completed"];
 
 const STATUS_LABEL = { All: "All Events", upcoming: "Upcoming", ongoing: "Ongoing", completed: "Past" };
-const STATUS_ICON  = { All: LayoutGrid, upcoming: CalendarClock, ongoing: Radio, completed: CheckCircle2 };
+const STATUS_ICON = { All: LayoutGrid, upcoming: CalendarClock, ongoing: Radio, completed: CheckCircle2 };
 
 const SORTS = [
-  { key: "soonest",   label: "Soonest",   Icon: Clock      },
-  { key: "popular",   label: "Popular",   Icon: TrendingUp },
-  { key: "ongoing",   label: "Live First",Icon: Flame      },
+  { key: "soonest", label: "Soonest", Icon: Clock },
+  { key: "ongoing", label: "Live First", Icon: Flame },
 ];
-
-function isTrending(ev) {
-  const reg = ev.attendees?.filter((a) => a.status === "registered").length || 0;
-  const cap = ev.maxAttendees || 0;
-  return cap > 0 && reg / cap >= 0.6;
-}
-
 export default function Events() {
   const navigate = useNavigate();
   const { myClubs, events, loading } = useMyClubEvents();
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-  const [sort,   setSort]   = useState("soonest");
+  const [sort, setSort] = useState("soonest");
 
   // Per-status counts for pill badges
   const countByStatus = useMemo(() => {
@@ -51,17 +45,12 @@ export default function Events() {
   const filtered = useMemo(() => {
     let list = events;
     if (filter !== "All") list = list.filter((e) => e.status === filter);
-    if (search.trim())    list = list.filter((e) => e.title.toLowerCase().includes(search.toLowerCase()));
+    if (search.trim()) list = list.filter((e) => e.title.toLowerCase().includes(search.toLowerCase()));
 
     // Sort
     if (sort === "soonest") {
       list = [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
-    } else if (sort === "popular") {
-      list = [...list].sort((a, b) => {
-        const ra = a.attendees?.filter((x) => x.status === "registered").length || 0;
-        const rb = b.attendees?.filter((x) => x.status === "registered").length || 0;
-        return rb - ra;
-      });
+
     } else if (sort === "ongoing") {
       list = [...list].sort((a, b) => {
         if (a.status === "ongoing" && b.status !== "ongoing") return -1;
@@ -71,10 +60,6 @@ export default function Events() {
     }
     return list;
   }, [events, filter, search, sort]);
-
-  // Mixed adaptive layout
-  const heroEvent  = filtered[0] || null;
-  const restEvents = filtered.slice(1);
 
   // Group rest events by club for section headers
   const clubNames = useMemo(() => {
@@ -97,27 +82,16 @@ export default function Events() {
   }
 
   return (
-    <div className="text-cc">
+    <div className="w-full">
       {/* ── Page header ── */}
-      <div className="relative overflow-hidden border-b border-cc-soft">
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute top-0 right-1/3 w-96 h-64 bg-accent-soft rounded-full blur-3xl opacity-40" />
-        </div>
-        <div className="relative px-5 lg:px-6 pt-5 pb-4">
-          <p className="text-label text-muted font-mono mb-2">Dashboard / Events</p>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-              <h1 className="text-display-lg cc-text-gradient">
-                Events
-              </h1>
-              <p className="text-body-sm text-secondary mt-1">
-                {loading ? "…" : `${events.length} event${events.length !== 1 ? "s" : ""} from your ${myClubs.length} club${myClubs.length !== 1 ? "s" : ""}`}
-              </p>
-            </div>
-          </div>
-
-          {/* ── Search + status pills ── */}
-          <div className="mt-4 space-y-3">
+      <PageHeader
+        breadcrumb="Dashboard / Events"
+        title="Events"
+        subtitle={loading ? "…" : `${events.length} event${events.length !== 1 ? "s" : ""} from your ${myClubs.length} club${myClubs.length !== 1 ? "s" : ""}`}
+        decorative
+        glowColor="sky"
+        filterRow={
+          <div className="flex flex-col gap-5 mt-4">
             <SearchBar value={search} onChange={setSearch} placeholder="Search events…" shortcutHint />
 
             {/* Status pills with count badges */}
@@ -129,24 +103,22 @@ export default function Events() {
                   <button
                     key={s}
                     onClick={() => setFilter(s)}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-semibold border transition-all duration-200 ${
-                      isActive
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-semibold border transition-all duration-200 ${isActive
                         ? "border-transparent scale-105"
                         : "bg-cc-surface-weak text-muted border-cc-soft hover:border-cc-strong hover:text-cc hover:scale-105"
-                    }`}
+                      }`}
                     style={isActive ? {
                       backgroundColor: 'var(--cc-color-brand)',
                       color: '#fff',
                       borderColor: 'var(--cc-color-brand)',
-                      boxShadow: '0 2px 8px rgba(0,79,159,0.20)',
+                      boxShadow: '0 2px 8px rgba(0, 79, 159, 0.2)',
                     } : undefined}
                   >
                     {(() => { const Icon = STATUS_ICON[s]; return Icon ? <Icon size={12} className="shrink-0" /> : null; })()}
                     {STATUS_LABEL[s]}
                     {count > 0 && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                        isActive ? "bg-white/20" : "bg-cc-surface-hover"
-                      }`}>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-cc-surface-hover"
+                        }`}>
                         {count}
                       </span>
                     )}
@@ -162,11 +134,10 @@ export default function Events() {
                 <button
                   key={key}
                   onClick={() => setSort(key)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all duration-150 ${
-                    sort === key
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all duration-150 ${sort === key
                       ? "border-cc-strong"
                       : "bg-transparent text-muted border-transparent hover:border-cc-soft hover:text-cc"
-                  }`}
+                    }`}
                   style={sort === key ? {
                     backgroundColor: 'var(--cc-color-primary-soft)',
                     color: 'var(--cc-color-brand)',
@@ -178,11 +149,11 @@ export default function Events() {
               ))}
             </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* ── Content ── */}
-      <div className="px-5 lg:px-6 py-6">
+      <PageContainer className="py-6">
         {loading ? (
           <div className="space-y-6">
             <Skeleton.Card className="h-48" />
@@ -199,61 +170,19 @@ export default function Events() {
           />
         ) : (
           <div className="space-y-6">
-            {/* Hero event */}
-            {heroEvent && (
-              <div>
-                <p className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-3 flex items-center gap-2">
-                  <span className="cc-live-dot cc-live-dot--amber" style={{ width: 6, height: 6 }} />
-                  {filter === "ongoing" ? "Happening now" : filter === "upcoming" ? "Coming up" : "Featured event"}
-                  {isTrending(heroEvent) && <span className="ml-1" style={{ color: 'var(--cc-color-warning)' }}>🔥 Trending</span>}
-                </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((ev, i) => (
                 <EventCard
-                  event={heroEvent}
-                  variant="hero"
-                  index={0}
-                  onClick={() => navigate(`/events/${heroEvent._id}`)}
+                  key={ev._id}
+                  event={ev}
+                  index={i}
+                  onClick={() => navigate(`/events/${ev._id}`)}
                 />
-              </div>
-            )}
-
-            {/* Rest — compact grid with trending badges */}
-            {restEvents.length > 0 && (
-              <div>
-                {heroEvent && (
-                  <p className="text-[11px] uppercase tracking-widest text-cc-muted font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-4 h-px bg-cc-border-soft" />
-                    More events ({restEvents.length})
-                    <span className="flex-1 h-px bg-cc-border-soft" />
-                  </p>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {restEvents.map((ev, i) => (
-                    <div key={ev._id} className="relative">
-                      {isTrending(ev) && (
-                        <span
-                          className="absolute -top-1.5 -right-1.5 z-10 flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full border"
-                          style={{
-                            color: 'var(--cc-color-warning)',
-                            backgroundColor: 'var(--cc-color-surface)',
-                            borderColor: 'var(--cc-color-border-subtle)',
-                          }}
-                        >
-                          🔥 Trending
-                        </span>
-                      )}
-                      <EventCard
-                        event={ev}
-                        index={i + 1}
-                        onClick={() => navigate(`/events/${ev._id}`)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

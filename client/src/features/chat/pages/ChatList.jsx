@@ -12,6 +12,8 @@
 import { useNavigate } from "react-router-dom";
 import { useChatList } from "../hooks";
 import Button from "../../../components/ui/Button";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 import { MessageCircle, Search, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -21,10 +23,10 @@ function formatRelative(date) {
   const m = Math.floor(diff / 60000);
   const h = Math.floor(m / 60);
   const d = Math.floor(h / 24);
-  if (m < 1)  return "now";
+  if (m < 1) return "now";
   if (m < 60) return `${m}m`;
   if (h < 24) return `${h}h`;
-  if (d < 7)  return `${d}d`;
+  if (d < 7) return `${d}d`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
@@ -55,49 +57,43 @@ export default function ChatList() {
     : chats;
 
   const activeChats = filtered.filter((c) => !!c.lastMessage);
-  const quietChats  = filtered.filter((c) => !c.lastMessage);
+  const quietChats = filtered.filter((c) => !c.lastMessage);
 
   return (
-    <div className="text-cc">
+    <div className="w-full">
       {/* ── Header ── */}
-      <div className="relative overflow-hidden border-b border-cc-soft">
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-32 left-1/3 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
-        </div>
-        <div className="relative px-5 lg:px-6 pt-5 pb-4">
-          <p className="text-label text-muted font-mono mb-2">Dashboard / Chats</p>
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h1 className="text-display-lg font-heading">
-                <span className="cc-text-gradient">Chats</span>
-              </h1>
-              <p className="text-caption text-muted mt-1">
-                {loading ? "…" : `${chats.length} conversation${chats.length !== 1 ? "s" : ""}`}
-                {activeChats.length > 0 && !loading && (
-                  <span className="ml-1.5 inline-flex items-center gap-1 text-indigo-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                    {activeChats.length} with messages
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Search */}
+      <PageHeader
+        breadcrumb="Dashboard / Chats"
+        title="Chats"
+        titleAccent="Chats"
+        subtitle={
+          <>
+            {loading ? "…" : `${chats.length} conversation${chats.length !== 1 ? "s" : ""}`}
+            {activeChats.length > 0 && !loading && (
+              <span className="ml-1.5 inline-flex items-center gap-1 text-[var(--cc-color-brand)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--cc-color-brand)] animate-pulse" />
+                {activeChats.length} with messages
+              </span>
+            )}
+          </>
+        }
+        decorative
+        glowColor="indigo"
+        filterRow={
           <div className="mt-4 relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search conversations…"
-              className="w-full pl-9 pr-4 py-2.5 bg-cc-surface-weak border border-cc-soft rounded-xl text-[13px] text-cc placeholder-muted focus:outline-none focus:border-indigo-500/60 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-cc-surface-weak border border-cc-soft rounded-xl text-[13px] text-cc placeholder-muted focus:outline-none focus:border-[var(--cc-color-brand)]/60 transition-all"
             />
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* ── Content ── */}
-      <div className="px-5 lg:px-6 py-5">
+      <PageContainer className="py-5">
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -120,7 +116,7 @@ export default function ChatList() {
             {activeChats.length > 0 && (
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted font-semibold mb-2 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--cc-color-brand)] animate-pulse" />
                   Active ({activeChats.length})
                 </p>
                 <div className="space-y-1">
@@ -146,7 +142,7 @@ export default function ChatList() {
             )}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }
@@ -154,9 +150,9 @@ export default function ChatList() {
 function ChatRow({ chat, onClick }) {
   const timeLabel = chat.lastMessageTime ? formatRelative(new Date(chat.lastMessageTime)) : "";
   const hasUnread = !!chat.lastMessage;
-  const typeCls   = chat.type === "club"
-    ? "bg-indigo-950 text-indigo-300 border-indigo-800"
-    : "bg-emerald-950 text-emerald-300 border-emerald-800";
+  const typeCls = chat.type === "club"
+    ? "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]"
+    : "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]";
 
   return (
     <button
@@ -165,18 +161,18 @@ function ChatRow({ chat, onClick }) {
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${getAvatarGrad(chat.name)} flex items-center justify-center text-[12px] font-bold text-white ring-1 ring-white/10 group-hover:ring-indigo-500/30 transition-all duration-200`}>
+        <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${getAvatarGrad(chat.name)} flex items-center justify-center text-[12px] font-bold text-white ring-1 ring-white/10 group-hover:ring-[var(--cc-color-brand)]/30 transition-all duration-200`}>
           {getInitials(chat.name)}
         </div>
         {hasUnread && (
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-cc-bg" />
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[var(--cc-color-brand)] border-2 border-cc-bg" />
         )}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <p className="text-[13px] font-semibold text-cc group-hover:text-indigo-400 transition-colors truncate">
+          <p className="text-[13px] font-semibold text-cc group-hover:text-[var(--cc-color-brand)] transition-colors truncate">
             {chat.name}
           </p>
           {chat.type && (

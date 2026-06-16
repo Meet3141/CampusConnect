@@ -30,16 +30,16 @@
 /* ── Scrollbar — themed via CSS variable so light/dark work ── */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--cc-scrollbar-thumb, rgba(255,255,255,0.12)) transparent;
+  scrollbar-color: var(--cc-scrollbar-thumb, var(--cc-legacy-rgba-255-255-255-012)) transparent;
 }
 .scrollbar-thin::-webkit-scrollbar        { width: 4px; height: 4px; }
 .scrollbar-thin::-webkit-scrollbar-track  { background: transparent; }
 .scrollbar-thin::-webkit-scrollbar-thumb  {
-  background: var(--cc-scrollbar-thumb, rgba(255,255,255,0.12));
+  background: var(--cc-scrollbar-thumb, var(--cc-legacy-rgba-255-255-255-012));
   border-radius: 99px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: var(--cc-scrollbar-thumb-hover, rgba(255,255,255,0.22));
+  background: var(--cc-scrollbar-thumb-hover, var(--cc-legacy-rgba-255-255-255-022));
 }
 .scrollbar-none                              { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar          { display: none; }
@@ -138,6 +138,170 @@
 .placeholder-cc-muted:-ms-input-placeholder      { color: var(--cc-muted) !important; }
 .placeholder-cc-muted::placeholder               { color: var(--cc-muted) !important; }
 
+/* Legacy-equivalent semantic bridges for frozen dark UI patterns */
+.cc-input-field {
+  width: 100%;
+  background-color: var(--cc-legacy-white-04);
+  border: 1px solid var(--cc-legacy-white-08);
+  border-radius: var(--cc-radius-xl);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--cc-color-on-brand);
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.cc-input-field::placeholder {
+  color: var(--cc-legacy-slate-600);
+  opacity: 1;
+}
+.cc-input-field:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: var(--cc-legacy-indigo-500-60);
+  background-color: var(--cc-legacy-white-06);
+}
+.cc-input-field--error { border-color: var(--cc-legacy-red-800); }
+.cc-input-field--error:focus { border-color: var(--cc-legacy-red-600); }
+
+.cc-status-upcoming {
+  background-color: var(--cc-legacy-indigo-950);
+  color: var(--cc-legacy-indigo-300);
+  border-color: var(--cc-legacy-indigo-800);
+}
+.cc-status-ongoing {
+  background-color: var(--cc-legacy-emerald-950);
+  color: var(--cc-legacy-emerald-300);
+  border-color: var(--cc-legacy-emerald-800);
+}
+.cc-status-completed {
+  background-color: var(--cc-legacy-slate-800);
+  color: var(--cc-legacy-slate-400);
+  border-color: var(--cc-legacy-slate-700);
+}
+.cc-status-cancelled {
+  background-color: var(--cc-legacy-red-950);
+  color: var(--cc-legacy-red-400);
+  border-color: var(--cc-legacy-red-900);
+}
+
+.cc-club-gradient-technical,
+.cc-club-gradient-arts {
+  --tw-gradient-from: var(--cc-legacy-cyan-600-20) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-blue-600-20) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.cc-club-gradient-cultural {
+  --tw-gradient-from: var(--cc-legacy-blue-600-20) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-cyan-600-20) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.cc-club-gradient-sports {
+  --tw-gradient-from: var(--cc-legacy-emerald-600-20) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-green-600-20) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.cc-club-gradient-academic {
+  --tw-gradient-from: var(--cc-legacy-amber-600-20) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-orange-600-20) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.cc-club-gradient-other {
+  --tw-gradient-from: var(--cc-legacy-slate-600-20) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-slate-700-20) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.cc-club-hero-technical,
+.cc-club-hero-arts {
+  --tw-gradient-from: var(--cc-legacy-cyan-900-50) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-cyan-900-0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--cc-legacy-blue-900-30) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+.cc-club-hero-cultural {
+  --tw-gradient-from: var(--cc-legacy-blue-900-50) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-blue-900-0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--cc-legacy-cyan-900-30) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+.cc-club-hero-sports {
+  --tw-gradient-from: var(--cc-legacy-emerald-900-50) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-emerald-900-0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--cc-legacy-green-900-30) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+.cc-club-hero-academic {
+  --tw-gradient-from: var(--cc-legacy-amber-900-50) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-amber-900-0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--cc-legacy-orange-900-30) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+.cc-club-hero-other {
+  --tw-gradient-from: var(--cc-legacy-slate-800-50) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--cc-legacy-slate-800-0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--cc-legacy-slate-900-30) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+
+.cc-club-badge-technical,
+.cc-club-badge-arts {
+  background-color: var(--cc-legacy-cyan-950);
+  color: var(--cc-legacy-cyan-300);
+  border-color: var(--cc-legacy-cyan-800-60);
+}
+.cc-club-badge-cultural {
+  background-color: var(--cc-legacy-blue-950);
+  color: var(--cc-legacy-blue-300);
+  border-color: var(--cc-legacy-blue-800-60);
+}
+.cc-club-badge-sports {
+  background-color: var(--cc-legacy-emerald-950);
+  color: var(--cc-legacy-emerald-300);
+  border-color: var(--cc-legacy-emerald-800-60);
+}
+.cc-club-badge-academic {
+  background-color: var(--cc-legacy-amber-950);
+  color: var(--cc-legacy-amber-300);
+  border-color: var(--cc-legacy-amber-800-60);
+}
+.cc-club-badge-other {
+  background-color: var(--cc-legacy-slate-800);
+  color: var(--cc-legacy-slate-300);
+  border-color: var(--cc-legacy-slate-700-60);
+}
+
+.cc-club-accent-technical,
+.cc-club-accent-arts { color: var(--cc-legacy-cyan-400); }
+.cc-club-accent-cultural { color: var(--cc-legacy-blue-400); }
+.cc-club-accent-sports { color: var(--cc-legacy-emerald-400); }
+.cc-club-accent-academic { color: var(--cc-legacy-amber-400); }
+.cc-club-accent-other { color: var(--cc-legacy-slate-400); }
+
+.cc-club-ring-technical,
+.cc-club-ring-arts { --tw-ring-color: var(--cc-legacy-cyan-500-20); }
+.cc-club-ring-cultural { --tw-ring-color: var(--cc-legacy-blue-500-20); }
+.cc-club-ring-sports { --tw-ring-color: var(--cc-legacy-emerald-500-20); }
+.cc-club-ring-academic { --tw-ring-color: var(--cc-legacy-amber-500-20); }
+.cc-club-ring-other { --tw-ring-color: var(--cc-legacy-slate-500-20); }
+
+.cc-club-tab-technical,
+.cc-club-tab-arts {
+  border-color: var(--cc-legacy-cyan-500);
+  color: var(--cc-legacy-cyan-400);
+}
+.cc-club-tab-cultural {
+  border-color: var(--cc-legacy-blue-500);
+  color: var(--cc-legacy-blue-400);
+}
+.cc-club-tab-sports {
+  border-color: var(--cc-legacy-emerald-500);
+  color: var(--cc-legacy-emerald-400);
+}
+.cc-club-tab-academic {
+  border-color: var(--cc-legacy-amber-500);
+  color: var(--cc-legacy-amber-400);
+}
+.cc-club-tab-other {
+  border-color: var(--cc-legacy-slate-400);
+  color: var(--cc-legacy-slate-300);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    LAYER 6 — Light-theme semantic safety net overrides
    Scoped to [data-theme="light"] so dark mode is NEVER affected.
@@ -145,22 +309,22 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Primary brand blue — replace indigo Tailwind with brand token ── */
-[data-theme="light"] .bg-indigo-600          { background-color: var(--cc-color-brand)       !important; }
-[data-theme="light"] .hover\:bg-indigo-500:hover { background-color: var(--cc-color-brand-hover) !important; }
+[data-theme="light"] .bg-legacy-indigo-600          { background-color: var(--cc-color-brand)       !important; }
+[data-theme="light"] .hover\:bg-legacy-indigo-500:hover { background-color: var(--cc-color-brand-hover) !important; }
 [data-theme="light"] .active\:bg-indigo-700:active { background-color: var(--cc-color-brand)  !important; }
-[data-theme="light"] .text-indigo-400         { color: var(--cc-color-brand)                  !important; }
-[data-theme="light"] .border-indigo-500\/40   { border-color: var(--cc-color-primary-border)  !important; }
+[data-theme="light"] .text-legacy-indigo-400         { color: var(--cc-color-brand)                  !important; }
+[data-theme="light"] .border-legacy-indigo-500\/40   { border-color: var(--cc-color-primary-border)  !important; }
 
 /* ── Dark opacity surfaces → semantic tokens ── */
 [data-theme="light"] .bg-cc-surface-weak      { background-color: var(--cc-color-surface-grouped, var(--cc-color-surface-secondary)) !important; }
 [data-theme="light"] .bg-cc-surface           { background-color: var(--cc-color-surface)            !important; }
 
 /* ── Raw white opacities (dark-only patterns) ── */
-[data-theme="light"] [class*="bg-white\/"]    { background-color: var(--cc-color-surface)            !important; }
-[data-theme="light"] [class*="border-white\/"]{ border-color:     var(--cc-color-border-subtle)      !important; }
+[data-theme="light"] [class*="bg-legacy-white\/"]    { background-color: var(--cc-color-surface)            !important; }
+[data-theme="light"] [class*="border-legacy-white\/"]{ border-color:     var(--cc-color-border-subtle)      !important; }
 
-/* ── text-white inside cards → primary text ── */
-[data-theme="light"] .text-white              { color: var(--cc-color-text-primary)                  !important; }
+/* ── text-legacy-on inside cards → primary text ── */
+[data-theme="light"] .text-legacy-on              { color: var(--cc-color-text-primary)                  !important; }
 
 /* ── Dark opaque surfaces ── */
 [data-theme="light"] [class*="bg-slate-9"]    { background-color: var(--cc-color-surface)            !important; }
@@ -175,33 +339,33 @@
 [data-theme="light"] .text-muted              { color: var(--cc-color-text-muted)                    !important; }
 
 /* ── Dark text children inside white-opacity cards ── */
-[data-theme="light"] [class*="bg-white\/"] h1,
-[data-theme="light"] [class*="bg-white\/"] h2,
-[data-theme="light"] [class*="bg-white\/"] h3,
-[data-theme="light"] [class*="bg-white\/"] h4,
-[data-theme="light"] [class*="bg-white\/"] p,
-[data-theme="light"] [class*="bg-white\/"] li,
-[data-theme="light"] [class*="bg-white\/"] label,
-[data-theme="light"] [class*="bg-white\/"] small { color: var(--cc-color-text-primary) !important; }
+[data-theme="light"] [class*="bg-legacy-white\/"] h1,
+[data-theme="light"] [class*="bg-legacy-white\/"] h2,
+[data-theme="light"] [class*="bg-legacy-white\/"] h3,
+[data-theme="light"] [class*="bg-legacy-white\/"] h4,
+[data-theme="light"] [class*="bg-legacy-white\/"] p,
+[data-theme="light"] [class*="bg-legacy-white\/"] li,
+[data-theme="light"] [class*="bg-legacy-white\/"] label,
+[data-theme="light"] [class*="bg-legacy-white\/"] small { color: var(--cc-color-text-primary) !important; }
 
 /* ── Danger/success tinted surfaces → semantic feedback tokens ── */
-[data-theme="light"] .bg-red-950\/20    { background-color: rgba(255, 77, 109, 0.08)  !important; }
-[data-theme="light"] .bg-red-950\/50    { background-color: rgba(255, 77, 109, 0.16)  !important; }
-[data-theme="light"] .text-red-400      { color: var(--cc-color-error)                !important; }
-[data-theme="light"] .border-red-900\/30{ border-color: rgba(255, 77, 109, 0.20)      !important; }
+[data-theme="light"] .bg-legacy-red-950\/20    { background-color: var(--cc-legacy-rgba-255-77-109-008)  !important; }
+[data-theme="light"] .bg-legacy-red-950\/50    { background-color: var(--cc-legacy-rgba-255-77-109-016)  !important; }
+[data-theme="light"] .text-legacy-red-400      { color: var(--cc-color-error)                !important; }
+[data-theme="light"] .border-legacy-red-900\/30{ border-color: var(--cc-legacy-rgba-255-77-109-020)      !important; }
 
-[data-theme="light"] .bg-emerald-950\/30  { background-color: rgba(0, 194, 122, 0.08)  !important; }
-[data-theme="light"] .bg-emerald-950\/60  { background-color: rgba(0, 194, 122, 0.16)  !important; }
-[data-theme="light"] .text-emerald-400    { color: var(--cc-color-success)              !important; }
-[data-theme="light"] .border-emerald-900\/30{ border-color: rgba(0, 194, 122, 0.20)    !important; }
+[data-theme="light"] .bg-legacy-emerald-950\/30  { background-color: var(--cc-legacy-rgba-0-194-122-008)  !important; }
+[data-theme="light"] .bg-legacy-emerald-950\/60  { background-color: var(--cc-legacy-rgba-0-194-122-016)  !important; }
+[data-theme="light"] .text-legacy-emerald-400    { color: var(--cc-color-success)              !important; }
+[data-theme="light"] .border-legacy-emerald-900\/30{ border-color: var(--cc-legacy-rgba-0-194-122-020)    !important; }
 
 /* ── Focus rings → brand focus token ── */
-[data-theme="light"] .focus-visible\:ring-indigo-500\/40:focus-visible {
+[data-theme="light"] .focus-visible\:ring-legacy-indigo-500\/40:focus-visible {
   --tw-ring-color: var(--cc-color-border-focus) !important;
 }
 
 /* ── Hover states on interactive elements ── */
-[data-theme="light"] [class*="bg-white\/"]:hover { background-color: var(--cc-color-surface-hover) !important; }
+[data-theme="light"] [class*="bg-legacy-white\/"]:hover { background-color: var(--cc-color-surface-hover) !important; }
 
 /* ── Input selects that still use dark surface ── */
 [data-theme="light"] select.bg-cc-surface-weak,
@@ -218,7 +382,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Avatar & initials dark containers ── */
-[data-theme="light"] .bg-indigo-950               { background-color: var(--cc-color-primary-soft)   !important; }
+[data-theme="light"] .bg-legacy-indigo-950               { background-color: var(--cc-color-primary-soft)   !important; }
 [data-theme="light"] [class*="text-indigo-3"]      { color:            var(--cc-color-brand)           !important; }
 [data-theme="light"] [class*="ring-indigo-5"]      { --tw-ring-color:  var(--cc-color-primary-border)  !important; }
 [data-theme="light"] [class*="ring-indigo-4"]      { --tw-ring-color:  var(--cc-color-primary-border)  !important; }
@@ -226,15 +390,15 @@
 /* ── Category/section tinted card backgrounds ── */
 [data-theme="light"] [class*="bg-indigo-9"]        { background-color: var(--cc-color-primary-soft)   !important; }
 [data-theme="light"] [class*="bg-sky-9"]           { background-color: var(--cc-color-accent-soft)    !important; }
-[data-theme="light"] [class*="bg-violet-9"]        { background-color: rgba(139, 92, 246, 0.06)       !important; }
-[data-theme="light"] [class*="bg-purple-9"]        { background-color: rgba(139, 92, 246, 0.06)       !important; }
-[data-theme="light"] [class*="bg-emerald-9"]       { background-color: rgba(0, 194, 122, 0.06)        !important; }
-[data-theme="light"] [class*="bg-amber-9"]         { background-color: rgba(255, 176, 32, 0.08)       !important; }
-[data-theme="light"] [class*="bg-orange-9"]        { background-color: rgba(255, 139, 0, 0.07)        !important; }
+[data-theme="light"] [class*="bg-violet-9"]        { background-color: var(--cc-legacy-rgba-139-92-246-006)       !important; }
+[data-theme="light"] [class*="bg-purple-9"]        { background-color: var(--cc-legacy-rgba-139-92-246-006)       !important; }
+[data-theme="light"] [class*="bg-emerald-9"]       { background-color: var(--cc-legacy-rgba-0-194-122-006)        !important; }
+[data-theme="light"] [class*="bg-amber-9"]         { background-color: var(--cc-legacy-rgba-255-176-32-008)       !important; }
+[data-theme="light"] [class*="bg-orange-9"]        { background-color: var(--cc-legacy-rgba-255-139-0-007)        !important; }
 
 /* ── Notification & status badges ── */
-[data-theme="light"] .bg-amber-500                 { background-color: #FFB020                        !important; }
-[data-theme="light"] .bg-amber-400                 { background-color: #FFB020                        !important; }
+[data-theme="light"] .bg-legacy-amber-500                 { background-color: var(--cc-legacy-hex-ffb020)                        !important; }
+[data-theme="light"] .bg-legacy-amber-400                 { background-color: var(--cc-legacy-hex-ffb020)                        !important; }
 
 /* ── Interactive nav/list hover states ── */
 [data-theme="light"] .bg-cc-surface-hover          { background-color: var(--cc-color-surface-hover)  !important; }
@@ -242,17 +406,17 @@
 /* ── Dark text that becomes invisible/low-contrast on light backgrounds ── */
 [data-theme="light"] [class*="text-indigo-4"]      { color: var(--cc-color-brand)                     !important; }
 [data-theme="light"] [class*="text-sky-4"]         { color: var(--cc-color-accent)                    !important; }
-[data-theme="light"] [class*="text-violet-4"]      { color: rgba(139, 92, 246, 0.90)                  !important; }
+[data-theme="light"] [class*="text-violet-4"]      { color: var(--cc-legacy-rgba-139-92-246-090)                  !important; }
 [data-theme="light"] [class*="text-emerald-5"]     { color: var(--cc-color-success)                   !important; }
 [data-theme="light"] [class*="text-amber-5"]       { color: var(--cc-color-warning)                   !important; }
 
 /* ── Saturated brand bg opacities that look garish on light ── */
-[data-theme="light"] [class*="bg-violet-6\\/"]     { background-color: rgba(139, 92, 246, 0.08)       !important; }
+[data-theme="light"] [class*="bg-violet-6\\/"]     { background-color: var(--cc-legacy-rgba-139-92-246-008)       !important; }
 
 /* ── Border overrides for dark-pattern ring colors ── */
 [data-theme="light"] [class*="border-indigo-5"]    { border-color: var(--cc-color-primary-border)     !important; }
 [data-theme="light"] [class*="border-sky-5"]       { border-color: var(--cc-color-accent-border)      !important; }
-[data-theme="light"] [class*="border-violet-5"]    { border-color: rgba(139, 92, 246, 0.20)           !important; }
+[data-theme="light"] [class*="border-violet-5"]    { border-color: var(--cc-legacy-rgba-139-92-246-020)           !important; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    VISUAL HIERARCHY ENHANCEMENT SYSTEM
@@ -488,7 +652,7 @@
 }
 
 [data-theme="light"] .cc-card-hover:hover {
-  box-shadow: 0 2px 8px rgba(0, 40, 80, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px var(--cc-legacy-rgba-0-40-80-008), 0 1px 3px var(--cc-legacy-rgba-0-0-0-004);
 }
 
 [data-theme="light"] .cc-active-dot {

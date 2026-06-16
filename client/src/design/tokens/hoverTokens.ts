@@ -214,10 +214,10 @@ export const INPUT_HOVER = {
  * GPU-friendly elevation through box-shadow only (no height change)
  */
 export const SHADOW_ELEVATION = {
-  "elevation-subtle": "0 2px 8px rgba(0, 79, 159, 0.08)",
-  "elevation-soft": "0 4px 16px rgba(0, 79, 159, 0.12)",
-  "elevation-elevated": "0 8px 24px rgba(0, 79, 159, 0.16)",
-  "elevation-focus": "0 4px 12px rgba(0, 188, 235, 0.15)",
+  "elevation-subtle": "0 2px 8px var(--cc-legacy-rgba-0-79-159-008)",
+  "elevation-soft": "0 4px 16px var(--cc-legacy-rgba-0-79-159-012)",
+  "elevation-elevated": "0 8px 24px var(--cc-legacy-rgba-0-79-159-016)",
+  "elevation-focus": "0 4px 12px var(--cc-legacy-rgba-0-188-235-015)",
 } as const;
 
 /**

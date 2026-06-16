@@ -8,12 +8,14 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../context/ToastContext";
 import { fetchReviewDashboard } from "../api";
 import api from "../../../services/api";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 const STATUS_BADGE = {
-  normal: "bg-emerald-950 text-emerald-300 border-emerald-800",
-  warning: "bg-amber-950 text-amber-300 border-amber-800",
-  review: "bg-indigo-950 text-indigo-300 border-indigo-800",
-  blocked: "bg-red-950 text-red-300 border-red-800",
+  normal: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]",
+  warning: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]",
+  review: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]",
+  blocked: "bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]",
 };
 
 const VIEW_OPTIONS = [
@@ -213,15 +215,18 @@ export default function ReviewDashboard() {
   }
 
   return (
-    <div className="text-cc px-5 lg:px-6 py-6 space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-2">Admin / Reviews</p>
-          <h1 className="text-3xl font-bold tracking-tight">Attendance Review Dashboard</h1>
-          <p className="text-cc-muted text-sm mt-1">Centralized governance for warnings, grace requests, and blocks.</p>
-        </div>
-        <button onClick={() => navigate(-1)} className="px-4 py-2 rounded-xl border border-cc-soft text-sm hover:border-cc-strong">Back</button>
-      </div>
+    <div className="w-full">
+      <PageHeader
+        breadcrumb="Admin / Reviews"
+        title="Attendance Review Dashboard"
+        subtitle="Centralized governance for warnings, grace requests, and blocks."
+        actions={
+          <button onClick={() => navigate(-1)} className="px-4 py-2 rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface-hover text-sm hover:border-cc-strong transition-colors">
+            Back
+          </button>
+        }
+      />
+      <PageContainer className="py-6 space-y-6">
 
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5"><p className="text-sm text-cc-muted">Pending Grace</p><p className="text-3xl font-bold mt-1">{data?.summary?.pendingGraceRequests || 0}</p></div>
@@ -235,7 +240,7 @@ export default function ReviewDashboard() {
             <button
               key={option.value}
               onClick={() => setView(option.value)}
-              className={`px-3 py-2 rounded-full text-xs border transition-colors ${view === option.value ? "bg-indigo-600 text-white border-indigo-500" : "bg-transparent text-cc-muted border-cc-soft hover:text-cc hover:border-cc"}`}
+              className={`px-3 py-2 rounded-full text-xs border transition-colors ${view === option.value ? "bg-[var(--cc-color-brand)] text-[var(--cc-color-on-brand)] border-[var(--cc-color-brand)]" : "bg-transparent text-cc-muted border-cc-soft hover:text-cc hover:border-cc"}`}
             >
               {option.label}
             </button>
@@ -282,9 +287,9 @@ export default function ReviewDashboard() {
                   <p className="text-sm text-cc-muted">Misses: {student.missedEvents?.length || 0} · Warnings: {student.warningCount || 0} · Status: {student.disciplineStatus || "normal"} · Club: {student.clubNames?.join(", ") || "Unknown club"}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button disabled={!eventId || isProcessing === `${student._id}-approveGrace`} onClick={() => reviewUser(student, "approveGrace", eventId)} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs disabled:opacity-50">Approve Grace</button>
-                  <button disabled={!eventId || isProcessing === `${student._id}-reduceWarning`} onClick={() => reviewUser(student, "reduceWarning", eventId)} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs disabled:opacity-50">Reduce Warning</button>
-                  <button disabled={!eventId || isProcessing === `${student._id}-blockStudent`} onClick={() => reviewUser(student, "blockStudent", eventId)} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs disabled:opacity-50">Block Student</button>
+                  <button disabled={!eventId || isProcessing === `${student._id}-approveGrace`} onClick={() => reviewUser(student, "approveGrace", eventId)} className="px-3 py-2 rounded-lg bg-[var(--cc-color-success)] text-[var(--cc-color-on-brand)] text-xs disabled:opacity-50">Approve Grace</button>
+                  <button disabled={!eventId || isProcessing === `${student._id}-reduceWarning`} onClick={() => reviewUser(student, "reduceWarning", eventId)} className="px-3 py-2 rounded-lg bg-[var(--cc-color-warning)] text-[var(--cc-color-on-brand)] text-xs disabled:opacity-50">Reduce Warning</button>
+                  <button disabled={!eventId || isProcessing === `${student._id}-blockStudent`} onClick={() => reviewUser(student, "blockStudent", eventId)} className="px-3 py-2 rounded-lg bg-[var(--cc-color-danger)] text-[var(--cc-color-on-brand)] text-xs disabled:opacity-50">Block Student</button>
                 </div>
               </div>
             );
@@ -306,10 +311,10 @@ export default function ReviewDashboard() {
                 <p className="text-sm text-cc-muted">Event: {request.eventId?.title || "Unknown"} · Reason: {request.reason} · Club: {request.clubName}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button disabled={isProcessing === `${request._id}-approveGrace`} onClick={() => reviewRequest(request, "approveGrace", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs disabled:opacity-50">Approve Grace</button>
-                <button disabled={isProcessing === `${request._id}-reduceWarning`} onClick={() => reviewRequest(request, "reduceWarning", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs disabled:opacity-50">Reduce Warning</button>
-                <button disabled={isProcessing === `${request._id}-blockStudent`} onClick={() => reviewRequest(request, "blockStudent", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs disabled:opacity-50">Block Student</button>
-                <button disabled={isProcessing === `${request._id}-reject`} onClick={() => reviewRequest(request, "reject", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs disabled:opacity-50">Reject</button>
+                <button disabled={isProcessing === `${request._id}-approveGrace`} onClick={() => reviewRequest(request, "approveGrace", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-[var(--cc-color-success)] text-[var(--cc-color-on-brand)] text-xs disabled:opacity-50">Approve Grace</button>
+                <button disabled={isProcessing === `${request._id}-reduceWarning`} onClick={() => reviewRequest(request, "reduceWarning", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-[var(--cc-color-warning)] text-[var(--cc-color-on-brand)] text-xs disabled:opacity-50">Reduce Warning</button>
+                <button disabled={isProcessing === `${request._id}-blockStudent`} onClick={() => reviewRequest(request, "blockStudent", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-[var(--cc-color-danger)] text-[var(--cc-color-on-brand)] text-xs disabled:opacity-50">Block Student</button>
+                <button disabled={isProcessing === `${request._id}-reject`} onClick={() => reviewRequest(request, "reject", { reason: request.reason })} className="px-3 py-2 rounded-lg bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-primary)] text-xs disabled:opacity-50">Reject</button>
               </div>
             </div>
           ))}
@@ -334,6 +339,7 @@ export default function ReviewDashboard() {
           ))}
         </div>
       </div>
+      </PageContainer>
     </div>
   );
 }

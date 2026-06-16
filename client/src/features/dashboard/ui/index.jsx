@@ -25,10 +25,10 @@ export { default as Section } from "../../../components/layout/Section";
 
 /* ── Stat card accent config (semantic tokens for light theme) ── */
 const STAT_ACCENT = {
-  clubs:     { color: "var(--cc-stat-accent-clubs)",     iconBg: "var(--cc-color-primary-soft)",  iconColor: "var(--cc-stat-accent-clubs)",     Icon: Building2  },
-  events:    { color: "var(--cc-stat-accent-events)",    iconBg: "var(--cc-color-accent-soft)",   iconColor: "var(--cc-stat-accent-events)",    Icon: Calendar   },
-  chats:     { color: "var(--cc-stat-accent-chats)",     iconBg: "var(--cc-color-success-soft)",  iconColor: "var(--cc-stat-accent-chats)",     Icon: MessageCircle},
-  bookmarks: { color: "var(--cc-stat-accent-bookmarks)", iconBg: "var(--cc-color-warning-soft)",  iconColor: "var(--cc-stat-accent-bookmarks)", Icon: Bookmark   },
+  clubs: { color: "var(--cc-stat-accent-clubs)", iconBg: "var(--cc-color-primary-soft)", iconColor: "var(--cc-stat-accent-clubs)", Icon: Building2 },
+  events: { color: "var(--cc-stat-accent-events)", iconBg: "var(--cc-color-accent-soft)", iconColor: "var(--cc-stat-accent-events)", Icon: Calendar },
+  chats: { color: "var(--cc-stat-accent-chats)", iconBg: "var(--cc-color-success-soft)", iconColor: "var(--cc-stat-accent-chats)", Icon: MessageCircle },
+  bookmarks: { color: "var(--cc-stat-accent-bookmarks)", iconBg: "var(--cc-color-warning-soft)", iconColor: "var(--cc-stat-accent-bookmarks)", Icon: Bookmark },
 };
 
 /* ── Sparkline mini bars ── */
@@ -36,7 +36,7 @@ function Sparkline({ color, value, max = 10 }) {
   const heights = [
     Math.max(3, Math.round((value * 0.4 / Math.max(max, 1)) * 16)),
     Math.max(3, Math.round((value * 0.7 / Math.max(max, 1)) * 16)),
-    Math.max(3, Math.round((value      / Math.max(max, 1)) * 16)),
+    Math.max(3, Math.round((value / Math.max(max, 1)) * 16)),
   ];
   return (
     <div className={`cc-sparkline ${color}`}>
@@ -109,9 +109,9 @@ export function StatCard({ label, value, sub, subHighlight, onClick, accent = "c
 /* ── Quick actions strip ── */
 export function QuickActions({ onCreateEvent, onBrowseClubs, onOpenChats }) {
   const actions = [
-    { label: "New Event",   icon: Plus,          onClick: onCreateEvent, accent: "clubs" },
-    { label: "Browse Clubs",icon: Building2,     onClick: onBrowseClubs, accent: "events" },
-    { label: "Open Chats",  icon: MessageCircle, onClick: onOpenChats,   accent: "chats" },
+    { label: "New Event", icon: Plus, onClick: onCreateEvent, accent: "clubs" },
+    { label: "Browse Clubs", icon: Building2, onClick: onBrowseClubs, accent: "events" },
+    { label: "Open Chats", icon: MessageCircle, onClick: onOpenChats, accent: "chats" },
   ];
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -132,9 +132,9 @@ export function QuickActions({ onCreateEvent, onBrowseClubs, onOpenChats }) {
 export function ClubMiniCard({ club, onClick, latestEvent }) {
   const cat = CLUB_CATEGORY_META[club?.category] || CLUB_CATEGORY_META.other;
   const STATUS = {
-    active:   { label: "Member",   cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-    pending:  { label: "Pending",  cls: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"   },
-    rejected: { label: "Rejected", cls: "bg-red-500/10 text-red-400 border-red-500/30"            },
+    active: { label: "Member", cls: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]/30" },
+    pending: { label: "Pending", cls: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]/30" },
+    rejected: { label: "Rejected", cls: "bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]/30" },
   };
   const st = STATUS[club.myStatus];
   const hasActivity = (club.ongoingEvents || 0) > 0;
@@ -142,7 +142,7 @@ export function ClubMiniCard({ club, onClick, latestEvent }) {
   return (
     <button onClick={onClick} className={`${styles.clubCard} cc-interactive-surface`}>
       <div className="relative shrink-0">
-        <div className={`w-9 h-9 rounded-xl ${cat.gradient || "bg-slate-700"} bg-gradient-to-br flex items-center justify-center transition-transform duration-200 group-hover:scale-105`}>
+        <div className={`w-9 h-9 rounded-xl ${cat.gradient || "bg-[var(--cc-color-surface-elevated)]"} bg-gradient-to-br flex items-center justify-center transition-transform duration-200 group-hover:scale-105`}>
           {cat.Icon ? <cat.Icon size={18} className="opacity-80" /> : null}
         </div>
         {hasActivity && <span className="cc-active-dot absolute -top-0.5 -right-0.5" />}
@@ -163,16 +163,16 @@ export function ClubMiniCard({ club, onClick, latestEvent }) {
 
 export function EventRow({ event, last, onClick }) {
   const parseDate = (val) => { if (!val) return null; const d = new Date(val); return Number.isNaN(d.getTime()) ? null : d; };
-  const d   = parseDate(event.date) || parseDate(event.createdAt);
+  const d = parseDate(event.date) || parseDate(event.createdAt);
   const day = d ? d.getDate() : "—";
   const mon = d ? d.toLocaleDateString("en-US", { month: "short" }) : "";
   const cat = EVENT_CATEGORY_META[event?.category] || {};
   const statusCls = STATUS_STYLE[event.status] || STATUS_STYLE.completed;
-  const isLive    = event.status === "ongoing";
-  const fillPct   = event.maxParticipants > 0
+  const isLive = event.status === "ongoing";
+  const fillPct = event.maxParticipants > 0
     ? Math.min(100, Math.round(((event.participants?.length || 0) / event.maxParticipants) * 100))
     : 0;
-  const isUrgent  = fillPct >= 70 && fillPct < 100;
+  const isUrgent = fillPct >= 70 && fillPct < 100;
 
   return (
     <button onClick={onClick} className={`${styles.rowBase} ${!last ? "border-b border-cc-soft" : ""} group cc-interactive-surface`}>
@@ -208,7 +208,7 @@ export function EventRow({ event, last, onClick }) {
       </div>
       <div className="flex shrink-0 items-center gap-1.5 flex-wrap justify-end">
         {isLive && (
-          <span className="text-label px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pop-in">Live</span>
+          <span className="text-label px-2 py-0.5 rounded-full bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border border-[var(--cc-color-success)]/30 animate-pop-in">Live</span>
         )}
         <span className={`text-label px-2 py-0.5 rounded-full border ${statusCls}`}>{event.status}</span>
       </div>
@@ -218,12 +218,12 @@ export function EventRow({ event, last, onClick }) {
 
 export function ChatRow({ chat, last, onClick }) {
   const timeLabel = chat.lastMessageTime ? formatRelativeTime(new Date(chat.lastMessageTime)) : "";
-  const initials  = chat.name ? chat.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() : "?";
+  const initials = chat.name ? chat.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() : "?";
   const avatarColors = [
-    "bg-indigo-950 text-indigo-300",
+    "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)]",
     "bg-purple-950 text-purple-300",
-    "bg-emerald-950 text-emerald-300",
-    "bg-amber-950 text-amber-300",
+    "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)]",
+    "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)]",
   ];
   const avatarCls = avatarColors[(chat.name?.length || 0) % avatarColors.length];
   const hasUnread = !!chat.lastMessage;
@@ -231,11 +231,11 @@ export function ChatRow({ chat, last, onClick }) {
   return (
     <button onClick={onClick} className={`${styles.chatRow} ${!last ? "border-b border-cc-soft" : ""} group cc-interactive-surface`}>
       <div className="relative shrink-0">
-        <div className={`w-8 h-8 rounded-full ${avatarCls} flex items-center justify-center text-micro font-bold ring-1 ring-transparent group-hover:ring-indigo-500/30 transition-all duration-200`}>
+        <div className={`w-8 h-8 rounded-full ${avatarCls} flex items-center justify-center text-micro font-bold ring-1 ring-transparent group-hover:ring-[var(--cc-color-brand)]/30 transition-all duration-200`}>
           {initials}
         </div>
         {hasUnread && (
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border border-cc-bg animate-pop-in" />
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[var(--cc-color-brand)] border border-cc-bg animate-pop-in" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -248,12 +248,12 @@ export function ChatRow({ chat, last, onClick }) {
 }
 
 export function BookmarkRow({ bookmark, last }) {
-  const ev        = bookmark.event;
-  const title     = ev?.title || "Untitled";
-  const cat       = EVENT_CATEGORY_META[ev?.category] || {};
-  const isExt     = bookmark.eventType === "external";
+  const ev = bookmark.event;
+  const title = ev?.title || "Untitled";
+  const cat = EVENT_CATEGORY_META[ev?.category] || {};
+  const isExt = bookmark.eventType === "external";
   const parseDate = (val) => { if (!val) return null; const d = new Date(val); return Number.isNaN(d.getTime()) ? null : d; };
-  const dateObj   = parseDate(ev?.date) || parseDate(ev?.createdAt);
+  const dateObj = parseDate(ev?.date) || parseDate(ev?.createdAt);
   const dateLabel = dateObj ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
 
   // Countdown
@@ -262,7 +262,7 @@ export function BookmarkRow({ bookmark, last }) {
 
   return (
     <div className={`${styles.bookmarkRow} ${!last ? "border-b border-cc-soft" : ""} group hover:bg-cc-surface-hover transition-colors duration-150`}>
-      <div className={`w-8 h-8 rounded-lg ${cat.gradient || "bg-slate-700"} bg-gradient-to-br flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105`}>
+      <div className={`w-8 h-8 rounded-lg ${cat.gradient || "bg-[var(--cc-color-surface-elevated)]"} bg-gradient-to-br flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105`}>
         {cat.Icon ? <cat.Icon size={16} className="opacity-70" /> : <Calendar size={16} className="opacity-60" />}
       </div>
       <div className="flex-1 min-w-0">
@@ -281,10 +281,10 @@ export function BookmarkRow({ bookmark, last }) {
 /* ── Activity strip ── */
 export function ActivityStrip({ stats = {} }) {
   const items = [
-    stats.events > 0     && { icon: <Zap size={10} style={{ color: 'var(--cc-stat-accent-events)' }} />,      text: `${stats.events} events this week` },
-    stats.activeClubs > 0&& { icon: <Building2 size={10} style={{ color: 'var(--cc-stat-accent-clubs)' }} />, text: `${stats.activeClubs} clubs active` },
-    stats.unreadChats > 0&& { icon: <MessageCircle size={10} style={{ color: 'var(--cc-stat-accent-chats)' }} />, text: `${stats.unreadChats} new messages` },
-    stats.ongoingEvents > 0 && { icon: <span className="cc-live-dot" style={{width:6,height:6}}/>, text: `${stats.ongoingEvents} ongoing` },
+    stats.events > 0 && { icon: <Zap size={10} style={{ color: 'var(--cc-stat-accent-events)' }} />, text: `${stats.events} events this week` },
+    stats.activeClubs > 0 && { icon: <Building2 size={10} style={{ color: 'var(--cc-stat-accent-clubs)' }} />, text: `${stats.activeClubs} clubs active` },
+    stats.unreadChats > 0 && { icon: <MessageCircle size={10} style={{ color: 'var(--cc-stat-accent-chats)' }} />, text: `${stats.unreadChats} new messages` },
+    stats.ongoingEvents > 0 && { icon: <span className="cc-live-dot" style={{ width: 6, height: 6 }} />, text: `${stats.ongoingEvents} ongoing` },
   ].filter(Boolean);
 
   return (
@@ -303,28 +303,9 @@ export function ActivityStrip({ stats = {} }) {
   );
 }
 
-/* ── Empty state (inline / local) ── */
-export function EmptyState({ icon, message, action, onAction }) {
-  const Icon =
-    typeof icon === "function" ||
-    (icon && typeof icon === "object" && "render" in icon)
-      ? icon
-      : null;
+/* ── Empty state — use canonical shared component ── */
+export { default as EmptyState } from "../../../components/feedback/EmptyState";
 
-  return (
-    <div className={styles.emptyState}>
-      <span className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-sky-500/10 ring-1 ring-inset ring-indigo-500/15 text-accent mb-1" aria-hidden="true">
-        {Icon ? <Icon size={24} strokeWidth={1.8} /> : icon}
-      </span>
-      <p className="text-body-sm font-semibold text-cc">{message}</p>
-      {action && (
-        <Button variant="ghost" size="sm" onClick={onAction} className="text-caption mt-1">
-          {action} →
-        </Button>
-      )}
-    </div>
-  );
-}
 
 /* ── "You might like" row ── */
 export function RecommendedRow({ events, onEventClick }) {
@@ -344,7 +325,7 @@ export function RecommendedRow({ events, onEventClick }) {
               onClick={() => onEventClick(ev._id)}
               className="min-w-[220px] sm:min-w-0 flex items-center gap-3 p-3 rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface hover:border-cc-strong hover:-translate-y-px hover:shadow-sm transition-all duration-200 text-left group"
             >
-              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.gradient || "from-slate-800 to-slate-700"} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.gradient || "from-[var(--cc-color-surface-elevated)] to-[var(--cc-color-surface)]"} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
                 {cat.Icon && <cat.Icon size={14} className="opacity-70" />}
               </div>
               <div className="min-w-0 flex-1">
@@ -387,14 +368,14 @@ export function DashboardSkeleton() {
 
 /* ── Helpers ── */
 function formatRelativeTime(date) {
-  const now    = new Date();
+  const now = new Date();
   const diffMs = now - date;
-  const diffM  = Math.floor(diffMs / 60000);
-  const diffH  = Math.floor(diffM / 60);
-  const diffD  = Math.floor(diffH / 24);
-  if (diffM < 1)  return "now";
+  const diffM = Math.floor(diffMs / 60000);
+  const diffH = Math.floor(diffM / 60);
+  const diffD = Math.floor(diffH / 24);
+  if (diffM < 1) return "now";
   if (diffM < 60) return `${diffM}m`;
   if (diffH < 24) return `${diffH}h`;
-  if (diffD < 7)  return `${diffD}d`;
+  if (diffD < 7) return `${diffD}d`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

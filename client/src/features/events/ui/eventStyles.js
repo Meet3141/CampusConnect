@@ -1,10 +1,10 @@
 export const STATUS_STYLE = {
-  upcoming:         "bg-indigo-950 text-indigo-300 border-indigo-800",
-  ongoing:          "bg-emerald-950 text-emerald-300 border-emerald-800",
-  completed:        "bg-white/[0.04] text-slate-500 border-white/[0.06]",
-  cancelled:        "bg-red-950 text-red-400 border-red-900",
-  draft:            "bg-slate-900 text-slate-400 border-slate-700",
-  pending_approval: "bg-yellow-950 text-yellow-400 border-yellow-800",
+  upcoming:         "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]",
+  ongoing:          "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]",
+  completed:        "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]",
+  cancelled:        "bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]",
+  draft:            "bg-[var(--cc-color-background)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]",
+  pending_approval: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]",
 };
 
 export const CATEGORY_ACCENT = {

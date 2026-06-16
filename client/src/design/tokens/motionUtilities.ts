@@ -119,13 +119,13 @@ export const createButtonHoverStyle = (
       transition: baseTransition,
       "&:hover": {
         borderColor: "currentColor",
-        backgroundColor: "rgba(248, 249, 250, 0.08)",
+        backgroundColor: "var(--cc-legacy-rgba-248-249-250-008)",
       },
     },
     ghost: {
       transition: baseTransition,
       "&:hover": {
-        backgroundColor: "rgba(248, 249, 250, 0.06)",
+        backgroundColor: "var(--cc-legacy-rgba-248-249-250-006)",
         color: "currentColor",
       },
     },
@@ -157,7 +157,7 @@ export const createNavHoverStyle = (
     sidebar: {
       transition: baseTransition,
       "&:hover": {
-        backgroundColor: "rgba(248, 249, 250, 0.08)",
+        backgroundColor: "var(--cc-legacy-rgba-248-249-250-008)",
       },
     },
     tab: {
@@ -189,8 +189,8 @@ export const createTableRowHoverStyle = (): Record<string, string> => ({
     HOVER_EASING.standard
   ),
   "&:hover": {
-    backgroundColor: "rgba(248, 249, 250, 0.04)",
-    boxShadow: "inset 0 0 0 1px rgba(248, 249, 250, 0.08)",
+    backgroundColor: "var(--cc-legacy-rgba-248-249-250-004)",
+    boxShadow: "inset 0 0 0 1px var(--cc-legacy-rgba-248-249-250-008)",
   },
 });
 
@@ -206,7 +206,7 @@ export const createInputFocusStyle = (): Record<string, string> => ({
   ),
   "&:focus": {
     borderColor: "var(--cc-accent)",
-    boxShadow: `0 0 0 3px rgba(0, 188, 235, 0.15)`,
+    boxShadow: `0 0 0 3px var(--cc-legacy-rgba-0-188-235-015)`,
     outline: "none",
   },
 });

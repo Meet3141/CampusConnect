@@ -9,7 +9,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FormField from "../../../components/ui/FormField";
-import { inputCls } from "../../../utils/inputCls";
+import Input from "../../../components/forms/Input";
+import Textarea from "../../../components/forms/Textarea";
+import Button from "../../../components/ui/Button";
 import { useToast } from "../../../context/ToastContext";
 import { createExternalEvent as createExternalEventApi, extractExternalEventOcr } from "../api";
 import { Code2, Wrench, Mic, Drama, Zap, Landmark, Trophy, Search } from "lucide-react";
@@ -113,9 +115,9 @@ export default function CreateExternalEvent() {
   };
 
   return (
-    <div className="text-white">
+    <div className="text-[var(--cc-color-text-primary)]">
       <div className="max-w-xl mx-auto px-5 py-8">
-        <button onClick={() => navigate("/external-events")} className="group flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-8 transition-colors">
+        <button onClick={() => navigate("/external-events")} className="group flex items-center gap-2 text-[var(--cc-color-text-muted)] hover:text-[var(--cc-color-text-primary)] text-sm mb-8 transition-colors">
           <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span> Back to External Events
         </button>
 
@@ -124,48 +126,60 @@ export default function CreateExternalEvent() {
             Submit{" "}
             <span className="cc-text-gradient">External Event</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-2">Share an event from another university or community.</p>
+          <p className="text-[var(--cc-color-text-muted)] text-sm mt-2">Share an event from another university or community.</p>
         </div>
 
         {/* ── OCR Extraction Panel ── */}
-        <div className="rounded-2xl border border-dashed border-white/[0.12] bg-white/[0.02] p-5 mb-6">
+        <div className="rounded-2xl border border-dashed border-[var(--cc-color-border-strong)] bg-[var(--cc-color-surface)] p-5 mb-6">
           <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
             <Search size={16} className="shrink-0" /> Auto-fill from poster
             <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-violet-950 text-violet-300 border border-violet-800 rounded-full font-medium">OCR</span>
           </h3>
-          <p className="text-[11px] text-slate-500 mb-3">Paste a poster image URL and we'll extract event details automatically.</p>
+          <p className="text-[11px] text-[var(--cc-color-text-muted)] mb-3">Paste a poster image URL and we'll extract event details automatically.</p>
           <div className="flex gap-2">
-            <input
-              type="url" value={ocrUrl}
+            <Input
+              type="url"
+              value={ocrUrl}
               onChange={(e) => setOcrUrl(e.target.value)}
               placeholder="https://example.com/poster.jpg"
-              className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-violet-500/60 transition-all"
+              className="flex-1"
             />
-            <button type="button" onClick={handleOcrExtract} disabled={ocrLoading || !ocrUrl.trim()}
-              className="px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-40 whitespace-nowrap">
-              {ocrLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Extracting…
-                </span>
-              ) : "Extract"}
-            </button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleOcrExtract}
+              loading={ocrLoading}
+              disabled={!ocrUrl.trim()}
+            >
+              Extract
+            </Button>
           </div>
           {ocrDone && (
-            <p className="text-emerald-400 text-[11px] mt-2">✓ Fields auto-filled from poster. Review and adjust as needed.</p>
+            <p className="text-[var(--cc-color-success)] text-[11px] mt-2">✓ Fields auto-filled from poster. Review and adjust as needed.</p>
           )}
         </div>
 
         {/* ── Form ── */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <FormField label="Event Title" required error={errors.title}>
-            <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)}
-              placeholder="e.g. Inter-university Hackathon" maxLength={200} className={inputCls(!!errors.title)} />
+            <Input
+              type="text"
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+              placeholder="e.g. Inter-university Hackathon"
+              maxLength={200}
+              error={!!errors.title}
+            />
           </FormField>
 
           <FormField label="University / Organization" required error={errors.universityName}>
-            <input type="text" value={form.universityName} onChange={(e) => set("universityName", e.target.value)}
-              placeholder="e.g. IIT Delhi" className={inputCls(!!errors.universityName)} />
+            <Input
+              type="text"
+              value={form.universityName}
+              onChange={(e) => set("universityName", e.target.value)}
+              placeholder="e.g. IIT Delhi"
+              error={!!errors.universityName}
+            />
           </FormField>
 
           <FormField label="Category" required error={errors.category}>
@@ -176,13 +190,13 @@ export default function CreateExternalEvent() {
                 return (
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-2.5 rounded-xl border text-center transition-all ${
-                      sel ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15]"
+                      sel ? "bg-[var(--cc-color-brand)]/20 border-[var(--cc-color-brand)]/60 ring-1 ring-[var(--cc-color-brand)]/20"
+                        : "bg-[var(--cc-color-surface)] border-[var(--cc-color-border)] hover:border-[var(--cc-color-border-strong)]"
                     }`}>
                     <div className="flex items-center justify-center h-7 mb-0.5">
                       {Icon && <Icon size={24} className="text-cc-muted" />}
                     </div>
-                    <div className="text-[11px] font-medium text-white capitalize">{cat}</div>
+                    <div className="text-[11px] font-medium text-[var(--cc-color-text-primary)] capitalize">{cat}</div>
                   </button>
                 );
               })}
@@ -191,45 +205,66 @@ export default function CreateExternalEvent() {
 
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Date & Time" required error={errors.date}>
-              <input type="datetime-local" value={form.date} onChange={(e) => set("date", e.target.value)}
-                className={inputCls(!!errors.date)} />
+              <Input
+                type="datetime-local"
+                value={form.date}
+                onChange={(e) => set("date", e.target.value)}
+                error={!!errors.date}
+              />
             </FormField>
             <FormField label="Venue" hint="Optional">
-              <input type="text" value={form.venue} onChange={(e) => set("venue", e.target.value)}
-                placeholder="e.g. Main Auditorium" className={inputCls(false)} />
+              <Input
+                type="text"
+                value={form.venue}
+                onChange={(e) => set("venue", e.target.value)}
+                placeholder="e.g. Main Auditorium"
+              />
             </FormField>
           </div>
 
           <FormField label="Description" required error={errors.description}>
-            <textarea value={form.description} onChange={(e) => set("description", e.target.value)}
-              rows={4} maxLength={2000} placeholder="Describe the event…"
-              className={inputCls(!!errors.description) + " resize-none"} />
+            <Textarea
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+              rows={4}
+              maxLength={2000}
+              placeholder="Describe the event…"
+              error={!!errors.description}
+            />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Registration Link" hint="Optional">
-              <input type="url" value={form.registrationLink} onChange={(e) => set("registrationLink", e.target.value)}
-                placeholder="https://..." className={inputCls(false)} />
+              <Input
+                type="url"
+                value={form.registrationLink}
+                onChange={(e) => set("registrationLink", e.target.value)}
+                placeholder="https://..."
+              />
             </FormField>
             <FormField label="Poster URL" hint="Optional">
-              <input type="url" value={form.posterUrl} onChange={(e) => set("posterUrl", e.target.value)}
-                placeholder="https://..." className={inputCls(false)} />
+              <Input
+                type="url"
+                value={form.posterUrl}
+                onChange={(e) => set("posterUrl", e.target.value)}
+                placeholder="https://..."
+              />
             </FormField>
           </div>
 
           {apiError && (
-            <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-sm">{apiError}</div>
+            <div className="bg-[var(--cc-color-danger-soft)] border border-[var(--cc-color-danger)] rounded-xl p-4 text-[var(--cc-color-danger)] text-sm">{apiError}</div>
           )}
 
-          <button type="submit" disabled={submitting}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50">
-            {submitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Submitting…
-              </span>
-            ) : "Submit Event 🚀"}
-          </button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            loading={submitting}
+            className="w-full"
+          >
+            Submit Event 🚀
+          </Button>
         </form>
       </div>
     </div>

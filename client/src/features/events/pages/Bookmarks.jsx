@@ -13,6 +13,8 @@ import { useToast } from "../../../context/ToastContext";
 import Button from "../../../components/ui/Button";
 import { CLUB_CATEGORY_META } from "../../../theme";
 import { EVENT_CATEGORY_META } from "../../../theme";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 import { Bookmark, MapPin } from "lucide-react";
 
 const catOf = (k) => CLUB_CATEGORY_META[k] || EVENT_CATEGORY_META[k] || CLUB_CATEGORY_META.other;
@@ -39,12 +41,12 @@ const styles = {
     "group flex items-center gap-4 p-4 rounded-xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all cursor-pointer",
   bookmarkIcon:
     "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0",
-  bookmarkTitle: "text-sm font-medium text-cc group-hover:text-indigo-300 transition-colors truncate",
+  bookmarkTitle: "text-sm font-medium text-cc group-hover:text-[var(--cc-color-brand)] transition-colors truncate",
   bookmarkMeta: "text-[11px] text-cc-muted",
   eventTypeBadge:
     "text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border font-medium",
   removeButton:
-    "opacity-0 group-hover:opacity-100 text-cc-muted hover:text-red-400 transition-all px-2 py-1 rounded-lg hover:bg-red-950/30 text-sm shrink-0",
+    "opacity-0 group-hover:opacity-100 text-cc-muted hover:text-[var(--cc-color-danger)] transition-all px-2 py-1 rounded-lg hover:bg-[var(--cc-color-danger-soft)] text-sm shrink-0",
 };
 
 export default function Bookmarks() {
@@ -82,24 +84,12 @@ export default function Bookmarks() {
 
  return (
     <div className={styles.page}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-32 right-0 w-80 h-80 bg-blue-700/6 rounded-full blur-3xl" />
-        </div>
-        <div className={styles.headerInner}>
-          <p className={styles.headerKicker}>
-            Dashboard / Bookmarks
-          </p>
-          <h1 className={styles.headerTitle}>
-            My{" "}
-            <span className="cc-text-gradient">Bookmarks</span>
-          </h1>
-          <p className={styles.headerCount}>
-            {bookmarks.length} saved event{bookmarks.length !== 1 ? "s" : ""}
-          </p>
-
-          {bookmarks.length > 0 && (
+      <PageHeader
+        breadcrumb="Dashboard / Bookmarks"
+        title={<>My <span className="cc-text-gradient">Bookmarks</span></>}
+        subtitle={`${bookmarks.length} saved event${bookmarks.length !== 1 ? "s" : ""}`}
+        filterRow={
+          bookmarks.length > 0 && (
             <div className={styles.tabBar}>
               {[
                 { key: "all", label: "All", count: bookmarks.length },
@@ -108,21 +98,21 @@ export default function Bookmarks() {
               ].map(({ key, label, count }) => (
                 <button key={key} onClick={() => setFilter(key)}
                   className={`${styles.tabButton} ${
-                    filter === key ? "border-blue-500 text-cc" : "border-transparent text-cc-muted hover:text-cc"
+                    filter === key ? "border-[var(--cc-color-brand)] text-cc" : "border-transparent text-cc-muted hover:text-cc"
                   }`}>
                   {label}
                   <span className={`${styles.tabCount} ${
-                    filter === key ? "bg-blue-600/30 text-blue-300" : "bg-cc-surface-weak text-cc-muted"
+                    filter === key ? "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)]" : "bg-cc-surface-weak text-cc-muted"
                   }`}>{count}</span>
                 </button>
               ))}
             </div>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {/* Content */}
-      <div className={styles.content}>
+      <PageContainer className="py-6">
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -161,7 +151,7 @@ export default function Bookmarks() {
                   onClick={() => {
                     if (bk.eventType === "internal") navigate(`/events/${bk.eventId}`);
                   }}>
-                  <div className={`${styles.bookmarkIcon} ${cat.gradient || "from-slate-800 to-slate-700"}`}>
+                  <div className={`${styles.bookmarkIcon} ${cat.gradient || "from-[var(--cc-color-surface-elevated)] to-[var(--cc-color-surface)]"}`}>
                     {cat.Icon ? <cat.Icon size={24} className="opacity-70" /> : null}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -189,7 +179,7 @@ export default function Bookmarks() {
             })}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

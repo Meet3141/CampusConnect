@@ -10,12 +10,12 @@ import React from "react";
 import { cn } from "../../utils/cn";
 
 const ACCENTS = {
-  indigo:  { text: "text-indigo-400",  ring: "ring-indigo-500/20",  bg: "bg-indigo-950/30"  },
+  indigo:  { text: "text-[var(--cc-color-brand)]",  ring: "ring-[var(--cc-color-brand)]/20",  bg: "bg-[var(--cc-color-surface-brand)]/30"  },
   violet:  { text: "text-violet-400",  ring: "ring-violet-500/20",  bg: "bg-violet-950/30"  },
-  emerald: { text: "text-emerald-400", ring: "ring-emerald-500/20", bg: "bg-emerald-950/30" },
+  emerald: { text: "text-[var(--cc-color-success)]", ring: "ring-[var(--cc-color-success)]/20", bg: "bg-[var(--cc-color-success-soft)]-30" },
   sky:     { text: "text-sky-400",     ring: "ring-sky-500/20",     bg: "bg-sky-950/30"     },
-  amber:   { text: "text-amber-400",   ring: "ring-amber-500/20",   bg: "bg-amber-950/30"   },
-  rose:    { text: "text-rose-400",    ring: "ring-rose-500/20",    bg: "bg-rose-950/30"    },
+  amber:   { text: "text-[var(--cc-color-warning)]",   ring: "ring-[var(--cc-color-warning)]/20",   bg: "bg-[var(--cc-color-warning-soft)]/30"   },
+  rose:    { text: "text-[var(--cc-color-danger)]",    ring: "ring-[var(--cc-color-danger)]/20",    bg: "bg-[var(--cc-color-danger-soft)]/30"    },
   teal:    { text: "text-teal-400",    ring: "ring-teal-500/20",    bg: "bg-teal-950/30"    },
   cyan:    { text: "text-cyan-400",    ring: "ring-cyan-500/20",    bg: "bg-cyan-950/30"    },
 };
@@ -80,7 +80,7 @@ export default function StatsCard({
           {trend && (
             <span className={cn(
               "text-[11px] font-medium",
-              trendDir === "up" ? "text-emerald-400" : trendDir === "down" ? "text-red-400" : "text-muted"
+              trendDir === "up" ? "text-[var(--cc-color-success)]" : trendDir === "down" ? "text-[var(--cc-color-danger)]" : "text-muted"
             )}>
               {trend}
             </span>

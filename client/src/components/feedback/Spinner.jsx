@@ -18,11 +18,11 @@ const SIZES = {
 };
 
 const COLORS = {
-  brand: "border-indigo-500/30 border-t-indigo-500",
-  white: "border-white/30 border-t-white",
+  brand: "border-[var(--cc-color-brand)]/30 border-t-indigo-500",
+  white: "border-white/30 border-t-[var(--cc-color-on-brand)]",
   muted: "border-cc-soft border-t-cc-muted",
-  success:"border-emerald-500/30 border-t-emerald-500",
-  danger: "border-red-500/30 border-t-red-500",
+  success:"border-[var(--cc-color-success)]/30 border-t-emerald-500",
+  danger: "border-[var(--cc-color-danger)]/30 border-t-red-500",
 };
 
 export default function Spinner({ size = "md", color = "brand", className }) {

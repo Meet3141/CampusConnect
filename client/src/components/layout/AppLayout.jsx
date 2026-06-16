@@ -39,8 +39,7 @@ function NavItem({ label, path, icon, pathname, onNavigate, collapsed }) {
           style={{
             background: active ? 'var(--cc-color-sidebar-active, rgba(0,79,159,0.08))' : 'transparent',
             color: active ? 'var(--cc-color-sidebar-text-active, var(--cc-color-brand))' : 'var(--cc-color-sidebar-text, var(--cc-color-text-muted))',
-            transform: active ? 'scale(1.04)' : 'scale(1)',
-            transition: 'transform 200ms cubic-bezier(0.34,1.56,0.64,1), background 150ms ease, color 150ms ease',
+            transition: 'background 150ms ease, color 150ms ease',
           }}
         >
           {active && (
@@ -96,7 +95,6 @@ function NavItem({ label, path, icon, pathname, onNavigate, collapsed }) {
         )}
         <span
           className="shrink-0 transition-transform duration-200"
-          style={{ transform: active ? 'scale(1.12)' : 'scale(1)' }}
         >
           {icon({ size: 16, active })}
         </span>
@@ -140,25 +138,25 @@ function NavSection({ section, items, pathname, onNavigate, collapsed }) {
 /* ─── Main layout ─── */
 export default function AppLayout() {
   const { user, logout } = useAuth();
-  const navigate         = useNavigate();
-  const location         = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [mobileOpen,             setMobileOpen]             = useState(false);
-  const [sidebarHovered,         setSidebarHovered]         = useState(false);
-  const [notificationsOpen,      setNotificationsOpen]      = useState(false);
-  const [notifications,          setNotifications]          = useState([]);
-  const [notificationLoading,    setNotificationLoading]    = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   const [notificationProcessingId, setNotificationProcessingId] = useState("");
-  const [markAllProcessing,      setMarkAllProcessing]      = useState(false);
+  const [markAllProcessing, setMarkAllProcessing] = useState(false);
   const notificationsRef = useRef(null);
 
   // Sidebar is collapsed whenever it's not being hovered (desktop)
   const collapsed = !sidebarHovered;
 
-  const isAdmin     = user?.roles?.includes("orgAdmin");
-  const isEditor    = user?.roles?.includes("editor");
+  const isAdmin = user?.roles?.includes("orgAdmin");
+  const isEditor = user?.roles?.includes("editor");
   const isClubAdmin = user?.roles?.includes("clubAdmin");
-  const adminNav    = getAdminNav({ isAdmin, isEditor, isClubAdmin });
+  const adminNav = getAdminNav({ isAdmin, isEditor, isClubAdmin });
 
   const userInitials = user?.name
     ? user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
@@ -249,10 +247,9 @@ export default function AppLayout() {
         aria-label="Main navigation"
       >
         {/* Logo / wordmark */}
-        <div className={`flex items-center border-b border-[var(--cc-color-sidebar-border)] shrink-0 transition-all duration-300 ${
-          collapsed ? "justify-center px-3 py-4" : "gap-3 px-4 py-4"
-        }`}>
-          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 transition-transform duration-200 hover:scale-105">
+        <div className={`flex items-center border-b border-[var(--cc-color-sidebar-border)] shrink-0 transition-all duration-300 ${collapsed ? "justify-center px-3 py-4" : "gap-3 px-4 py-4"
+          }`}>
+          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 transition-transform duration-200">
             <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-0.5 bg-white" />
           </div>
           <span
@@ -268,9 +265,8 @@ export default function AppLayout() {
         </div>
 
         {/* Nav */}
-        <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-5 transition-all duration-300 ${
-          collapsed ? "px-2" : "px-3"
-        }`}>
+        <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-5 transition-all duration-300 ${collapsed ? "px-2" : "px-3"
+          }`}>
           {NAV.map(({ section, items }) => (
             <NavSection
               key={section}
@@ -294,9 +290,8 @@ export default function AppLayout() {
         </nav>
 
         {/* Bottom: user profile */}
-        <div className={`shrink-0 border-t border-[var(--cc-color-sidebar-border)] transition-all duration-300 ${
-          collapsed ? "px-2 py-3 flex flex-col items-center gap-2" : "px-3 pb-4 pt-3"
-        }`}>
+        <div className={`shrink-0 border-t border-[var(--cc-color-sidebar-border)] transition-all duration-300 ${collapsed ? "px-2 py-3 flex flex-col items-center gap-2" : "px-3 pb-4 pt-3"
+          }`}>
           {!collapsed ? (
             /* Expanded: avatar + name + logout */
             <div className="flex items-center gap-2">
@@ -317,7 +312,7 @@ export default function AppLayout() {
               </button>
               <button
                 onClick={logout}
-                className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] transition-all"
                 title="Log out"
               >
                 <IconLogout size={24} />
@@ -336,7 +331,7 @@ export default function AppLayout() {
               <button
                 onClick={logout}
                 title="Log out"
-                className="p-2 rounded-xl text-cc-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                className="p-2 rounded-xl text-cc-muted hover:text-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] transition-all"
               >
                 <IconLogout size={24} />
               </button>
@@ -400,7 +395,7 @@ export default function AppLayout() {
             </button>
             <button
               onClick={logout}
-              className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+              className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] transition-all"
               title="Log out"
             >
               <IconLogout size={24} />
@@ -433,13 +428,13 @@ export default function AppLayout() {
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setNotificationsOpen((o) => !o)}
-                className="relative p-2 rounded-xl hover:bg-surface-hover transition-all duration-150 text-cc-muted hover:text-cc hover:scale-105 active:scale-95"
+                className="relative p-2 rounded-xl hover:bg-surface-hover transition-all duration-150 text-cc-muted hover:text-cc"
                 title="Notifications"
                 aria-label="Notifications"
               >
                 <IconBell size={24} />
                 {unreadNotifications.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-amber-500 text-[9px] text-black font-bold flex items-center justify-center animate-pop-in">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-[var(--cc-color-warning)] text-[var(--cc-color-on-brand)] font-bold flex items-center justify-center animate-pop-in">
                     {unreadNotifications.length}
                   </span>
                 )}
@@ -478,9 +473,8 @@ export default function AppLayout() {
                           key={n._id}
                           onClick={() => handleMarkRead(n._id)}
                           disabled={notificationProcessingId === n._id}
-                          className={`w-full text-left px-4 py-3 border-b border-cc-soft/60 hover:bg-surface-hover transition-colors ${
-                            n.status === "read" || n.readAt ? "opacity-60" : "bg-cc-surface-weak"
-                          }`}
+                          className={`w-full text-left px-4 py-3 border-b border-cc-soft/60 hover:bg-surface-hover transition-colors ${n.status === "read" || n.readAt ? "opacity-60" : "bg-cc-surface-weak"
+                            }`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -488,7 +482,7 @@ export default function AppLayout() {
                               <p className="text-xs text-cc-muted mt-0.5">{n.message}</p>
                             </div>
                             {n.status !== "read" && !n.readAt && (
-                              <span className="mt-1 h-2 w-2 rounded-full bg-amber-400 shrink-0" />
+                              <span className="mt-1 h-2 w-2 rounded-full bg-[var(--cc-color-warning)] shrink-0" />
                             )}
                           </div>
                         </button>

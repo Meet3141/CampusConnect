@@ -22,15 +22,15 @@
     --cc-motion-ease-gentle: cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Hover Color Overlays */
-    --cc-color-surface-hover: rgba(248, 249, 250, 0.06);
-    --cc-color-surface-hover-strong: rgba(248, 249, 250, 0.10);
-    --cc-color-border-hover: rgba(0, 188, 235, 0.3);
+    --cc-color-surface-hover: var(--cc-legacy-rgba-248-249-250-006);
+    --cc-color-surface-hover-strong: var(--cc-legacy-rgba-248-249-250-010);
+    --cc-color-border-hover: var(--cc-legacy-rgba-0-188-235-03);
 
     /* Shadow Elevations */
-    --cc-shadow-elevation-subtle: 0 2px 8px rgba(0, 79, 159, 0.08);
-    --cc-shadow-elevation-soft: 0 4px 16px rgba(0, 79, 159, 0.12);
-    --cc-shadow-elevation-elevated: 0 8px 24px rgba(0, 79, 159, 0.16);
-    --cc-shadow-elevation-focus: 0 4px 12px rgba(0, 188, 235, 0.15);
+    --cc-shadow-elevation-subtle: 0 2px 8px var(--cc-legacy-rgba-0-79-159-008);
+    --cc-shadow-elevation-soft: 0 4px 16px var(--cc-legacy-rgba-0-79-159-012);
+    --cc-shadow-elevation-elevated: 0 8px 24px var(--cc-legacy-rgba-0-79-159-016);
+    --cc-shadow-elevation-focus: 0 4px 12px var(--cc-legacy-rgba-0-188-235-015);
 
     /* Action States */
     --cc-color-border-focus: var(--cc-accent);
@@ -359,7 +359,7 @@
 
 .cc-table-row:hover {
   background-color: var(--cc-surface-hover);
-  box-shadow: inset 0 0 0 1px rgba(248, 249, 250, 0.08);
+  box-shadow: inset 0 0 0 1px var(--cc-legacy-rgba-248-249-250-008);
 }
 
 .cc-table-row .cc-row-actions {
@@ -421,7 +421,7 @@
 
 .cc-input:focus {
   border-color: var(--cc-accent);
-  box-shadow: 0 0 0 3px rgba(0, 188, 235, 0.15);
+  box-shadow: 0 0 0 3px var(--cc-legacy-rgba-0-188-235-015);
   outline: none;
 }
 

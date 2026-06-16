@@ -36,8 +36,8 @@
     overflow: hidden;
     /* Always start at collapsed width — hover drives expansion */
     width: var(--cc-sidebar-collapsed);
-    /* Smooth expand/collapse — 350ms feels natural, not jarring */
-    transition: width 350ms var(--cc-motion-ease-emphasized);
+    /* Smooth expand/collapse — slower speed and smoother ease-in-out */
+    transition: width 350ms ease-in-out;
     z-index: var(--cc-z-sticky);
   }
 
@@ -73,7 +73,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-width: 0; /* prevent flex blowout */
+    min-width: 0;
+    /* prevent flex blowout */
   }
 
   /* Topbar — sits visually below sidebar authority */
@@ -103,7 +104,7 @@
   .cc-sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: var(--cc-legacy-rgba-0-0-0-06);
     backdrop-filter: blur(2px);
     z-index: calc(var(--cc-z-modal) - 1);
   }
@@ -142,7 +143,7 @@
     background: transparent;
     color: var(--cc-color-text-muted);
     transition: color var(--cc-motion-fast) var(--cc-motion-ease-standard),
-                transform var(--cc-motion-fast) var(--cc-motion-ease-spring);
+      transform var(--cc-motion-fast) var(--cc-motion-ease-spring);
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -180,6 +181,7 @@
    Provide consistent max-width + horizontal padding for page-level content.
 ───────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+
   /* Standard content container — 1280px */
   .cc-page {
     width: 100%;
@@ -256,31 +258,110 @@
    Vertical rhythm — always use these, never hardcode margin/padding values.
 ───────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+
   /* Named stack sizes */
-  .stack-xs { display: flex; flex-direction: column; gap: var(--cc-space-1); }
-  .stack-sm { display: flex; flex-direction: column; gap: var(--cc-space-2); }
-  .stack-md { display: flex; flex-direction: column; gap: var(--cc-space-4); }
-  .stack-lg { display: flex; flex-direction: column; gap: var(--cc-space-6); }
-  .stack-xl { display: flex; flex-direction: column; gap: var(--cc-space-8); }
+  .stack-xs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-1);
+  }
+
+  .stack-sm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-2);
+  }
+
+  .stack-md {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-4);
+  }
+
+  .stack-lg {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-6);
+  }
+
+  .stack-xl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-8);
+  }
 
   /* Horizontal stack */
-  .hstack-xs { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-1); }
-  .hstack-sm { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-2); }
-  .hstack-md { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-4); }
-  .hstack-lg { display: flex; flex-direction: row; align-items: center; gap: var(--cc-space-6); }
+  .hstack-xs {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cc-space-1);
+  }
+
+  .hstack-sm {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cc-space-2);
+  }
+
+  .hstack-md {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cc-space-4);
+  }
+
+  .hstack-lg {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cc-space-6);
+  }
 
   /* Section-level vertical gaps */
-  .section-gap-sm { margin-top: var(--cc-space-4); }
-  .section-gap-md { margin-top: var(--cc-space-6); }
-  .section-gap-lg { margin-top: var(--cc-space-8); }
+  .section-gap-sm {
+    margin-top: var(--cc-space-4);
+  }
+
+  .section-gap-md {
+    margin-top: var(--cc-space-6);
+  }
+
+  .section-gap-lg {
+    margin-top: var(--cc-space-8);
+  }
 
   /* Legacy aliases */
-  .u-stack    { display: flex; flex-direction: column; gap: var(--cc-space-4); }
-  .u-stack-sm { display: flex; flex-direction: column; gap: var(--cc-space-2); }
-  .u-stack-md { display: flex; flex-direction: column; gap: var(--cc-space-4); }
-  .u-stack-lg { display: flex; flex-direction: column; gap: var(--cc-space-6); }
+  .u-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-4);
+  }
 
-  .u-inline-stack { display: inline-flex; align-items: center; gap: var(--cc-space-3); }
+  .u-stack-sm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-2);
+  }
+
+  .u-stack-md {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-4);
+  }
+
+  .u-stack-lg {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-6);
+  }
+
+  .u-inline-stack {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cc-space-3);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -288,6 +369,7 @@
    12-column conceptual grid via responsive named variants.
 ───────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+
   /* Base grid */
   .cc-grid {
     display: grid;
@@ -388,10 +470,28 @@
   }
 
   /* Legacy aliases */
-  .u-grid   { display: grid; gap: var(--cc-space-6); }
-  .u-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cc-space-6); }
-  .u-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cc-space-6); }
-  .u-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--cc-space-6); }
+  .u-grid {
+    display: grid;
+    gap: var(--cc-space-6);
+  }
+
+  .u-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cc-space-6);
+  }
+
+  .u-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--cc-space-6);
+  }
+
+  .u-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--cc-space-6);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -399,6 +499,7 @@
    Structural wrappers that enforce visual rhythm across pages.
 ───────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+
   /* Content section — standard vertical block */
   .cc-section {
     display: flex;
@@ -540,6 +641,7 @@
 
 /* Mobile — 768px */
 @media (max-width: 768px) {
+
   .cc-page,
   .cc-page-wide,
   .cc-page-reading,
@@ -621,6 +723,7 @@
    New layout building blocks for grouped surfaces, chat split, and sidebar groups.
 ───────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+
   /* Section group — balanced visible grouping for dashboard sections */
   .cc-section-group {
     background-color: var(--cc-color-surface-grouped, var(--cc-color-surface-secondary));

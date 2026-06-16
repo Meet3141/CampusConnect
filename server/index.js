@@ -55,15 +55,8 @@ const corsOriginFn = (origin, callback) => {
     return callback(new Error(`CORS: origin ${origin} not allowed`));
   }
 
-  // Development: allow any localhost or 127.0.0.1 origin on any port
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-    return callback(null, true);
-  }
-
-  // Also honour the explicit env var if set
-  if (CORS_ORIGIN && origin === CORS_ORIGIN) return callback(null, true);
-
-  return callback(new Error(`CORS: origin ${origin} not allowed`));
+  // Development: allow any origin to accept requests from local network IPs
+  return callback(null, true);
 };
 
 const io = new Server(server, {
@@ -216,7 +209,7 @@ const startServer = async () => {
   startScheduler();
 
   const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => {
+  server.listen(PORT, "0.0.0.0", () => {
     logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`);
   });
 };

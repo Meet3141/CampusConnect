@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
 const COLOR_FALLBACKS = {
-  brand: "#004F9F",
-  accent: "#06B6D4",
+  brand: "#004f9f",
+  accent: "#06b6d4",
 };
 
 const readCssVar = (name, fallback) => {
@@ -39,12 +39,12 @@ const toRgba = (rgb, alpha) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
 
 export default function useParticleCanvas(canvasRef) {
   useEffect(() => {
-    const brandRgb  = parseColor(readCssVar("--cc-color-brand", COLOR_FALLBACKS.brand));
+    const brandRgb = parseColor(readCssVar("--cc-color-brand", COLOR_FALLBACKS.brand));
     const accentRgb = parseColor(readCssVar("--cc-color-accent", COLOR_FALLBACKS.accent));
-    const BRAND      = toRgba(brandRgb, 0.85);
+    const BRAND = toRgba(brandRgb, 0.85);
     const BRAND_GLOW = toRgba(brandRgb, 0.38);
     const BRAND_FADE = toRgba(brandRgb, 0);
-    const BRAND_LINK = `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b},`;
+    const BRAND_LINK = `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, `;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -54,7 +54,7 @@ export default function useParticleCanvas(canvasRef) {
     const mouse = { x: null, y: null };
 
     const resize = () => {
-      canvas.width  = canvas.offsetWidth;
+      canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
     };
 
@@ -73,16 +73,16 @@ export default function useParticleCanvas(canvasRef) {
       mouse.y = null;
     };
 
-    canvas.addEventListener("mousemove",  handleMouseMove);
+    canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", handleMouseLeave);
 
     const particleCount = 55;
     const particles = Array.from({ length: particleCount }, () => ({
-      x:     Math.random() * canvas.width,
-      y:     Math.random() * canvas.height,
-      vx:    (Math.random() - 0.5) * 0.35,
-      vy:    (Math.random() - 0.5) * 0.35,
-      r:     Math.random() * 1.8 + 1.2,
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 1.8 + 1.2,
       phase: Math.random() * Math.PI * 2,
     }));
 
@@ -95,9 +95,9 @@ export default function useParticleCanvas(canvasRef) {
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        if (particle.x < -10)                particle.x = canvas.width + 10;
-        if (particle.x > canvas.width + 10)  particle.x = -10;
-        if (particle.y < -10)                particle.y = canvas.height + 10;
+        if (particle.x < -10) particle.x = canvas.width + 10;
+        if (particle.x > canvas.width + 10) particle.x = -10;
+        if (particle.y < -10) particle.y = canvas.height + 10;
         if (particle.y > canvas.height + 10) particle.y = -10;
 
         if (mouse.x !== null) {
@@ -118,9 +118,9 @@ export default function useParticleCanvas(canvasRef) {
           particle.x, particle.y, 0,
           particle.x, particle.y, pulse * 4
         );
-        glow.addColorStop(0,   BRAND);
+        glow.addColorStop(0, BRAND);
         glow.addColorStop(0.4, BRAND_GLOW);
-        glow.addColorStop(1,   BRAND_FADE);
+        glow.addColorStop(1, BRAND_FADE);
 
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, pulse * 4, 0, Math.PI * 2);
@@ -135,13 +135,13 @@ export default function useParticleCanvas(canvasRef) {
 
         /* Connection lines — accent (sky-surge) tint */
         for (let j = index + 1; j < particles.length; j++) {
-          const other    = particles[j];
-          const dx       = particle.x - other.x;
-          const dy       = particle.y - other.y;
+          const other = particles[j];
+          const dx = particle.x - other.x;
+          const dy = particle.y - other.y;
           const distance = Math.hypot(dx, dy);
 
           if (distance < linkDistance) {
-            const alpha    = (1 - distance / linkDistance) * 0.22;
+            const alpha = (1 - distance / linkDistance) * 0.22;
             const gradient = ctx.createLinearGradient(particle.x, particle.y, other.x, other.y);
             gradient.addColorStop(0, `${BRAND_LINK}${alpha})`);
             gradient.addColorStop(1, `${BRAND_LINK}${alpha * 0.5})`);
@@ -150,7 +150,7 @@ export default function useParticleCanvas(canvasRef) {
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(other.x, other.y);
             ctx.strokeStyle = gradient;
-            ctx.lineWidth   = 0.7;
+            ctx.lineWidth = 0.7;
             ctx.stroke();
           }
         }
@@ -164,7 +164,7 @@ export default function useParticleCanvas(canvasRef) {
     return () => {
       cancelAnimationFrame(animId);
       ro.disconnect();
-      canvas.removeEventListener("mousemove",  handleMouseMove);
+      canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [canvasRef]);

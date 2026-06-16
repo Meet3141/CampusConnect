@@ -22,6 +22,9 @@ import { CLUB_CATEGORY_META } from "../../../theme";
 import { deleteClub } from "../api";
 import { useAdminClubs, useAdminPendingCounts } from "../hooks";
 import { Lock, Landmark, CheckCircle2 } from "lucide-react";
+import Tabs from "../../../components/ui/Tabs";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -58,13 +61,13 @@ export default function AdminPanel() {
     return (
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
-          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-800">
-            <Lock size={16} className="text-slate-400" />
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-[var(--cc-color-surface-elevated)]">
+            <Lock size={16} className="text-[var(--cc-color-text-muted)]" />
           </div>
           <h2 className="text-xl font-semibold text-cc mb-2">Org Admin Only</h2>
           <p className="text-cc-muted text-sm">This panel is restricted to Organisation Admins.</p>
           <button onClick={() => navigate("/dashboard")}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+            className="mt-6 px-5 py-2.5 bg-[var(--cc-color-brand)] hover:bg-[var(--cc-color-brand-hover)] text-[var(--cc-color-on-brand)] rounded-xl text-sm transition-colors">
             Back to Dashboard
           </button>
         </div>
@@ -81,61 +84,35 @@ export default function AdminPanel() {
     }));
 
   return (
-    <div className="text-cc">
+    <div className="w-full">
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-cc-soft">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 left-0 w-80 h-80 bg-amber-700/5 rounded-full blur-3xl" />
-          <div className="absolute -top-16 right-0 w-60 h-60 bg-indigo-700/5 rounded-full blur-3xl" />
-        </div>
-        <div className="relative px-5 lg:px-6 pt-6 pb-0">
-          <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono mb-3">
-            Admin / Platform
-          </p>
-          <div className="flex items-end justify-between gap-4 mb-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Admin{" "}
-                <span className="cc-text-gradient">
-                  Panel
-                </span>
-              </h1>
-              <p className="text-cc-muted text-sm mt-1.5">
-                {meta.total} club{meta.total !== 1 ? "s" : ""} on the platform
-              </p>
-            </div>
-            <button onClick={() => navigate("/clubs/create")}
-              className="shrink-0 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors">
-              + New Club
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-0 border-b border-cc-soft -mb-px">
-            {[
-              { key: "clubs",   label: "All Clubs",      count: meta.total },
-              { key: "pending", label: "Pending Members", count: pendingClubs.length },
-            ].map(({ key, label, count }) => (
-              <button key={key} onClick={() => setTab(key)}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-all ${
-                  tab === key
-                    ? "border-amber-500 text-amber-300"
-                    : "border-transparent text-cc-muted hover:text-cc-muted"
-                }`}>
-                {label}
-                {count > 0 && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-                    tab === key ? "bg-amber-600/30 text-amber-300" : "bg-cc-surface-weak text-cc-muted"
-                  }`}>{count}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumb="Admin / Platform"
+        title={<>Admin <span className="cc-text-gradient">Panel</span></>}
+        subtitle={`${meta.total} club${meta.total !== 1 ? "s" : ""} on the platform`}
+        actions={
+          <button onClick={() => navigate("/clubs/create")} className="px-4 py-2 text-sm font-medium rounded-xl border border-transparent bg-[var(--cc-color-brand)] hover:bg-[var(--cc-color-brand-hover)] text-[var(--cc-color-on-brand)] transition-colors">
+            + New Club
+          </button>
+        }
+        filterRow={
+          <Tabs value={tab} onChange={setTab}>
+            <Tabs.List>
+              <Tabs.Tab value="clubs">
+                All Clubs
+                {meta.total > 0 && <Tabs.Count>{meta.total}</Tabs.Count>}
+              </Tabs.Tab>
+              <Tabs.Tab value="pending">
+                Pending Members
+                {pendingClubs.length > 0 && <Tabs.Count>{pendingClubs.length}</Tabs.Count>}
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs>
+        }
+      />
 
       {/* Content */}
-      <div className="px-5 lg:px-6 py-6">
+      <PageContainer className="py-6">
 
         {/* ── All Clubs tab ── */}
         {tab === "clubs" && (
@@ -201,13 +178,13 @@ export default function AdminPanel() {
                           </button>
                           <button
                             onClick={() => navigate(`/clubs/${club._id}/edit`)}
-                            className="px-3 py-1.5 text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-600/10 hover:bg-indigo-600/20 rounded-lg transition-colors">
+                            className="px-3 py-1.5 text-xs text-[var(--cc-color-brand)] hover:text-[var(--cc-color-brand)] bg-[var(--cc-color-brand)]/10 hover:bg-[var(--cc-color-brand)]/20 rounded-lg transition-colors">
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(club._id, club.name)}
                             disabled={deletingId === club._id}
-                            className="px-3 py-1.5 text-xs text-red-400 hover:text-red-300 bg-red-950/20 hover:bg-red-950/40 border border-red-900/30 rounded-lg transition-colors disabled:opacity-40">
+                            className="px-3 py-1.5 text-xs text-[var(--cc-color-danger)] hover:text-[var(--cc-color-danger)] bg-[var(--cc-color-danger-soft)] hover:bg-[var(--cc-color-danger)]/10 border border-[var(--cc-color-danger)]/30 rounded-lg transition-colors disabled:opacity-40">
                             {deletingId === club._id ? "…" : "Delete"}
                           </button>
                         </div>
@@ -249,7 +226,7 @@ export default function AdminPanel() {
             ) : pendingClubs.length === 0 ? (
               <div className="text-center py-16">
                 <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-2xl bg-cc-surface-weak">
-                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <CheckCircle2 size={16} className="text-[var(--cc-color-success)]" />
                 </div>
                 <p className="text-cc font-semibold mb-1">All caught up</p>
                 <p className="text-cc-muted text-sm">No pending member requests across any club.</p>
@@ -272,7 +249,7 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <button onClick={() => navigate(`/clubs/${club._id}`)}
-                        className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                        className="text-xs text-[var(--cc-color-brand)] hover:text-[var(--cc-color-brand)] transition-colors">
                         Manage club →
                       </button>
                     </div>
@@ -281,14 +258,14 @@ export default function AdminPanel() {
                     <div className="divide-y divide-cc-soft">
                       {club.pendingMembers.map((m) => (
                         <div key={m._id} className="flex items-center gap-3 px-5 py-3">
-                          <div className="w-7 h-7 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-[var(--cc-color-surface-brand)] ring-1 ring-[var(--cc-color-brand)]/20 flex items-center justify-center text-[11px] font-bold text-[var(--cc-color-brand)] shrink-0">
                             {(m.userId?.name || "?")[0]?.toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-cc truncate">{m.userId?.name || "Unknown"}</p>
                             <p className="text-[11px] text-cc-muted truncate">{m.userId?.email}</p>
                           </div>
-                          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-yellow-950 text-yellow-300 border border-yellow-800 rounded-full font-semibold">
+                          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border border-[var(--cc-color-warning)] rounded-full font-semibold">
                             Pending
                           </span>
                         </div>
@@ -300,7 +277,7 @@ export default function AdminPanel() {
             )}
           </>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

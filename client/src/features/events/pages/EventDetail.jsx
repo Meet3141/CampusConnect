@@ -30,27 +30,28 @@ import {
   deleteBookmark,
 } from "../api";
 import { InfoRow, VolunteerPanel } from "../ui";
+import PageContainer from "../../../components/layout/PageContainer";
 import { Code2, Wrench, Mic, Drama, Zap, ClipboardList, Trophy, Landmark } from "lucide-react";
 import { Calendar, Clock, Hourglass, MapPin, Users, Building2, Settings, Trash2, Bookmark, BarChart3 } from "lucide-react";
 
 const EVENT_CAT = {
-  hackathon: { Icon: Code2,         bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-indigo-950 text-indigo-300 border-indigo-800" },
+  hackathon: { Icon: Code2,         bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]" },
   workshop:  { Icon: Wrench,        bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
   webinar:   { Icon: Mic,           bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
   cultural:  { Icon: Drama,         bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:    { Icon: Zap,           bg: "from-emerald-900/50 to-green-900/30", badge: "bg-emerald-950 text-emerald-300 border-emerald-800" },
-  meeting:   { Icon: ClipboardList, bg: "from-slate-800/50 to-slate-900/30",   badge: "bg-slate-800 text-slate-300 border-slate-700" },
+  sports:    { Icon: Zap,           bg: "from-emerald-900/50 to-green-900/30", badge: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]" },
+  meeting:   { Icon: ClipboardList, bg: "from-slate-800/50 to-slate-900/30",   badge: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]" },
   competition:{ Icon: Trophy,       bg: "from-rose-900/50 to-pink-900/30",     badge: "bg-rose-950 text-rose-300 border-rose-800" },
-  conference: { Icon: Landmark,     bg: "from-amber-900/50 to-orange-900/30",  badge: "bg-amber-950 text-amber-300 border-amber-800" },
+  conference: { Icon: Landmark,     bg: "from-amber-900/50 to-orange-900/30",  badge: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]" },
 };
 const catOf = (k) => EVENT_CAT[k] || EVENT_CAT.meeting;
 
 
 const STATUS_BADGE = {
-  upcoming:  "bg-indigo-950 text-indigo-300 border-indigo-800",
-  ongoing:   "bg-emerald-950 text-emerald-300 border-emerald-800",
-  completed: "bg-slate-800 text-slate-400 border-slate-700",
-  cancelled: "bg-red-950 text-red-400 border-red-900",
+  upcoming:  "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]",
+  ongoing:   "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]",
+  completed: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]",
+  cancelled: "bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]",
 };
 
 const formatDuration = (ms) => {
@@ -282,7 +283,7 @@ export default function EventDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+        <div className="w-10 h-10 rounded-full border-2 border-[var(--cc-color-brand)] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -291,8 +292,8 @@ export default function EventDetail() {
     return (
       <div className="flex items-center justify-center px-4 py-20 text-center">
         <div>
-          <p className="text-red-400 mb-4">{error || "Event not found."}</p>
-          <button onClick={() => navigate(-1)} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm transition-colors">
+          <p className="text-[var(--cc-color-danger)] mb-4">{error || "Event not found."}</p>
+          <button onClick={() => navigate(-1)} className="px-5 py-2 btn-primary rounded-xl text-sm transition-colors">
             Go Back
           </button>
         </div>
@@ -315,22 +316,22 @@ export default function EventDetail() {
   const durationMs = (d && end) ? Math.max(0, end.getTime() - d.getTime()) : 0;
 
   return (
-    <div className="text-white">
+    <PageContainer inset className="text-[var(--cc-color-text-primary)]">
       {/* Hero */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden rounded-2xl mb-6">
         <div className={`absolute inset-0 bg-linear-to-b ${cat.bg} to-transparent`} />
         {event.image && (
           <img src={event.image} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-[0.08]" />
         )}
 
         <div className="relative px-5 lg:px-6 pt-5 pb-6">
-          <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-6 transition-colors">
+          <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-[var(--cc-color-text-muted)] hover:text-[var(--cc-color-text-primary)] text-sm mb-6 transition-colors">
             <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span> Back
           </button>
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/7 ring-1 ring-white/10 flex items-center justify-center shrink-0">
-              {cat.Icon && <cat.Icon size={24} className="text-white/80" />}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[var(--cc-color-surface-elevated)] ring-1 ring-[var(--cc-color-border-strong)] flex items-center justify-center shrink-0">
+              {cat.Icon && <cat.Icon size={24} className="text-[var(--cc-color-text-primary)]/80" />}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -348,14 +349,14 @@ export default function EventDetail() {
               {event.clubId && (
                 <button
                   onClick={() => navigate(`/clubs/${event.clubId._id || event.clubId}`)}
-                  className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 text-sm mt-2 transition-colors"
+                  className="flex items-center gap-1.5 text-[var(--cc-color-brand)] hover:text-[var(--cc-color-brand-hover)] text-sm mt-2 transition-colors"
                 >
                   <Building2 size={14} className="shrink-0" />
                   {event.clubId.name || "Club"}
                 </button>
               )}
 
-              <div className="flex flex-wrap gap-6 mt-4 text-sm text-slate-400">
+              <div className="flex flex-wrap gap-6 mt-4 text-sm text-[var(--cc-color-text-muted)]">
                 <span className="flex items-center gap-1.5"><Calendar size={14} className="shrink-0" /> {dateStr}</span>
                 <span className="flex items-center gap-1.5"><Clock    size={24} className="shrink-0" /> {timeStr}</span>
                 {end && durationMs > 0 && <span className="flex items-center gap-1.5"><Hourglass size={14} className="shrink-0" /> {formatDuration(durationMs)}</span>}
@@ -371,53 +372,53 @@ export default function EventDetail() {
                 <>
                   {!isRegistered && !isFull && (
                     <button onClick={handleRsvp} disabled={actionLoading}
-                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                      className="px-5 py-2.5 btn-primary rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
                       {actionLoading ? "…" : "RSVP"}
                     </button>
                   )}
                   {isRegistered && (
                     <button onClick={handleCancelRsvp} disabled={actionLoading}
-                      className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap">
+                      className="px-5 py-2.5 border border-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap">
                       Cancel RSVP
                     </button>
                   )}
                   {isFull && !isRegistered && (
-                    <span className="px-5 py-2.5 bg-slate-800/60 text-slate-500 rounded-xl text-sm text-center">Event Full</span>
+                    <span className="px-5 py-2.5 bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] rounded-xl text-sm text-center">Event Full</span>
                   )}
                 </>
               )}
               {user && canManageLifecycle && isUpcoming && (
                 <button onClick={handleStartEvent} disabled={actionLoading}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                  className="px-5 py-2.5 bg-[var(--cc-color-success)] hover:bg-[var(--cc-color-success)]/80 text-[var(--cc-color-on-brand)] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
                   {actionLoading ? "…" : "▶ Start Event"}
                 </button>
               )}
               {user && canManageLifecycle && isOngoing && (
                 <button onClick={handleEndEvent} disabled={actionLoading}
-                  className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                  className="px-5 py-2.5 bg-[var(--cc-color-warning)] hover:bg-[var(--cc-color-warning)]/80 text-[var(--cc-color-on-brand)] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
                   {actionLoading ? "…" : "■ End Event"}
                 </button>
               )}
               {user && canManageLifecycle && isCompleted && (
                 <>
                   <button onClick={handleRestartEvent} disabled={actionLoading}
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                    className="px-5 py-2.5 bg-[var(--cc-color-success)] hover:bg-[var(--cc-color-success)]/80 text-[var(--cc-color-on-brand)] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
                     {actionLoading ? "…" : "↺ Restart Event"}
                   </button>
                   <button onClick={() => navigate(`/events/${id}/attendance`)}
-                    className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
+                    className="px-5 py-2.5 bg-[var(--cc-color-surface-brand)] border border-[var(--cc-color-brand)] hover:bg-[var(--cc-color-surface-brand)]/60 text-[var(--cc-color-brand)] rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
                     <BarChart3 size={16} /> View Analytics
                   </button>
                 </>
               )}
               {canApplyForVolunteer && (
                 <button onClick={handleVolunteer} disabled={actionLoading}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
+                  className="px-5 py-2.5 bg-[var(--cc-color-success)] hover:bg-[var(--cc-color-success)]/80 text-[var(--cc-color-on-brand)] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
                   {actionLoading ? "…" : "Volunteer"}
                 </button>
               )}
               {isVolunteer && event?.showOnVolunteerHub && (
-                <span className="px-5 py-2.5 border border-emerald-900/60 bg-emerald-950/20 text-emerald-300 rounded-xl text-sm text-center whitespace-nowrap">
+                <span className="px-5 py-2.5 border border-[var(--cc-color-success)] bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] rounded-xl text-sm text-center whitespace-nowrap">
                   Volunteer Applied
                 </span>
               )}
@@ -425,12 +426,12 @@ export default function EventDetail() {
                 <>
                   {(isEventCreator || isClubAdminOfEvent || isOrgAdmin) && (
                     <button onClick={() => navigate(`/events/${id}/edit`)}
-                      className="px-5 py-2.5 bg-indigo-950/40 border border-indigo-800 hover:bg-indigo-950/60 text-indigo-300 rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
+                      className="px-5 py-2.5 bg-[var(--cc-color-surface-brand)] border border-[var(--cc-color-brand)] hover:bg-[var(--cc-color-surface-brand)]/60 text-[var(--cc-color-brand)] rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
                       <Settings size={16} /> Manage
                     </button>
                   )}
                   <button onClick={toggleBookmark}
-                    className="px-5 py-2.5 bg-white/4 border border-white/8 hover:border-white/15 rounded-xl text-sm transition-all whitespace-nowrap flex items-center gap-2">
+                    className="px-5 py-2.5 bg-[var(--cc-color-surface-elevated)] border border-[var(--cc-color-border)] hover:border-[var(--cc-color-border-strong)] rounded-xl text-sm transition-all whitespace-nowrap flex items-center gap-2">
                     <Bookmark size={16} className={bookmarkId ? "fill-current" : ""} />
                     {bookmarkId ? "Bookmarked" : "Bookmark"}
                   </button>
@@ -438,7 +439,7 @@ export default function EventDetail() {
               )}
               {canDeleteEvent && (
                 <button onClick={handleDeleteEvent} disabled={actionLoading}
-                  className="px-5 py-2.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2">
+                  className="px-5 py-2.5 border border-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2">
                   <Trash2 size={16} /> Delete Event
                 </button>
               )}
@@ -448,20 +449,20 @@ export default function EventDetail() {
       </div>
 
       {/* Content */}
-      <div className="px-5 lg:px-6 py-6">
+      <div className="px-1 py-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Description */}
           <div className="lg:col-span-2">
-            <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
-              <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">About this event</h3>
-              <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
+            <div className="rounded-2xl surface-primary p-5">
+              <h3 className="text-[11px] uppercase tracking-widest text-[var(--cc-color-text-secondary)] font-semibold mb-4">About this event</h3>
+              <p className="text-[var(--cc-color-text-primary)] text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
-              <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">Details</h3>
+            <div className="rounded-2xl surface-primary p-5">
+              <h3 className="text-[11px] uppercase tracking-widest text-[var(--cc-color-text-secondary)] font-semibold mb-4">Details</h3>
               <dl className="space-y-3 text-sm">
                 <InfoRow label="Date" value={dateStr} />
                 <InfoRow label="Time" value={timeStr} />
@@ -480,25 +481,25 @@ export default function EventDetail() {
             </div>
 
             {canManageLifecycle && (isOngoing || isCompleted) && (
-              <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
-                <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">Attendance</h3>
+              <div className="rounded-2xl surface-primary p-5">
+                <h3 className="text-[11px] uppercase tracking-widest text-[var(--cc-color-text-secondary)] font-semibold mb-4">Attendance</h3>
                 <div className="grid grid-cols-3 gap-3 text-center text-xs mb-4">
-                  <div className="rounded-xl bg-white/4 p-3">
-                    <div className="text-slate-500">Registered</div>
-                    <div className="mt-1 text-white font-semibold">{registeredCount}</div>
+                  <div className="rounded-xl bg-[var(--cc-color-surface-elevated)] p-3">
+                    <div className="text-[var(--cc-color-text-muted)]">Registered</div>
+                    <div className="mt-1 text-[var(--cc-color-text-primary)] font-semibold">{registeredCount}</div>
                   </div>
-                  <div className="rounded-xl bg-white/4 p-3">
-                    <div className="text-slate-500">Attended</div>
-                    <div className="mt-1 text-emerald-300 font-semibold">{event.attendedCount || 0}</div>
+                  <div className="rounded-xl bg-[var(--cc-color-surface-elevated)] p-3">
+                    <div className="text-[var(--cc-color-text-muted)]">Attended</div>
+                    <div className="mt-1 text-[var(--cc-color-success)] font-semibold">{event.attendedCount || 0}</div>
                   </div>
-                  <div className="rounded-xl bg-white/4 p-3">
-                    <div className="text-slate-500">No-shows</div>
-                    <div className="mt-1 text-amber-300 font-semibold">{event.noShowCount || 0}</div>
+                  <div className="rounded-xl bg-[var(--cc-color-surface-elevated)] p-3">
+                    <div className="text-[var(--cc-color-text-muted)]">No-shows</div>
+                    <div className="mt-1 text-[var(--cc-color-warning)] font-semibold">{event.noShowCount || 0}</div>
                   </div>
                 </div>
                 <button
                   onClick={() => navigate(`/events/${id}/attendance`)}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl text-sm font-medium btn-primary transition-colors"
                 >
                   {isCompleted ? "View Analytics" : "Open Attendance Panel"}
                 </button>
@@ -507,19 +508,19 @@ export default function EventDetail() {
 
             {/* Attendees preview */}
             {attendees.filter((a) => a.status === "registered").length > 0 && (
-              <div className="rounded-2xl border border-white/7 bg-white/2 p-5">
-                <h3 className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
+              <div className="rounded-2xl surface-primary p-5">
+                <h3 className="text-[11px] uppercase tracking-widest text-[var(--cc-color-text-secondary)] font-semibold mb-4">
                   Attendees ({registeredCount})
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {attendees.filter((a) => a.status === "registered").slice(0, 12).map((a, i) => (
                     <div key={i} title={a.userId?.name}
-                      className="w-8 h-8 rounded-full bg-indigo-950 ring-1 ring-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300 uppercase select-none">
+                      className="w-8 h-8 rounded-full bg-[var(--cc-color-surface-brand)] ring-1 ring-[var(--cc-color-brand)]/20 flex items-center justify-center text-[11px] font-bold text-[var(--cc-color-brand)] uppercase select-none">
                       {(a.userId?.name || "?")[0]}
                     </div>
                   ))}
                   {registeredCount > 12 && (
-                    <div className="w-8 h-8 rounded-full bg-white/6 flex items-center justify-center text-[10px] text-slate-500">
+                    <div className="w-8 h-8 rounded-full bg-[var(--cc-color-surface-elevated)] flex items-center justify-center text-[10px] text-[var(--cc-color-text-muted)]">
                       +{registeredCount - 12}
                     </div>
                   )}
@@ -542,7 +543,7 @@ export default function EventDetail() {
           />
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

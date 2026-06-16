@@ -31,7 +31,7 @@ import {
 import EventCard from "../../../components/data-display/EventCard";
 import { CLUB_CATEGORY_META, EVENT_CATEGORY_META } from "../../../theme";
 
-const FALLBACK_META = { Icon: null, badge: "bg-slate-800 text-slate-300 border-slate-700", gradient: "from-slate-800/50 to-slate-700/50" };
+const FALLBACK_META = { Icon: null, badge: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]", gradient: "from-[var(--cc-color-surface-elevated)]/50 to-[var(--cc-color-surface-hover)]/50" };
 export const catOf = (key) => CLUB_CATEGORY_META[key] || EVENT_CATEGORY_META[key] || FALLBACK_META;
 
 function getGreeting() {
@@ -79,8 +79,8 @@ function DashboardPageHeader({ name, onCreateEvent, onBrowseClubs, onOpenChats }
 }
 
 export default function Dashboard() {
-  const { user }  = useAuth();
-  const navigate  = useNavigate();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { myClubs, events, ongoingEvents, chats, bookmarks, loading, stats } = useDashboardData(user);
   const {
@@ -93,7 +93,7 @@ export default function Dashboard() {
   if (loading) return <DashboardSkeleton />;
 
   // Split events for layout
-  const heroEvent     = events[0] || null;
+  const heroEvent = events[0] || null;
   const compactEvents = events.slice(1);
 
   // Recommended events: events from clubs the user has not attended (simple heuristic: all events minus hero)
@@ -134,7 +134,7 @@ export default function Dashboard() {
             onLink={() => navigate("/clubs")}
           >
             {myClubs.length === 0 ? (
-              <EmptyState icon={Building2} message="You haven't joined any clubs yet." action="Explore Clubs" onAction={() => navigate("/clubs")} />
+              <EmptyState icon={Building2} title="You haven't joined any clubs yet." action={{ label: "Explore Clubs", onClick: () => navigate("/clubs") }} compact />
             ) : (
               /* Mobile: horizontal scroll / Desktop: grid */
               <div className="cc-horizontal-scroll sm:grid sm:grid-cols-2 xl:grid-cols-3 sm:gap-3">
@@ -160,123 +160,123 @@ export default function Dashboard() {
         {/* ── Dashboard widgets ── */}
         <div className="cc-dashboard-overview-grid">
           <div className="cc-dashboard-overview-column">
-          <Section
-            title="Upcoming events"
-            count={events.length}
-            linkLabel="See all →"
-            onLink={() => navigate("/events")}
-          >
-            {events.length === 0 ? (
-              <EmptyState icon={CalendarDays} message="No upcoming events found." />
-            ) : (
-              <div className="space-y-2">
-                {heroEvent && (
-                  <EventCard
-                    event={heroEvent}
-                    variant="hero"
-                    index={0}
-                    onClick={() => navigate(`/events/${heroEvent._id}`)}
-                  />
-                )}
-                {compactEvents.length > 0 && (
-                  <div className={styles.eventList}>
-                    {compactEvents.map((ev, i) => (
-                      <EventRow
-                        key={ev._id}
-                        event={ev}
-                        last={i === compactEvents.length - 1}
-                        onClick={() => navigate(`/events/${ev._id}`)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </Section>
+            <Section
+              title="Upcoming events"
+              count={events.length}
+              linkLabel="See all →"
+              onLink={() => navigate("/events")}
+            >
+              {events.length === 0 ? (
+                <EmptyState icon={CalendarDays} title="No upcoming events found." compact />
+              ) : (
+                <div className="space-y-2">
+                  {heroEvent && (
+                    <EventCard
+                      event={heroEvent}
+                      variant="hero"
+                      index={0}
+                      onClick={() => navigate(`/events/${heroEvent._id}`)}
+                    />
+                  )}
+                  {compactEvents.length > 0 && (
+                    <div className={styles.eventList}>
+                      {compactEvents.map((ev, i) => (
+                        <EventRow
+                          key={ev._id}
+                          event={ev}
+                          last={i === compactEvents.length - 1}
+                          onClick={() => navigate(`/events/${ev._id}`)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </Section>
 
-          <Section
-            title="Ongoing events"
-            count={ongoingEvents.length}
-            linkLabel="See all →"
-            onLink={() => navigate("/events")}
-          >
-            {ongoingEvents.length === 0 ? (
-              <EmptyState icon={Radio} message="No ongoing events right now." />
-            ) : (
-              <div className={styles.eventList}>
-                {ongoingEvents.map((ev, i) => (
-                  <EventRow
-                    key={ev._id}
-                    event={ev}
-                    last={i === ongoingEvents.length - 1}
-                    onClick={() => navigate(`/events/${ev._id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </Section>
+            <Section
+              title="Ongoing events"
+              count={ongoingEvents.length}
+              linkLabel="See all →"
+              onLink={() => navigate("/events")}
+            >
+              {ongoingEvents.length === 0 ? (
+                <EmptyState icon={Radio} title="No ongoing events right now." compact />
+              ) : (
+                <div className={styles.eventList}>
+                  {ongoingEvents.map((ev, i) => (
+                    <EventRow
+                      key={ev._id}
+                      event={ev}
+                      last={i === ongoingEvents.length - 1}
+                      onClick={() => navigate(`/events/${ev._id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </Section>
           </div>
 
           <div className="cc-dashboard-overview-column">
-          <Section
-            title="Recent chats"
-            count={chats.length}
-            linkLabel="Open →"
-            onLink={() => navigate("/chats")}
-          >
-            {chats.length === 0 ? (
-              <EmptyState icon={MessageCircle} message="No chats yet." />
-            ) : (
-              <div className={styles.eventList}>
-                {chats.slice(0, 4).map((chat, i) => (
-                  <ChatRow
-                    key={chat._id}
-                    chat={chat}
-                    last={i === Math.min(chats.length, 4) - 1}
-                    onClick={() => navigate(`/chats/${chat._id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </Section>
-          <Section
-            title="Bookmarks"
-            count={bookmarks.length}
-            linkLabel="View all →"
-            onLink={() => navigate("/bookmarks")}
-          >
-            {bookmarks.length === 0 ? (
-              <EmptyState icon={Bookmark} message="No bookmarks saved." />
-            ) : (
-              <div className={styles.eventList}>
-                {bookmarks.slice(0, 4).map((bk, i) => (
-                  <BookmarkRow
-                    key={bk._id}
-                    bookmark={bk}
-                    last={i === Math.min(bookmarks.length, 4) - 1}
-                  />
-                ))}
-              </div>
-            )}
-          </Section>
+            <Section
+              title="Recent chats"
+              count={chats.length}
+              linkLabel="Open →"
+              onLink={() => navigate("/chats")}
+            >
+              {chats.length === 0 ? (
+                <EmptyState icon={MessageCircle} title="No chats yet." compact />
+              ) : (
+                <div className={styles.eventList}>
+                  {chats.slice(0, 4).map((chat, i) => (
+                    <ChatRow
+                      key={chat._id}
+                      chat={chat}
+                      last={i === Math.min(chats.length, 4) - 1}
+                      onClick={() => navigate(`/chats/${chat._id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </Section>
+            <Section
+              title="Bookmarks"
+              count={bookmarks.length}
+              linkLabel="View all →"
+              onLink={() => navigate("/bookmarks")}
+            >
+              {bookmarks.length === 0 ? (
+                <EmptyState icon={Bookmark} title="No bookmarks saved." compact />
+              ) : (
+                <div className={styles.eventList}>
+                  {bookmarks.slice(0, 4).map((bk, i) => (
+                    <BookmarkRow
+                      key={bk._id}
+                      bookmark={bk}
+                      last={i === Math.min(bookmarks.length, 4) - 1}
+                    />
+                  ))}
+                </div>
+              )}
+            </Section>
           </div>
 
           <div className="cc-dashboard-overview-column">
-          <Section
-            title="Monthly calendar"
-            count={calendarEvents.length}
-          >
-            <MonthlyCalendar
-              events={calendarEvents}
-              loading={calendarLoading}
-              monthStart={monthStart}
-              onEventClick={(ev) => {
-                if (!ev?.id) return;
-                const base = ev.source === "external" ? "/external-events" : "/events";
-                navigate(`${base}/${ev.id}`);
-              }}
-            />
-          </Section>
+            <Section
+              title="Monthly calendar"
+              count={calendarEvents.length}
+            >
+              <MonthlyCalendar
+                events={calendarEvents}
+                loading={calendarLoading}
+                monthStart={monthStart}
+                onEventClick={(ev) => {
+                  if (!ev?.id) return;
+                  const base = ev.source === "external" ? "/external-events" : "/events";
+                  navigate(`${base}/${ev.id}`);
+                }}
+              />
+            </Section>
           </div>
 
         </div>

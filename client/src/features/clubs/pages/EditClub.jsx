@@ -18,6 +18,8 @@ import FormField from "../../../components/ui/FormField";
 import { inputCls } from "../../../utils/inputCls";
 import { CLUB_CATEGORIES, CLUB_CATEGORY_META } from "../../../theme";
 import { fetchClubById, updateClub } from "../api";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 const NAME_MAX = 100;
 const DESC_MAX = 1000;
@@ -120,7 +122,7 @@ export default function EditClub() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-9 h-9 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+        <div className="w-9 h-9 rounded-full border-2 border-[var(--cc-color-brand)] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -132,7 +134,7 @@ export default function EditClub() {
         <div>
           <p className="text-body-sm text-error mb-4">{fetchErr}</p>
           <button onClick={() => navigate(-1)}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors">
+            className="px-5 py-2 btn-primary rounded-xl text-body-sm transition-colors">
             Go Back
           </button>
         </div>
@@ -145,10 +147,10 @@ export default function EditClub() {
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
           <div className="text-heading-xl mb-5">🔒</div>
-          <h2 className="text-heading-md text-white mb-2">Access Restricted</h2>
+          <h2 className="text-heading-md text-[var(--cc-color-text-primary)] mb-2">Access Restricted</h2>
           <p className="text-body-sm text-muted">You don't have permission to edit this club.</p>
           <button onClick={() => navigate(`/clubs/${id}`)}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors">
+            className="mt-6 px-5 py-2.5 btn-primary rounded-xl text-body-sm transition-colors">
             Back to Club
           </button>
         </div>
@@ -157,41 +159,21 @@ export default function EditClub() {
   }
 
   return (
-    <div className="text-white">
-      {/* Header */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-32 left-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
-        </div>
-        <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-label text-muted font-mono mb-3">
-            Admin / Clubs / Edit
-          </p>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-display-lg">
-                Edit{" "}
-                <span className="cc-text-gradient">
-                  Club
-                </span>
-              </h1>
-              <p className="text-body-sm text-muted mt-1.5">
-                Changes are reflected immediately for all members.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate(`/clubs/${id}`)}
-              className="shrink-0 px-4 py-2 border border-white/[0.08] hover:border-white/[0.15] text-slate-400 hover:text-white rounded-xl text-body-sm transition-all"
-            >
-              ← Back to Club
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="w-full">
+      <PageHeader
+        breadcrumb="Admin / Clubs / Edit"
+        title={<>Edit <span className="cc-text-gradient">Club</span></>}
+        subtitle="Changes are reflected immediately for all members."
+        actions={
+          <button onClick={() => navigate(`/clubs/${id}`)} className="px-4 py-2 text-sm font-medium rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface-hover text-cc transition-colors">
+            Back to Club
+          </button>
+        }
+      />
 
       {/* Form */}
-      <div className="px-5 lg:px-6 py-6">
-        <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
+      <PageContainer className="py-6 max-w-xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* Name */}
           <FormField label="Club Name" required hint={`${form.name.length} / ${NAME_MAX}`} error={fieldErrors.name}>
@@ -207,7 +189,7 @@ export default function EditClub() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-label text-muted">
-                Category <span className="text-red-400">*</span>
+                Category <span className="text-[var(--cc-color-danger)]">*</span>
               </label>
             </div>
             {fieldErrors.category && (
@@ -221,13 +203,13 @@ export default function EditClub() {
                   <button key={cat} type="button" onClick={() => set("category", cat)}
                     className={`p-3.5 rounded-xl border text-left transition-all group ${
                       sel
-                        ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15] hover:bg-white/[0.05]"
+                        ? "bg-[var(--cc-color-brand)]/20 border-[var(--cc-color-brand)]/60 ring-1 ring-[var(--cc-color-brand)]/20"
+                        : "bg-[var(--cc-color-surface)] border-[var(--cc-color-border)] hover:border-[var(--cc-color-border-strong)] hover:bg-[var(--cc-color-surface-hover)]"
                     }`}>
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg mb-1.5 bg-cc-surface group-hover:scale-110 transition-transform">
                       {cm.Icon && <cm.Icon size={24} className="text-cc-muted" />}
                     </div>
-                    <div className="text-body-sm font-semibold text-white capitalize">{cat}</div>
+                    <div className="text-body-sm font-semibold text-[var(--cc-color-text-primary)] capitalize">{cat}</div>
                     <div className="text-caption text-muted mt-0.5 leading-tight">{cm.desc}</div>
                   </button>
                 );
@@ -255,7 +237,7 @@ export default function EditClub() {
               className={inputCls(!!fieldErrors.coverImage)}
             />
             {form.coverImage && !fieldErrors.coverImage && (
-              <div className="mt-2 h-24 rounded-xl overflow-hidden border border-white/[0.07]">
+              <div className="mt-2 h-24 rounded-xl overflow-hidden border border-[var(--cc-color-border)]">
                 <img src={form.coverImage} alt="Preview"
                   className="w-full h-full object-cover opacity-50"
                   onError={(e) => { e.currentTarget.style.display = "none"; }} />
@@ -265,25 +247,25 @@ export default function EditClub() {
 
           {/* API error */}
           {apiError && (
-            <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-body-sm">
+            <div className="bg-[var(--cc-color-danger-soft)] border border-[var(--cc-color-danger)] rounded-xl p-4 text-[var(--cc-color-danger)] text-body-sm">
               {apiError}
             </div>
           )}
 
           {/* Success flash */}
           {saved && (
-            <div className="bg-emerald-950/30 border border-emerald-900/60 rounded-xl p-4 text-emerald-400 text-body-sm">
+            <div className="bg-[var(--cc-color-success-soft)] border border-[var(--cc-color-success)] rounded-xl p-4 text-[var(--cc-color-success)] text-body-sm">
               ✓ Changes saved — redirecting…
             </div>
           )}
 
           <div className="flex gap-3">
             <button type="button" onClick={() => navigate(`/clubs/${id}`)}
-              className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-body-sm transition-all">
+              className="flex-1 py-3 border border-[var(--cc-color-border-strong)] hover:border-[var(--cc-color-text-muted)] text-[var(--cc-color-text-muted)] hover:text-[var(--cc-color-text-primary)] rounded-xl text-body-sm transition-all">
               Cancel
             </button>
             <button type="submit" disabled={saving || saved}
-              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              className="flex-1 py-3 btn-primary rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -293,7 +275,7 @@ export default function EditClub() {
             </button>
           </div>
         </form>
-      </div>
+      </PageContainer>
     </div>
   );
 }

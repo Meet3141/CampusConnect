@@ -15,6 +15,19 @@ export default defineConfig({
     }),tailwindcss()
   ],
   server: {
+    host: true, // Listen on all local IPs
+    proxy: {
+      // Proxy API requests to the backend — works from any device on the network
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        ws: true,         // proxy WebSocket upgrades too
+      },
+    },
     fs: {
       allow: [path.resolve(__dirname, '..')],
     },
