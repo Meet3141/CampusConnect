@@ -22,6 +22,8 @@ import Select from "../../../components/forms/Select";
 import Checkbox from "../../../components/forms/Checkbox";
 import Switch from "../../../components/forms/Switch";
 import Alert from "../../../components/feedback/Alert";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 // Helper: format duration in ms to human readable string
 const formatDuration = (ms) => {
@@ -153,29 +155,24 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="relative text-white">
+    <div className="w-full">
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-violet-700/6 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-80 h-80 bg-[var(--cc-color-brand)]/[0.06] rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-violet-700/[0.06] rounded-full blur-3xl" />
       </div>
 
-      <div className="relative max-w-xl mx-auto px-5 py-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="group flex items-center gap-2 text-body-sm text-muted hover:text-white mb-10 transition-colors"
-        >
-          <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
-          Back
-        </button>
+      <PageHeader
+        breadcrumb="Dashboard / Events / New"
+        title={<>Create an <span className="cc-text-gradient">Event</span></>}
+        subtitle="Plan and schedule a new event for your club."
+        actions={
+          <button onClick={() => navigate(-1)} className="px-4 py-2 text-sm font-medium rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface-hover text-cc transition-colors">
+            Go Back
+          </button>
+        }
+      />
 
-        <div className="mb-8">
-          <p className="text-label text-muted font-mono mb-2">Dashboard / Events / New</p>
-          <h1 className="text-display-lg">
-            Create an <span className="cc-text-gradient">Event</span>
-          </h1>
-          <p className="text-body-sm text-muted mt-2">Plan and schedule a new event for your club.</p>
-        </div>
-
+      <PageContainer className="py-6 max-w-xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Select
             label="Club"
@@ -205,7 +202,7 @@ export default function CreateEvent() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-label text-muted">
-                Category <span className="text-red-400">*</span>
+                Category <span className="text-[var(--cc-color-danger)]">*</span>
               </label>
             </div>
             {errors.category && <p className="text-micro text-error mb-2">{errors.category}</p>}
@@ -220,14 +217,14 @@ export default function CreateEvent() {
                     onClick={() => set("category", cat)}
                     className={`p-4 rounded-xl border text-left transition-all group ${
                       sel
-                        ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                        : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15] hover:bg-white/[0.05]"
+                        ? "bg-[var(--cc-color-brand)]/20 border-[var(--cc-color-brand)]/60 ring-1 ring-[var(--cc-color-brand)]/20"
+                        : "bg-[var(--cc-color-surface)] border-[var(--cc-color-border)] hover:border-[var(--cc-color-border-strong)] hover:bg-[var(--cc-color-surface-hover)]"
                     }`}
                   >
                     <div className="flex items-center justify-center w-9 h-9 rounded-xl mb-2 bg-cc-surface group-hover:scale-110 transition-transform">
                       {m.Icon && <m.Icon size={24} className="text-cc-muted" />}
                     </div>
-                    <div className="text-body-sm font-semibold text-white capitalize">{cat}</div>
+                    <div className="text-body-sm font-semibold text-[var(--cc-color-text-primary)] capitalize">{cat}</div>
                     <div className="text-caption text-muted mt-0.5 leading-tight">{m.desc}</div>
                   </button>
                 );
@@ -302,7 +299,7 @@ export default function CreateEvent() {
             />
           </div>
 
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 space-y-4">
+          <div className="rounded-2xl surface-primary p-5 space-y-4">
             <Switch
               label="Volunteer Opportunities"
               description="List this event on the Volunteer Hub so students can apply to help out."
@@ -310,7 +307,7 @@ export default function CreateEvent() {
               onChange={(v) => set("showOnVolunteerHub", v)}
             />
             {form.showOnVolunteerHub && (
-              <div className="space-y-4 pt-1 border-t border-white/[0.07]">
+              <div className="space-y-4 pt-1 border-t border-[var(--cc-color-border)]">
                 <div className="grid grid-cols-2 gap-3">
                   <Input
                     label="Volunteer Limit"
@@ -334,9 +331,9 @@ export default function CreateEvent() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 space-y-4">
+          <div className="rounded-2xl surface-primary p-5 space-y-4">
             <div>
-              <p className="text-sm font-semibold text-white">Attendance Policy</p>
+              <p className="text-sm font-semibold text-[var(--cc-color-text-primary)]">Attendance Policy</p>
               <p className="text-[11px] text-muted mt-0.5">Control warning and review behavior for this event.</p>
             </div>
             <Checkbox
@@ -379,12 +376,12 @@ export default function CreateEvent() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 btn-primary rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Creating…" : "Create Event"}
           </button>
         </form>
-      </div>
+      </PageContainer>
     </div>
   );
 }

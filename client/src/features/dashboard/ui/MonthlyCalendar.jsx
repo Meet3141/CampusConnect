@@ -7,9 +7,9 @@ const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const CATEGORY_DOT_COLORS = {
   hackathon: "var(--cc-color-brand)",
-  workshop: "#3DA9A0",
+  workshop: "#3da9a0",
   webinar: "var(--cc-color-accent)",
-  cultural: "#7C6FCD",
+  cultural: "#7c6fcd",
   sports: "var(--cc-color-success)",
   meeting: "var(--cc-color-text-muted)",
   conference: "var(--cc-color-warning)",

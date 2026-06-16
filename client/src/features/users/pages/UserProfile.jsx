@@ -13,6 +13,8 @@ import { useUserProfile } from "../hooks";
 import { useSyneFont } from "../../auth/hooks";
 import { TechStackBadges } from "../techStack.jsx";
 import { normalizeTechStack } from "../techStackUtils";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 // Same 12 avatars as Profile.jsx
 const AVATARS = {
@@ -56,7 +58,7 @@ export default function UserProfile() {
 
   if (loading) {
     return (
-      <div style={S.page}>
+      <div className="w-full">
         <div style={S.center}>
           <div style={S.spinner} />
         </div>
@@ -66,7 +68,7 @@ export default function UserProfile() {
 
   if (error) {
     return (
-      <div style={S.page}>
+      <div className="w-full">
         <div style={S.center}>
           <p style={{ color: "#e94560", marginBottom: 16 }}>{error}</p>
           <button onClick={() => navigate(-1)} style={S.backBtn}>← Go Back</button>
@@ -88,19 +90,19 @@ export default function UserProfile() {
         .back-btn:hover { background: rgba(255,255,255,0.06) !important; }
       `}</style>
 
-      <div style={S.page}>
+      <div className="w-full" style={{ fontFamily: "'Syne', sans-serif" }}>
 
-        {/* ── Nav ── */}
-        <nav style={S.nav}>
-          <button className="back-btn" onClick={() => navigate(-1)} style={S.navBack}>
-            <span style={{ fontSize: 18 }}>←</span>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12 }}>back</span>
-          </button>
-          <span style={S.navBrand}>CAMPUS<span style={{ color: "#e94560" }}>CONNECT</span></span>
-          <div style={{ width: 80 }} />
-        </nav>
+        <PageHeader
+          breadcrumb="Users / Public Profile"
+          title={`${profile.name}'s Profile`}
+          actions={
+            <button onClick={() => navigate(-1)} className="px-4 py-2 text-sm font-medium rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface-hover text-cc transition-colors">
+              Go Back
+            </button>
+          }
+        />
 
-        <main style={S.main}>
+        <PageContainer className="py-6">
 
           {/* ── Profile card ── */}
           <div style={S.card}>
@@ -214,7 +216,7 @@ export default function UserProfile() {
               </div>
             </div>
           </div>
-        </main>
+        </PageContainer>
       </div>
     </>
   );

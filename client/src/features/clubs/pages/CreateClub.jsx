@@ -19,6 +19,8 @@ import FormField from "../../../components/ui/FormField";
 import { inputCls } from "../../../utils/inputCls";
 import { CLUB_CATEGORIES, CLUB_CATEGORY_META } from "../../../theme";
 import { createClub } from "../api";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 const NAME_MAX = 100;
 const DESC_MAX = 1000;
@@ -111,17 +113,17 @@ export default function CreateClub() {
     return (
       <div className="flex items-center justify-center px-4 py-20">
         <div className="text-center max-w-sm">
-          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-800">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-5 rounded-2xl bg-[var(--cc-color-surface-elevated)]">
             <span className="text-2xl">🔒</span>
           </div>
-          <h2 className="text-heading-md text-white mb-2">Access Restricted</h2>
+          <h2 className="text-heading-md text-[var(--cc-color-text-primary)] mb-2">Access Restricted</h2>
           <p className="text-body-sm text-muted text-relaxed">
             Only users with <span className="text-accent">Club Admin</span> or{" "}
             <span className="text-accent">Org Admin</span> roles can create clubs.
           </p>
           <button
             onClick={() => navigate("/clubs")}
-            className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm transition-colors"
+            className="mt-6 px-5 py-2.5 btn-primary rounded-xl text-body-sm transition-colors"
           >
             Back to Clubs
           </button>
@@ -133,39 +135,25 @@ export default function CreateClub() {
   const selectedCat = CLUB_CATEGORY_META[form.category];
 
   return (
-    <div className="text-white">
+    <div className="w-full">
       {/* Background glow */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-80 h-80 bg-indigo-700/6 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-violet-700/6 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-80 h-80 bg-[var(--cc-color-brand)]/[0.06] rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-violet-700/[0.06] rounded-full blur-3xl" />
       </div>
 
-      <div className="relative max-w-xl mx-auto px-5 py-8">
+      <PageHeader
+        breadcrumb="Dashboard / Clubs / New"
+        title={<>Create a <span className="cc-text-gradient">Club</span></>}
+        subtitle="Build a community around a shared interest."
+        actions={
+          <button onClick={() => (step === 1 ? navigate("/clubs") : setStep(1))} className="px-4 py-2 text-sm font-medium rounded-xl border border-cc-soft bg-cc-surface-weak hover:bg-cc-surface-hover text-cc transition-colors">
+            {step === 1 ? "Back to Clubs" : "Back to Step 1"}
+          </button>
+        }
+      />
 
-        {/* Back */}
-        <button
-          onClick={() => (step === 1 ? navigate("/clubs") : setStep(1))}
-          className="group flex items-center gap-2 text-body-sm text-muted hover:text-white mb-10 transition-colors"
-        >
-          <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
-          {step === 1 ? "Back to Clubs" : "Back to Step 1"}
-        </button>
-
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-label text-muted font-mono mb-2">
-            Dashboard / Clubs / New
-          </p>
-          <h1 className="text-display-lg">
-            Create a{" "}
-            <span className="cc-text-gradient">
-              Club
-            </span>
-          </h1>
-          <p className="text-body-sm text-muted mt-2">
-            Build a community around a shared interest.
-          </p>
-        </div>
+      <PageContainer className="py-6 max-w-xl mx-auto">
 
         {/* Step indicator */}
         <div className="flex items-center gap-3 mb-9">
@@ -173,18 +161,18 @@ export default function CreateClub() {
             <div key={s} className="flex items-center gap-3">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-caption font-bold transition-all ${
                 step === s
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-[var(--cc-color-brand)] text-[var(--cc-color-on-brand)]"
                   : s < step
-                  ? "bg-emerald-900/60 text-emerald-400 border border-emerald-700"
-                  : "bg-white/[0.04] text-slate-600 border border-white/[0.08]"
+                  ? "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border border-[var(--cc-color-success)]"
+                  : "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-secondary)] border border-[var(--cc-color-border)]"
               }`}>
                 {s < step ? "✓" : s}
               </div>
-              <span className={`text-caption font-semibold ${step === s ? "text-white" : "text-slate-600"}`}>
+              <span className={`text-caption font-semibold ${step === s ? "text-[var(--cc-color-text-primary)]" : "text-[var(--cc-color-text-secondary)]"}`}>
                 {s === 1 ? "Basics" : "Details"}
               </span>
               {idx < 1 && (
-                <div className={`w-10 h-px ${step > s ? "bg-emerald-700" : "bg-white/[0.08]"}`} />
+                <div className={`w-10 h-px ${step > s ? "bg-[var(--cc-color-success)]" : "bg-[var(--cc-color-border)]"}`} />
               )}
             </div>
           ))}
@@ -216,7 +204,7 @@ export default function CreateClub() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <label className="text-label text-muted">
-                  Category <span className="text-red-400">*</span>
+                  Category <span className="text-[var(--cc-color-danger)]">*</span>
                 </label>
               </div>
               {fieldErrors.category && (
@@ -233,14 +221,14 @@ export default function CreateClub() {
                       onClick={() => set("category", cat)}
                       className={`p-4 rounded-xl border text-left transition-all group ${
                         selected
-                          ? "bg-indigo-600/20 border-indigo-500/60 ring-1 ring-indigo-500/20"
-                          : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.15] hover:bg-white/[0.05]"
+                          ? "bg-[var(--cc-color-brand)]/20 border-[var(--cc-color-brand)]/60 ring-1 ring-[var(--cc-color-brand)]/20"
+                          : "bg-[var(--cc-color-surface)] border-[var(--cc-color-border)] hover:border-[var(--cc-color-border-strong)] hover:bg-[var(--cc-color-surface-hover)]"
                       }`}
                     >
                       <div className="flex items-center justify-center w-9 h-9 rounded-xl mb-2 bg-cc-surface group-hover:scale-110 transition-transform">
                         {cm.Icon && <cm.Icon size={24} className="text-cc-muted" />}
                       </div>
-                      <div className="text-body-sm font-semibold text-white capitalize">{cat}</div>
+                      <div className="text-body-sm font-semibold text-[var(--cc-color-text-primary)] capitalize">{cat}</div>
                       <div className="text-caption text-muted mt-0.5 leading-tight">{cm.desc}</div>
                     </button>
                   );
@@ -251,7 +239,7 @@ export default function CreateClub() {
             <button
               type="button"
               onClick={goNext}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-body-sm transition-colors"
+              className="w-full py-3 btn-primary rounded-xl font-semibold text-body-sm transition-colors"
             >
               Continue →
             </button>
@@ -264,12 +252,12 @@ export default function CreateClub() {
 
             {/* Preview strip */}
             {selectedCat && (
-              <div className={`rounded-xl border border-white/[0.07] overflow-hidden bg-gradient-to-r ${selectedCat.color} p-4 flex items-center gap-3`}>
+              <div className={`rounded-xl border border-[var(--cc-color-border)] overflow-hidden bg-gradient-to-r ${selectedCat.color} p-4 flex items-center gap-3`}>
                 <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10">
-                  {selectedCat.Icon && <selectedCat.Icon size={24} className="text-white/80" />}
+                  {selectedCat.Icon && <selectedCat.Icon size={24} className="text-[var(--cc-color-text-primary)]/80" />}
                 </span>
                 <div>
-                  <p className="font-semibold text-white text-body-sm">{form.name || "Club Name"}</p>
+                  <p className="font-semibold text-[var(--cc-color-text-primary)] text-body-sm">{form.name || "Club Name"}</p>
                   <p className="text-caption text-muted capitalize">{form.category}</p>
                 </div>
               </div>
@@ -306,7 +294,7 @@ export default function CreateClub() {
                 className={inputCls(!!fieldErrors.coverImage)}
               />
               {form.coverImage && !fieldErrors.coverImage && (
-                <div className="mt-2 h-24 rounded-xl overflow-hidden border border-white/[0.07]">
+                <div className="mt-2 h-24 rounded-xl overflow-hidden border border-[var(--cc-color-border)]">
                   <img
                     src={form.coverImage}
                     alt="Preview"
@@ -319,7 +307,7 @@ export default function CreateClub() {
 
             {/* API error */}
             {apiError && (
-              <div className="bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-red-400 text-body-sm">
+              <div className="bg-[var(--cc-color-danger-soft)] border border-[var(--cc-color-danger)] rounded-xl p-4 text-[var(--cc-color-danger)] text-body-sm">
                 {apiError}
               </div>
             )}
@@ -328,14 +316,14 @@ export default function CreateClub() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 border border-white/[0.10] hover:border-white/[0.18] text-slate-400 hover:text-white rounded-xl text-body-sm transition-all"
+                className="flex-1 py-3 border border-[var(--cc-color-border-strong)] hover:border-[var(--cc-color-text-muted)] text-[var(--cc-color-text-muted)] hover:text-[var(--cc-color-text-primary)] rounded-xl text-body-sm transition-all"
               >
                 ← Back
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 btn-primary rounded-xl text-body-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -349,7 +337,7 @@ export default function CreateClub() {
             </div>
           </form>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

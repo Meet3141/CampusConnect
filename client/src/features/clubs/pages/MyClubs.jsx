@@ -15,6 +15,8 @@ import Spinner from "../../../components/feedback/Spinner";
 import EmptyState from "../../../components/feedback/EmptyState";
 import FilterBar from "../../../components/navigation/FilterBar";
 import Button from "../../../components/ui/Button";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 
 
@@ -66,57 +68,36 @@ export default function MyClubs() {
   if (error) return <div className="py-12 px-6"><EmptyState variant="error" title={error} action={{ label: "Retry", onClick: () => window.location.reload() }} /></div>;
 
   return (
-    <div className="text-white">
-
-      {/* ── Header ── */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]">
-        <div className="absolute -top-32 -left-16 w-80 h-80 bg-indigo-700/8 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -top-12 right-8 w-60 h-60 bg-violet-700/8 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative w-full px-5 lg:px-6 pt-6 pb-5">
-          <p className="text-label text-muted font-mono mb-3">
-            Dashboard / My Clubs
-          </p>
-
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <h1 className="text-display-lg">
-                My{" "}
-                <span className="cc-text-gradient">
-                  Clubs
-                </span>
-              </h1>
-              <p className="text-body-sm text-muted mt-1.5">
-                {counts.all} club{counts.all !== 1 ? "s" : ""} you're connected to
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={() => navigate("/clubs")}>Browse All</Button>
-              {canCreateClub && (
-                <Button variant="primary" size="sm" onClick={() => navigate("/clubs/create")}>+ New Club</Button>
-              )}
-            </div>
+    <div className="w-full">
+      <PageHeader
+        breadcrumb="Dashboard / My Clubs"
+        title={<>My <span className="cc-text-gradient">Clubs</span></>}
+        subtitle={`${counts.all} club${counts.all !== 1 ? "s" : ""} you're connected to`}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={() => navigate("/clubs")}>Browse All</Button>
+            {canCreateClub && (
+              <Button variant="primary" size="sm" onClick={() => navigate("/clubs/create")}>+ New Club</Button>
+            )}
           </div>
-
-          {counts.all > 0 && (
-            <div className="mt-7">
-              <FilterBar
-                filters={[
-                  { value: "all", label: `All (${counts.all})` },
-                  { value: "active", label: `Active (${counts.active})` },
-                  { value: "pending", label: `Pending (${counts.pending})` },
-                ]}
-                value={activeFilter}
-                onChange={setActiveFilter}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+        }
+        filterRow={
+          counts.all > 0 && (
+            <FilterBar
+              filters={[
+                { value: "all", label: `All (${counts.all})` },
+                { value: "active", label: `Active (${counts.active})` },
+                { value: "pending", label: `Pending (${counts.pending})` },
+              ]}
+              value={activeFilter}
+              onChange={setActiveFilter}
+            />
+          )
+        }
+      />
 
       {/* ── Content ── */}
-      <div className="w-full px-5 lg:px-6 py-6">
+      <PageContainer className="py-6">
         {counts.all === 0 && (
           <EmptyState
             icon="🏙️"
@@ -143,7 +124,7 @@ export default function MyClubs() {
             ))}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }
@@ -159,7 +140,7 @@ function MyClubCard({ club, index, onClick }) {
     <button
       onClick={onClick}
       style={{ animationDelay: `${index * 55}ms` }}
-      className="group text-left rounded-2xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+      className="group text-left rounded-2xl border border-cc-soft bg-cc-surface-weak hover-bg-cc-surface hover-border-cc-strong transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[var(--cc-color-brand)]/40"
     >
       {/* Gradient header */}
       <div className={`relative h-24 bg-gradient-to-br ${meta.gradient} flex items-center justify-center`}>
@@ -184,7 +165,7 @@ function MyClubCard({ club, index, onClick }) {
       {/* Body */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="text-body-md font-semibold text-cc leading-snug group-hover:text-indigo-300 transition-colors line-clamp-1">
+          <h3 className="text-body-md font-semibold text-cc leading-snug group-hover:text-[var(--cc-color-brand)] transition-colors line-clamp-1">
             {club.name}
           </h3>
           <span className={`shrink-0 text-label px-2 py-0.5 rounded-full border ${meta.badge}`}>

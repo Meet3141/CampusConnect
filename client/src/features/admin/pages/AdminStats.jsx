@@ -15,19 +15,21 @@ import StatsCard from "../../../components/data-display/StatsCard";
 import Spinner from "../../../components/feedback/Spinner";
 import Button from "../../../components/ui/Button";
 import { Building2, Calendar, Globe, CheckCircle2, MessageCircle, Bookmark } from "lucide-react";
+import PageHeader from "../../../components/layout/PageHeader";
+import PageContainer from "../../../components/layout/PageContainer";
 
 /* Neutral operational chart palette — calm, non-neon, works on light and dark */
 const CATEGORY_COLORS = {
   technical:   "var(--cc-color-brand)",        // brand blue
-  cultural:    "#7C6FCD",                       // muted violet
+  cultural:    "#7c6fcd",                       // muted violet
   sports:      "var(--cc-color-success)",       // semantic green
   academic:    "var(--cc-color-warning)",       // semantic amber
-  arts:        "#C05E7A",                       // muted rose
+  arts:        "#c05e7a",                       // muted rose
   other:       "var(--cc-color-text-muted)",    // muted grey
-  hackathon:   "#5A7FD0",                       // steel blue
-  workshop:    "#3DA9A0",                       // teal
+  hackathon:   "#5a7fd0",                       // steel blue
+  workshop:    "#3da9a0",                       // teal
   webinar:     "var(--cc-color-accent)",        // sky surge
-  cultural2:   "#7C6FCD",
+  cultural2:   "#7c6fcd",
   sports2:     "var(--cc-color-success)",
   meeting:     "var(--cc-color-text-disabled)",
   conference:  "var(--cc-color-warning)",
@@ -175,7 +177,7 @@ export default function AdminStats() {
           <h2 className="text-xl font-semibold text-cc mb-2">Access Restricted</h2>
           <p className="text-cc-muted text-sm">Analytics are available to club and org admins only.</p>
           <button onClick={() => navigate("/dashboard")}
-            className="mt-6 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm transition-colors">
+            className="mt-6 px-5 py-2.5 bg-primary hover:bg-primary-hover text-[var(--cc-color-on-brand)] rounded-xl text-sm transition-colors">
             Back to Dashboard
           </button>
         </div>
@@ -194,36 +196,23 @@ export default function AdminStats() {
   };
 
   return (
-    <div className="text-cc">
+    <div className="w-full">
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-cc-soft">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 left-0 w-96 h-80 bg-blue-700/5 rounded-full blur-3xl" />
-          <div className="absolute top-0 right-0 w-60 h-60 bg-cyan-700/5 rounded-full blur-3xl" />
-        </div>
-        <div className="relative px-5 lg:px-6 pt-6 pb-5">
-          <div className="flex items-center justify-between mb-3">
-             <p className="text-[11px] tracking-widest text-cc-muted uppercase font-mono">
-               Admin / Analytics
-             </p>
-             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] uppercase font-bold tracking-wider">
-               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <PageHeader
+        breadcrumb={
+          <div className="flex items-center justify-between">
+             <span>Admin / Analytics</span>
+             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--cc-color-success)]/10 text-[var(--cc-color-success)] text-[10px] uppercase font-bold tracking-wider">
+               <span className="w-1.5 h-1.5 rounded-full bg-[var(--cc-color-success)] animate-pulse" />
                Live
              </span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-cc">
-            Platform{" "}
-            <span className="cc-text-gradient">
-              Analytics
-            </span>
-          </h1>
-          <p className="text-cc-muted text-sm mt-1.5">
-            Live snapshot — data pulled from the live database.
-          </p>
-        </div>
-      </div>
+        }
+        title={<>Platform <span className="cc-text-gradient">Analytics</span></>}
+        subtitle="Live snapshot — data pulled from the live database."
+      />
 
-      <div className="px-5 lg:px-6 py-6 space-y-6">
+      <PageContainer className="py-6 space-y-6">
 
         {/* ── Stat cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -281,7 +270,7 @@ export default function AdminStats() {
             </div>
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }
