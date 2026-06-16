@@ -3,13 +3,19 @@ import axios from "axios";
 /**
  * Axios instance for all API calls.
  *
+ * Uses a relative baseURL ("/api") so requests always go to the same host
+ * that served the page — Vite's dev proxy then forwards them to port 5000.
+ * This means the app works from any device on the network (desktop, mobile)
+ * without requiring a .env file or hardcoded IP address.
+ *
+ * In production: the reverse proxy (nginx, etc.) handles the /api forwarding.
  * withCredentials: true — instructs the browser to send/receive HttpOnly cookies
  * automatically with every request.  No manual token handling needed.
  */
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL ? `${API_BASE_URL}/api` : "/api",
   withCredentials: true,    // send cookies cross-origin
 });
 
@@ -52,15 +58,14 @@ api.interceptors.response.use(
 
       try {
         // Refresh token is sent automatically via the HttpOnly cookie
-        await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {}, { withCredentials: true });
+        await api.post("/auth/refresh-token", {});
 
         // New access token cookie is now set — retry the original request
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        // Refresh failed — redirect to login
-        window.location.href = "/login";
+        // Let the rejected promise bubble up — ProtectedRoute handles the UI redirect
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
