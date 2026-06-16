@@ -1,9 +1,9 @@
 import { useToast } from "../../context/ToastContext";
 
 const TYPE_STYLES = {
-  success: "border-emerald-500/30 bg-emerald-500/10 text-cc",
-  error: "border-red-500/30 bg-red-500/10 text-cc",
-  info: "border-slate-500/30 bg-slate-500/10 text-cc",
+  success: "border-[var(--cc-color-success)]/30 bg-[var(--cc-color-success)]/10 text-cc",
+  error: "border-[var(--cc-color-danger)]/30 bg-[var(--cc-color-danger-soft)] text-cc",
+  info: "border-[var(--cc-color-surface-hover)] bg-[var(--cc-color-surface-weak)] text-cc",
 };
 
 const TYPE_LABELS = {

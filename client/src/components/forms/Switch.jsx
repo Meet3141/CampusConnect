@@ -33,8 +33,8 @@ export default function Switch({ label, description, checked, onChange, disabled
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-          checked ? "bg-indigo-600" : "bg-cc-surface border border-cc-soft",
+          "relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cc-color-brand)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+          checked ? "bg-[var(--cc-color-brand)]" : "bg-cc-surface border border-cc-soft",
           disabled && "opacity-40 cursor-not-allowed"
         )}
       >

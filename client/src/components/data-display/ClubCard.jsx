@@ -16,20 +16,19 @@ import { CLUB_CATEGORY_META } from "../../theme";
 import { Users, Zap } from "lucide-react";
 
 const FALLBACK_CAT = {
-  gradient: "from-slate-900/40 to-slate-800/40",
-  badge: "bg-slate-900 text-slate-400 border-slate-700",
-  accent: "text-slate-400",
+  gradient: "from-[var(--cc-color-surface-elevated)]/40 to-[var(--cc-color-surface-hover)]/40",
+  badge: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]",
+  accent: "text-[var(--cc-color-text-muted)]",
   Icon: null,
 };
 
 const MEMBER_BADGE = {
-  active:   { label: "Member",   cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-  pending:  { label: "Pending",  cls: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"   },
-  rejected: { label: "Rejected", cls: "bg-red-500/10 text-red-400 border-red-500/30"            },
+  active: { label: "Member", cls: "bg-[var(--cc-color-success)]/10 text-[var(--cc-color-success)] border-[var(--cc-color-success)]/30" },
+  pending: { label: "Pending", cls: "bg-[var(--cc-color-warning)]/10 text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]/30" },
+  rejected: { label: "Rejected", cls: "bg-[var(--cc-color-danger)]/10 text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]/30" },
 };
 
-// Trending threshold — clubs with >20 members considered active
-const TRENDING_THRESHOLD = 20;
+
 
 export default function ClubCard({
   club,
@@ -44,17 +43,16 @@ export default function ClubCard({
 }) {
   const meta = CLUB_CATEGORY_META[club.category] ?? FALLBACK_CAT;
   const { Icon } = meta;
-  const statusStr   = myStatus?.status || null;
+  const statusStr = myStatus?.status || null;
   const statusBadge = isOrgAdmin
-    ? { label: "Org Admin", cls: "bg-red-500/10 text-red-400 border-red-500/30" }
+    ? { label: "Org Admin", cls: "bg-[var(--cc-color-danger)]/10 text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]/30" }
     : MEMBER_BADGE[statusStr] ?? null;
-  const isBlocked      = myStatus?.blockedUntil && new Date(myStatus.blockedUntil) > new Date();
-  const canJoin        = (!statusStr || statusStr === "rejected") && !isBlocked;
+  const isBlocked = myStatus?.blockedUntil && new Date(myStatus.blockedUntil) > new Date();
+  const canJoin = (!statusStr || statusStr === "rejected") && !isBlocked;
   const isActiveMember = statusStr === "active";
 
-  const isTrending     = (club.memberCount || 0) >= TRENDING_THRESHOLD;
-  const hasOngoing     = (club.ongoingEvents || 0) > 0;
-  const ongoingCount   = club.ongoingEvents || 0;
+  const hasOngoing = (club.ongoingEvents || 0) > 0;
+  const ongoingCount = club.ongoingEvents || 0;
 
   /* ── Mini variant ── */
   if (variant === "mini") {
@@ -76,23 +74,18 @@ export default function ClubCard({
               <Icon size={18} className="opacity-70" />
             ) : null}
           </div>
-          {hasOngoing && <span className="cc-active-dot absolute -top-0.5 -right-0.5" />}
+
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-medium text-cc truncate group-hover:text-accent transition-colors">{club.name}</p>
           <div className="flex items-center gap-1.5 mt-0.5">
-            {isActiveMember && <span className="cc-live-dot cc-live-dot--amber" style={{ width: 6, height: 6 }} />}
             <p className="text-[11px] text-muted truncate">
               {club.memberCount ?? 0} members
-              {ongoingCount > 0 && <span className="ml-1 text-emerald-400">· {ongoingCount} live</span>}
+              {ongoingCount > 0 && <span className="ml-1 text-[var(--cc-color-success)]">· {ongoingCount} live</span>}
             </p>
           </div>
         </div>
-        {isTrending && (
-          <span className="shrink-0 text-[9px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
-            🔥
-          </span>
-        )}
+
       </button>
     );
   }
@@ -127,12 +120,7 @@ export default function ClubCard({
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Trending badge */}
-        {isTrending && (
-          <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-300 bg-amber-950/80 border border-amber-500/30 px-1.5 py-0.5 rounded-full backdrop-blur-sm">
-            🔥 Trending
-          </span>
-        )}
+
 
         {/* Status badge */}
         {statusBadge && (
@@ -141,19 +129,18 @@ export default function ClubCard({
           </span>
         )}
 
-        {/* Active member live dot */}
+        {/* Active member indicator */}
         {isActiveMember && (
           <span className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-            <span className="cc-live-dot" style={{ width: 6, height: 6 }} />
-            <span className="text-[9px] text-white font-medium">Member</span>
+            <span className="text-[9px] text-[var(--cc-color-on-brand)] font-medium">Member</span>
           </span>
         )}
 
         {/* Ongoing events indicator */}
         {hasOngoing && (
-          <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-emerald-950/70 backdrop-blur-sm rounded-full px-1.5 py-0.5 border border-emerald-500/30">
-            <Zap size={8} className="text-emerald-400" />
-            <span className="text-[9px] text-emerald-300 font-semibold">{ongoingCount} live</span>
+          <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-[var(--cc-color-success-soft)]/70 backdrop-blur-sm rounded-full px-1.5 py-0.5 border border-[var(--cc-color-success)]/30">
+            <Zap size={8} className="text-[var(--cc-color-success)]" />
+            <span className="text-[9px] text-[var(--cc-color-success)] font-semibold">{ongoingCount} live</span>
           </span>
         )}
       </div>
@@ -184,8 +171,7 @@ export default function ClubCard({
 
           {/* Ongoing events */}
           {ongoingCount > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
-              <span className="cc-active-dot" style={{ width: 5, height: 5 }} />
+            <span className="flex items-center gap-1 text-[10px] text-[var(--cc-color-success)] font-medium">
               {ongoingCount} event{ongoingCount !== 1 ? "s" : ""} live
             </span>
           )}
@@ -210,7 +196,7 @@ export default function ClubCard({
               </button>
             )}
             {isBlocked && (
-              <span className="text-[10px] text-red-400 font-medium">
+              <span className="text-[10px] text-[var(--cc-color-danger)] font-medium">
                 Blocked until {new Date(myStatus.blockedUntil).toLocaleDateString()}
               </span>
             )}

@@ -37,10 +37,10 @@ const Checkbox = React.forwardRef(function Checkbox(
           {/* Custom checkbox visual */}
           <div className={cn(
             "w-4 h-4 rounded flex items-center justify-center border transition-all duration-150",
-            "peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500/40 peer-focus-visible:ring-offset-1",
+            "peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--cc-color-brand)]/40 peer-focus-visible:ring-offset-1",
             props.checked
-              ? "bg-indigo-600 border-indigo-600"
-              : "bg-white/[0.04] border-white/[0.15] group-hover:border-indigo-500/50"
+              ? "bg-[var(--cc-color-brand)] border-[var(--cc-color-brand)]"
+              : "bg-white/4 border-white/15 group-hover:border-[var(--cc-color-brand)]/50"
           )}>
             {props.checked && (
               <svg width="9" height="7" viewBox="0 0 9 7" fill="none" aria-hidden="true">
@@ -50,9 +50,9 @@ const Checkbox = React.forwardRef(function Checkbox(
           </div>
         </div>
         {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
+        {required && <span className="text-[var(--cc-color-danger)] ml-0.5">*</span>}
       </label>
-      {error && <p className="text-red-400 text-[11px] ml-7">{error}</p>}
+      {error && <p className="text-[var(--cc-color-danger)] text-[11px] ml-7">{error}</p>}
     </div>
   );
 });

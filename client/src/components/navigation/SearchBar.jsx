@@ -23,7 +23,7 @@ export default function SearchBar({
   onBlur,
   shortcutHint = false,
 }) {
-  const ref     = useRef(null);
+  const ref = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = (e) => {
@@ -81,7 +81,7 @@ export default function SearchBar({
             : "var(--cc-color-surface-weak)",
           border: `1px solid ${isFocused ? "var(--cc-color-accent)" : "var(--cc-color-border-subtle)"}`,
           boxShadow: isFocused
-            ? "0 0 0 3px rgba(0, 188, 235, 0.12), 0 2px 8px rgba(0,0,0,0.08)"
+            ? "0 0 0 3px rgba(0,188,235,0.12), 0 2px 8px rgba(0,0,0,0.08)"
             : "none",
         }}
       />

@@ -7,7 +7,7 @@
  *     "inline-flex items-center font-medium",
  *     {
  *       variants: {
- *         variant: { primary: "bg-indigo-600", ghost: "bg-transparent" },
+ *         variant: { primary: "bg-[var(--cc-color-brand)]", ghost: "bg-transparent" },
  *         size:    { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm" },
  *       },
  *       defaultVariants: { variant: "primary", size: "md" },

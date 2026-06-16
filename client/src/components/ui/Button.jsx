@@ -12,13 +12,13 @@ const BASE =
 const VARIANTS = {
   /* Authority blue — uses brand semantic token, softer premium feel */
   primary:
-    "bg-primary hover:bg-primary-hover active:bg-primary text-on-brand shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-px focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/30",
+    "bg-brand hover:bg-brand-hover active:bg-brand text-on-brand shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-px focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand/30",
   /* Secondary — surface hierarchy, no hard colour */
   secondary:
     "bg-cc-surface-weak hover:bg-cc-surface border border-cc-soft hover:border-cc-strong text-cc hover:-translate-y-px hover:shadow-sm active:translate-y-0",
   /* Outline — brand border/text, subtle hover fill */
   outline:
-    "border border-primary-border hover:border-primary text-primary hover:bg-primary-soft hover:-translate-y-px transition-all",
+    "border border-brand/30 hover:border-brand text-brand hover:bg-surface-brand hover:-translate-y-px transition-all",
   /* Ghost — minimal, only surface on hover */
   ghost:
     "text-cc-muted hover:text-cc hover:bg-surface-hover active:scale-[0.97] transition-all",

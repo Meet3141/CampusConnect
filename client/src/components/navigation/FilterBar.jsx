@@ -37,8 +37,8 @@ export default function FilterBar({ filters = [], value, onChange, className }) 
             className={cn(
               "px-3.5 py-1.5 rounded-xl text-xs font-medium capitalize transition-all duration-150 border",
               active
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/20"
-                : "bg-white/[0.03] text-muted border-white/[0.07] hover:border-white/[0.14] hover:text-cc"
+                ? "bg-[var(--cc-color-brand)] text-[var(--cc-color-on-brand)] border-[var(--cc-color-brand)] shadow-sm shadow-[var(--cc-color-brand)]/20"
+                : "bg-white-03 text-muted border-white/7 hover:border-white/14 hover:text-cc"
             )}
           >
             {label}

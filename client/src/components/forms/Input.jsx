@@ -13,10 +13,10 @@ import { AlertCircle } from "lucide-react";
 
 /* ── Base: semantic surface + border tokens, no raw dark opacity hacks ── */
 const INPUT_BASE = [
-  "w-full rounded-xl text-sm transition-all duration-150 focus:outline-none",
-  "bg-surface-weak border border-border-subtle",
-  "text-text-primary placeholder:text-text-muted",
-  "focus:bg-surface focus:border-border-focus focus:ring-2 focus:ring-border-focus/20",
+  "input-standard w-full rounded-xl text-sm transition-all duration-150 focus:outline-none",
+  "bg-white border border-border-subtle",
+  "text-brand placeholder:text-text-muted",
+  "focus:border-border-focus focus:ring-2 focus:ring-border-focus/20",
 ].join(" ");
 
 const SIZE_CLS = {
@@ -90,7 +90,7 @@ const Input = React.forwardRef(function Input(
           )}
           {inputEl}
           {suffix && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none flex items-center">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted flex items-center">
               {suffix}
             </span>
           )}
