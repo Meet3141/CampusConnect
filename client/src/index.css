@@ -9,3 +9,19 @@
 @import "./styles/components.css";
 @import "./styles/motion.css";
 @import "./styles/hover.css";
+
+/* ── Tailwind v4 Theme Sync ── */
+@theme {
+  --color-brand: var(--cc-color-brand);
+  --color-brand-hover: var(--cc-color-brand-hover);
+  --color-on-brand: var(--cc-color-on-brand);
+  --color-accent: var(--cc-color-accent);
+  --color-background: var(--cc-color-background);
+  --color-surface: var(--cc-color-surface);
+  --color-surface-brand: var(--cc-color-surface-brand);
+  --color-surface-elevated: var(--cc-color-surface-elevated);
+  --color-text-primary: var(--cc-color-text-primary);
+  --color-text-muted: var(--cc-color-text-muted);
+  --color-border-subtle: var(--cc-color-border);
+  --color-border-strong: var(--cc-color-border-strong);
+}

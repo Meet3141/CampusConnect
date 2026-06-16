@@ -45,7 +45,7 @@ export const INTERACTIVE_VARIANTS = {
    */
   button: {
     primary:
-      "bg-cc-brand text-white hover:brightness-110 hover:translate-y-[-1px] hover:shadow-md",
+      "bg-cc-brand text-legacy-on hover:brightness-110 hover:translate-y-[-1px] hover:shadow-md",
     secondary:
       "border-cc-strong hover:border-cc-brand hover:bg-cc-surface-hover",
     ghost: "hover:bg-cc-surface-hover hover:text-cc-text",
@@ -128,7 +128,7 @@ export const INTERACTIVE_VARIANTS = {
    */
   badge: {
     base: "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
-    solid: "bg-cc-brand text-white",
+    solid: "bg-cc-brand text-legacy-on",
     outline: "border border-cc-border-soft text-cc-text",
     outlineHover: "hover:border-cc-accent hover:text-cc-accent",
   },

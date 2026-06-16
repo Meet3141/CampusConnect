@@ -19,8 +19,8 @@ export const lightTheme = {
     surfaceSecondary:   lightSemanticSpec.surfaceSecondary,
     surfaceHover:       lightSemanticSpec.surfaceHover,
     surfaceActive:      lightSemanticSpec.surfaceActive,
-    surfaceWeak:        "rgba(15, 23, 42, 0.03)",
-    surfaceOverlay:     "rgba(248, 249, 250, 0.94)",
+    surfaceWeak:        "var(--cc-legacy-rgba-15-23-42-003)",
+    surfaceOverlay:     "var(--cc-legacy-rgba-248-249-250-094)",
 
     /* ── Text ── */
     textPrimary:        lightSemanticSpec.textPrimary,
