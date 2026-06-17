@@ -1,4 +1,4 @@
-+/**
+/**
  * MyClubs.jsx
  * Shows clubs the authenticated user belongs to (any membership status).
  *
