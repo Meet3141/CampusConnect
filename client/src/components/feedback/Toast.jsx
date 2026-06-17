@@ -64,12 +64,12 @@ function ToastItem({ id, type = "default", message, duration = 4000, onDismiss }
       )}
     >
       <Icon size={16} className={cn("shrink-0 mt-px", iconCls)} aria-hidden="true" />
-      <p className="flex-1 min-w-0 text-sm text-text-primary leading-snug">{message}</p>
+      <p className="flex-1 min-w-0 text-sm text-black dark:text-white leading-snug">{message}</p>
       <button
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="shrink-0 text-text-muted hover:text-text-primary transition-colors rounded p-0.5"
+        className="shrink-0 text-text-muted hover:text-black dark:hover:text-white transition-colors rounded p-0.5"
       >
         <X size={13} aria-hidden="true" />
       </button>
