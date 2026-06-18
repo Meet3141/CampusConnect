@@ -22,6 +22,11 @@ const correctionRequestSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected", "amended"],
       default: "pending",
     },
+    correctionType: {
+      type: String,
+      enum: ["normal", "late_correction"],
+      default: "normal",
+    },
     reviewedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

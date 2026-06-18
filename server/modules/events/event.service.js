@@ -1231,10 +1231,14 @@ export const amendAttendance = async ({ id, body, user }) => {
       await ReviewHistory.create({
         eventId: event._id,
         userId: targetUser._id,
-        action: "GRACE_APPROVED", // Repurposing as a "Forgiven" action
+        action: "ATTENDANCE_CORRECTION",
         performedBy: user.id,
         role: "system",
-        reason: "Attendance amended post-completion",
+        reason: existingRequest.reason,
+        correctionType: existingRequest.correctionType,
+        justification: existingRequest.reason,
+        approvedBy: existingRequest.reviewedBy,
+        approvedAt: existingRequest.reviewedAt,
       });
     }
   }
@@ -1269,12 +1273,18 @@ export const requestAttendanceCorrection = async ({ id, user, body }) => {
     throw createHttpError(403, "Forbidden");
   }
 
-  // 48-hour window check
-  const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-  // Using updatedAt as a proxy for when it was completed, or just allowing it if endDate was within 48h
+  // 24-hour window check
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const completionDate = event.endDate || event.updatedAt;
-  if (completionDate < fortyEightHoursAgo) {
-    throw createHttpError(400, "Correction window has closed (48 hours).");
+  
+  let correctionType = "normal";
+  
+  if (completionDate < twentyFourHoursAgo) {
+    if (user.roles?.includes("orgAdmin")) {
+      correctionType = "late_correction";
+    } else {
+      throw createHttpError(400, "Correction window has closed (24 hours).");
+    }
   }
 
   const existingRequest = await CorrectionRequest.findOne({
@@ -1290,6 +1300,7 @@ export const requestAttendanceCorrection = async ({ id, user, body }) => {
     eventId: event._id,
     requestedBy: user.id,
     reason: String(body.reason || "").trim(),
+    correctionType,
   });
 
   return request;

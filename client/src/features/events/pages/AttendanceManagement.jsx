@@ -6,11 +6,13 @@ import { fetchEventAnalytics, reviewAttendanceIssue, submitGraceRequest, amendAt
 import { getAttendanceStats } from "../../../../../utils/attendanceStats.js";
 import PageHeader from "../../../components/layout/PageHeader";
 import PageContainer from "../../../components/layout/PageContainer";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function AttendanceManagement() {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
   
   const [event, setEvent] = useState(null);
   const [attendees, setAttendees] = useState([]);
@@ -437,35 +439,60 @@ export default function AttendanceManagement() {
             {isCompleted && (
               <div className="rounded-3xl border border-[var(--cc-color-warning)]/60 bg-[var(--cc-color-warning-soft)] p-5 shadow-2xl shadow-[var(--cc-shadow-md)] space-y-4">
                 <h3 className="text-lg font-semibold text-[var(--cc-color-warning)]">Request Correction</h3>
-                {correctionRequest ? (
-                  <div className="space-y-2 text-sm text-[var(--cc-color-warning)]">
-                    <p>Status: <strong className="capitalize">{correctionRequest.status}</strong></p>
-                    {correctionRequest.status === "approved" && (
-                      <p>You may now amend attendance. Check the boxes and click "Submit Correction".</p>
-                    )}
-                    {correctionRequest.status === "rejected" && (
-                      <p>Reason: {correctionRequest.facultyRemark}</p>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-sm text-[var(--cc-color-warning)]/80">Request orgAdmin approval to amend attendance.</p>
-                    <textarea
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      rows={3}
-                      className="w-full rounded-2xl border border-[var(--cc-color-warning)]/40 bg-transparent px-4 py-3 text-sm text-[var(--cc-color-warning)] placeholder:text-[var(--cc-color-warning)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cc-color-warning)]/50"
-                      placeholder="Why do you need to correct attendance?"
-                    />
-                    <button
-                      onClick={handleRequestCorrection}
-                      disabled={isProcessing === "correction"}
-                      className="w-full rounded-xl bg-[var(--cc-color-warning)] hover:bg-[var(--cc-color-warning)]/80 text-black py-3 px-4 text-sm font-semibold transition-colors disabled:opacity-40"
-                    >
-                      {isProcessing === "correction" ? "Submitting..." : "Submit Correction Request"}
-                    </button>
-                  </>
-                )}
+                
+                {(() => {
+                  if (correctionRequest) {
+                    return (
+                      <div className="space-y-2 text-sm text-[var(--cc-color-warning)]">
+                        <p>Status: <strong className="capitalize">{correctionRequest.status}</strong></p>
+                        {correctionRequest.status === "approved" && (
+                          <p>You may now amend attendance. Check the boxes and click "Submit Correction".</p>
+                        )}
+                        {correctionRequest.status === "rejected" && (
+                          <p>Reason: {correctionRequest.facultyRemark}</p>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  const isOrgAdmin = user?.roles?.includes("orgAdmin");
+                  const completionDate = event.endDate || event.updatedAt;
+                  const isWindowExpired = new Date(completionDate).getTime() < Date.now() - 24 * 60 * 60 * 1000;
+
+                  if (isWindowExpired && !isOrgAdmin) {
+                    return (
+                      <div className="p-3 rounded-xl bg-[var(--cc-color-danger)]/10 text-[var(--cc-color-danger)] text-sm">
+                        <p className="font-semibold">Correction Window Expired</p>
+                        <p>Please contact an organization administrator.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {isWindowExpired && isOrgAdmin && (
+                        <div className="p-3 mb-2 rounded-xl bg-[var(--cc-color-warning)]/20 text-[var(--cc-color-warning)] text-sm font-semibold border border-[var(--cc-color-warning)]/40">
+                          Emergency Override Available
+                        </div>
+                      )}
+                      <p className="text-sm text-[var(--cc-color-warning)]/80">Request orgAdmin approval to amend attendance.</p>
+                      <textarea
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-2xl border border-[var(--cc-color-warning)]/40 bg-transparent px-4 py-3 text-sm text-[var(--cc-color-warning)] placeholder:text-[var(--cc-color-warning)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cc-color-warning)]/50"
+                        placeholder="Why do you need to correct attendance?"
+                      />
+                      <button
+                        onClick={handleRequestCorrection}
+                        disabled={isProcessing === "correction"}
+                        className="w-full rounded-xl bg-[var(--cc-color-warning)] hover:bg-[var(--cc-color-warning)]/80 text-black py-3 px-4 text-sm font-semibold transition-colors disabled:opacity-40"
+                      >
+                        {isProcessing === "correction" ? "Submitting..." : "Submit Correction Request"}
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
             )}
 
