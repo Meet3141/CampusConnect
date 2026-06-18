@@ -2,6 +2,7 @@ import Event from "../modules/events/event.model.js";
 import RSVP from "../modules/events/rsvp.model.js";
 import User from "../modules/users/user.model.js";
 import logger from "../middleware/logger.js";
+import { recalculateDisciplineState } from "../utils/governanceUtils.js";
 
 export const reconcileAttendanceCounters = async () => {
   const events = await Event.find({ status: { $in: ["ongoing", "completed"] } });
@@ -34,19 +35,6 @@ export const repairGovernanceState = async () => {
   for (const user of users) {
     let needsSave = false;
 
-    if (user.disciplineStatus === "blocked" && (!user.isBlocked || !user.blockedUntil)) {
-      // Downgrade to normal, let processNoShows recalculate if needed
-      user.disciplineStatus = "normal";
-      user.isBlocked = false;
-      user.blockedUntil = null;
-      needsSave = true;
-    }
-
-    if (user.disciplineStatus === "review" && !user.reviewRequired) {
-      user.disciplineStatus = "normal";
-      needsSave = true;
-    }
-
     if (user.isBlocked && user.blockedUntil && new Date(user.blockedUntil) < new Date()) {
       user.archivedMissedEvents.push(...user.missedEvents);
       user.missedEvents = [];
@@ -56,6 +44,21 @@ export const repairGovernanceState = async () => {
       user.disciplineStatus = "probation";
       user.probationUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       user.reviewRequired = false;
+      needsSave = true;
+    }
+
+    // Always run through the deterministic engine to catch any other drift
+    const newState = recalculateDisciplineState(user, {});
+    
+    if (
+      user.disciplineStatus !== newState.disciplineStatus ||
+      user.isBlocked !== newState.isBlocked ||
+      user.reviewRequired !== newState.reviewRequired
+    ) {
+      user.disciplineStatus = newState.disciplineStatus;
+      user.isBlocked = newState.isBlocked;
+      user.blockedUntil = newState.blockedUntil || user.blockedUntil;
+      user.reviewRequired = newState.reviewRequired;
       needsSave = true;
     }
 

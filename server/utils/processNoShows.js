@@ -81,7 +81,7 @@ export const processNoShows = async (eventId) => {
       user.blockedUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
       user.reviewRequired = false;
       user.disciplineStatus = "blocked";
-      user.probationUntil = null; // Clear probation since they are blocked
+      // We intentionally do NOT clear probationUntil so mathematical memory is preserved.
       blockedUsers.push(user._id);
       await Notification.create({
         userId: user._id,

@@ -11,6 +11,7 @@ import Notification from "../notifications/notification.model.js";
 import { createHttpError } from "../../utils/httpError.js";
 import { getOrSet, invalidate } from "../../utils/cache.js";
 import { processNoShows } from "../../utils/processNoShows.js";
+import { recalculateDisciplineState } from "../../utils/governanceUtils.js";
 import { getAttendanceStats } from "../../../utils/attendanceStats.js";
 
 const EVENT_CACHE_TTL = 60; // seconds
@@ -1197,34 +1198,36 @@ export const amendAttendance = async ({ id, body, user }) => {
     const targetUser = await User.findById(uid);
     if (!targetUser) continue;
     
-    // Remove the event from missedEvents
+    let changed = false;
+
+    // Search missedEvents
     const initialMissed = targetUser.missedEvents.length;
-    targetUser.missedEvents = targetUser.missedEvents.filter(eId => eId.toString() !== event._id.toString());
-    const newMissed = targetUser.missedEvents.length;
-    
-    // Only downgrade if the length actually changed
-    if (newMissed < initialMissed) {
-      // Recalculate discipline state based on new count
-      if (newMissed < threshold) {
-        targetUser.disciplineStatus = "normal";
-        targetUser.reviewRequired = false;
-        targetUser.isBlocked = false;
-        targetUser.blockedUntil = null;
-      } else if (newMissed < reviewPoint) {
-        targetUser.disciplineStatus = "warning";
-        targetUser.reviewRequired = false;
-        targetUser.isBlocked = false;
-        targetUser.blockedUntil = null;
-      } else if (newMissed < limit) {
-        targetUser.disciplineStatus = "review";
-        targetUser.reviewRequired = true;
-        targetUser.isBlocked = false;
-        targetUser.blockedUntil = null;
+    targetUser.missedEvents = targetUser.missedEvents.filter(eId => String(eId) !== String(event._id));
+    if (targetUser.missedEvents.length < initialMissed) {
+      changed = true;
+    }
+
+    // Search archivedMissedEvents
+    const initialArchived = targetUser.archivedMissedEvents.length;
+    targetUser.archivedMissedEvents = targetUser.archivedMissedEvents.filter(eId => String(eId) !== String(event._id));
+    if (targetUser.archivedMissedEvents.length < initialArchived) {
+      changed = true;
+      // Historical Collapse (Fix 4)
+      if (targetUser.archivedMissedEvents.length < limit) {
+        targetUser.missedEvents.push(...targetUser.archivedMissedEvents);
+        targetUser.archivedMissedEvents = [];
+        targetUser.probationUntil = null;
       }
+    }
+    
+    if (changed) {
+      const newState = recalculateDisciplineState(targetUser, policy);
       
-      // We do not decrement warningCount directly because warningCount is just a strike tracker 
-      // but if they are back to normal, maybe zero it out? The policy allows them to retain the strike buffer.
-      // Let's just save.
+      targetUser.disciplineStatus = newState.disciplineStatus;
+      targetUser.isBlocked = newState.isBlocked;
+      targetUser.blockedUntil = newState.blockedUntil;
+      targetUser.reviewRequired = newState.reviewRequired;
+      
       await targetUser.save();
       
       // Create Audit Log
