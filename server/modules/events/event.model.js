@@ -137,6 +137,7 @@ const eventSchema = new mongoose.Schema(
     remindersSent: {
       type: Boolean,
       default: false,
+    },
   },
   { timestamps: true }
 );
