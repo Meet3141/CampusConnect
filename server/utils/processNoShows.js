@@ -52,8 +52,11 @@ export const processNoShows = async (eventId) => {
     }
 
     const missedCount = user.missedEvents.length;
-    const warningLimit = Number(policy.warningLimit || 3);
-    user.disciplineStatus = "normal";
+    const threshold = policy.noShowThreshold ?? 2;
+    const limit = policy.warningLimit ?? 4;
+    const reviewPoint = limit - 1;
+    
+    const initialState = user.disciplineStatus || "normal";
 
     if (!strictAttendance) {
       reminderUsers.push(user._id);
@@ -70,33 +73,7 @@ export const processNoShows = async (eventId) => {
       continue;
     }
 
-    if (countWarnings && missedCount === 2) {
-      user.warningCount = (user.warningCount || 0) + 1;
-      warnedUsers.push(user._id);
-      user.disciplineStatus = "warning";
-      await Notification.create({
-        userId: user._id,
-        type: "warning",
-        title: "Attendance warning",
-        message: "You missed 2 strict events. Your attendance record has been updated.",
-        eventId: event._id,
-      });
-    }
-
-    if (allowGraceReview && missedCount >= 3) {
-      user.reviewRequired = true;
-      reviewedUsers.push(user._id);
-      user.disciplineStatus = "review";
-      await Notification.create({
-        userId: user._id,
-        type: "review",
-        title: "Attendance review required",
-        message: "Your attendance case is under review by faculty.",
-        eventId: event._id,
-      });
-    }
-
-    if ((missedCount >= 4 || (user.warningCount || 0) >= warningLimit) && policy.strictAttendance) {
+    if (missedCount >= limit) {
       user.isBlocked = true;
       user.blockedUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
       user.reviewRequired = false;
@@ -109,6 +86,32 @@ export const processNoShows = async (eventId) => {
         message: "Your attendance access has been temporarily blocked.",
         eventId: event._id,
       });
+    } else if (allowGraceReview && missedCount === reviewPoint) {
+      user.reviewRequired = true;
+      user.disciplineStatus = "review";
+      reviewedUsers.push(user._id);
+      await Notification.create({
+        userId: user._id,
+        type: "review",
+        title: "Attendance review required",
+        message: "Your attendance case is under review by faculty.",
+        eventId: event._id,
+      });
+    } else if (countWarnings && missedCount >= threshold) {
+      if (initialState !== "warning" && initialState !== "review" && initialState !== "blocked") {
+        user.warningCount = (user.warningCount || 0) + 1;
+      }
+      user.disciplineStatus = "warning";
+      warnedUsers.push(user._id);
+      await Notification.create({
+        userId: user._id,
+        type: "warning",
+        title: "Attendance warning",
+        message: `You missed ${missedCount} strict events. Your attendance record has been updated.`,
+        eventId: event._id,
+      });
+    } else {
+      user.disciplineStatus = "normal";
     }
 
     await user.save();
@@ -120,12 +123,12 @@ export const processNoShows = async (eventId) => {
         ? "STUDENT_BLOCKED"
         : user.reviewRequired
           ? "GRACE_REJECTED"
-          : missedCount === 2
+          : user.disciplineStatus === "warning"
             ? "WARNING_REDUCED"
             : "GRACE_APPROVED",
       performedBy: user._id,
       role: "system",
-      reason: "processNoShows",
+      reason: `processNoShows - missedCount: ${missedCount}`,
     });
   }
 
