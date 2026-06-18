@@ -414,13 +414,9 @@ export default function EventDetail() {
               )}
               {user && canManageLifecycle && isCompleted && (
                 <>
-                  <button onClick={handleRestartEvent} disabled={actionLoading}
-                    className="px-5 py-2.5 bg-[var(--cc-color-success)] hover:bg-[var(--cc-color-success)]/80 text-[var(--cc-color-on-brand)] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
-                    {actionLoading ? "…" : "↺ Restart Event"}
-                  </button>
                   <button onClick={() => navigate(`/events/${id}/attendance`)}
                     className="px-5 py-2.5 bg-[var(--cc-color-surface-brand)] border border-[var(--cc-color-brand)] hover:bg-[var(--cc-color-surface-brand)]/60 text-[var(--cc-color-brand)] rounded-xl text-sm transition-colors whitespace-nowrap flex items-center gap-2">
-                    <BarChart3 size={16} /> View Analytics
+                    <BarChart3 size={16} /> Amend Attendance
                   </button>
                 </>
               )}

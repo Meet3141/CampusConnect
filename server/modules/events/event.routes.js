@@ -26,6 +26,10 @@ import {
   reviewAttendanceIssue,
   getReviewDashboard,
   markAttendance,
+  amendAttendance,
+  requestAttendanceCorrection,
+  reviewCorrectionRequest,
+  getCorrectionRequest,
 } from "./event.controller.js";
 
 const router = express.Router();
@@ -57,5 +61,9 @@ router.post("/:id/grace-request", auth, asyncHandler(submitGraceRequest));
 router.post("/:id/grace-request/:requestId/review", auth, asyncHandler(reviewGraceRequest));
 router.post("/:id/review/:userId", auth, asyncHandler(reviewAttendanceIssue));
 router.post("/:id/attendance", auth, asyncHandler(markAttendance));
+router.post("/:id/attendance-correction", auth, asyncHandler(amendAttendance));
+router.post("/:id/attendance-correction/request", auth, asyncHandler(requestAttendanceCorrection));
+router.post("/:id/attendance-correction/request/:requestId/review", auth, asyncHandler(reviewCorrectionRequest));
+router.get("/:id/attendance-correction/request", auth, asyncHandler(getCorrectionRequest));
 
 export default router;

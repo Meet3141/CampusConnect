@@ -161,3 +161,50 @@ export const markAttendance = async (req, res) => {
     data: attendees,
   });
 };
+
+export const amendAttendance = async (req, res) => {
+  const result = await eventService.amendAttendance({
+    id: req.params.id,
+    body: req.body,
+    user: req.user,
+  });
+  res.json({
+    success: true,
+    message: result.message,
+    data: result.attendees,
+  });
+};
+
+export const requestAttendanceCorrection = async (req, res) => {
+  const request = await eventService.requestAttendanceCorrection({
+    id: req.params.id,
+    user: req.user,
+    body: req.body,
+  });
+  res.status(201).json({
+    success: true,
+    message: "Correction request submitted",
+    data: request,
+  });
+};
+
+export const reviewCorrectionRequest = async (req, res) => {
+  const request = await eventService.reviewCorrectionRequest({
+    id: req.params.id,
+    reqId: req.params.requestId,
+    user: req.user,
+    body: req.body,
+  });
+  res.json({
+    success: true,
+    message: `Correction request ${request.status}`,
+    data: request,
+  });
+};
+
+export const getCorrectionRequest = async (req, res) => {
+  const request = await eventService.getCorrectionRequest({
+    id: req.params.id,
+  });
+  res.json({ success: true, data: request });
+};

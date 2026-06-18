@@ -76,22 +76,22 @@ export const processNoShows = async (eventId) => {
       continue;
     }
 
-    if (missedCount >= limit) {
+    if (missedCount >= limit || initialState === "probation") {
       user.isBlocked = true;
       user.blockedUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
       user.reviewRequired = false;
       user.disciplineStatus = "blocked";
+      user.probationUntil = null; // Clear probation since they are blocked
       blockedUsers.push(user._id);
-      await Notification.updateOne(
-        { userId: user._id, eventId: event._id, type: "blocked" },
-        {
-          $set: {
-            title: "Temporary attendance block",
-            message: "Your attendance access has been temporarily blocked.",
-          }
-        },
-        { upsert: true }
-      );
+      await Notification.create({
+        userId: user._id,
+        eventId: event._id,
+        type: "blocked",
+        title: "Temporary attendance block",
+        message: initialState === "probation"
+          ? "You missed an event while on probation. Your attendance access has been blocked."
+          : "Your attendance access has been temporarily blocked.",
+      });
     } else if (allowGraceReview && missedCount === reviewPoint) {
       user.reviewRequired = true;
       user.disciplineStatus = "review";

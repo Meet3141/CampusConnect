@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import { useToast } from "../../../context/ToastContext";
-import { fetchEventAnalytics, reviewAttendanceIssue, submitGraceRequest } from "../api";
+import { fetchEventAnalytics, reviewAttendanceIssue, submitGraceRequest, amendAttendance, getCorrectionRequest, requestAttendanceCorrection } from "../api";
 import { getAttendanceStats } from "../../../../../utils/attendanceStats.js";
 import PageHeader from "../../../components/layout/PageHeader";
 import PageContainer from "../../../components/layout/PageContainer";
@@ -15,6 +15,7 @@ export default function AttendanceManagement() {
   const [event, setEvent] = useState(null);
   const [attendees, setAttendees] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [correctionRequest, setCorrectionRequest] = useState(null);
   const [selectedAttendees, setSelectedAttendees] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -45,6 +46,15 @@ export default function AttendanceManagement() {
               )
             );
       setAnalytics(analyticsRes.data.data || null);
+      
+      if (eventRes.data.data.status === "completed") {
+        try {
+          const correctionRes = await getCorrectionRequest(eventId);
+          setCorrectionRequest(correctionRes.data.data || null);
+        } catch (e) {
+          // ignore if 404
+        }
+      }
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch event details");
     } finally {
@@ -74,7 +84,7 @@ export default function AttendanceManagement() {
   };
 
   const toggleAll = () => {
-    if (!isOngoing) return;
+    if (!isOngoing && !isCompleted) return;
     if (selectedAttendees.size === attendees.length) {
       setSelectedAttendees(new Set());
     } else {
@@ -83,8 +93,8 @@ export default function AttendanceManagement() {
   };
 
   const handleMarkAttendance = async () => {
-    if (!isOngoing) {
-      toast.info("Attendance can only be marked while the event is ongoing.");
+    if (!isOngoing && !isCompleted) {
+      toast.info("Attendance can only be modified for ongoing or completed events.");
       return;
     }
 
@@ -111,18 +121,29 @@ export default function AttendanceManagement() {
       });
       const changedCount = added + removed;
 
-      const response = await api.post(`/events/${eventId}/attendance`, {
-        attendeeIds: [...selected],
-      });
+      let response;
+      if (isCompleted) {
+        response = await amendAttendance(eventId, [...selected]);
+        // Also refetch analytics to get updated review lists if needed
+        const newAnalytics = await fetchEventAnalytics(eventId);
+        setAnalytics(newAnalytics.data.data || null);
+      } else {
+        response = await api.post(`/events/${eventId}/attendance`, {
+          attendeeIds: [...selected],
+        });
+      }
 
-      // prefer a computed changedCount for clearer UX; fall back to server message
       if (changedCount > 0) {
         toast.success(`${changedCount} attendance(s) marked`);
       } else {
         toast.success(response.data?.message || "Attendance updated");
       }
 
-      // update attendees locally to reflect the saved/desired state
+      if (isCompleted) {
+        const correctionRes = await getCorrectionRequest(eventId);
+        setCorrectionRequest(correctionRes.data.data || null);
+      }
+
       const updated = attendees.map((a) => {
         const uid = a.userId?._id;
         if (!uid) return a;
@@ -266,9 +287,9 @@ export default function AttendanceManagement() {
                     <th className="px-5 py-4 text-left w-12">
                       <input
                         type="checkbox"
-                        checked={isOngoing && attendees.length > 0 && selectedAttendees.size === attendees.length}
+                        checked={(isOngoing || isCompleted) && attendees.length > 0 && selectedAttendees.size === attendees.length}
                         onChange={toggleAll}
-                        disabled={!isOngoing}
+                        disabled={!isOngoing && !isCompleted}
                         className="w-4 h-4 accent-indigo-500"
                       />
                     </th>
@@ -312,8 +333,8 @@ export default function AttendanceManagement() {
                             <input
                               type="checkbox"
                               checked={desired}
-                              onChange={() => isOngoing && toggleAttendee(attendeeId)}
-                              disabled={!isOngoing}
+                              onChange={() => (isOngoing || (isCompleted && correctionRequest?.status === "approved")) && toggleAttendee(attendeeId)}
+                              disabled={!isOngoing && !(isCompleted && correctionRequest?.status === "approved")}
                               className="w-4 h-4 accent-indigo-500"
                             />
                           </td>
@@ -335,10 +356,10 @@ export default function AttendanceManagement() {
             <div className="px-5 py-4 border-t border-cc-soft bg-cc-surface-weak/40 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleMarkAttendance}
-                disabled={submitting || !isOngoing}
+                disabled={submitting || (!isOngoing && !(isCompleted && correctionRequest?.status === "approved"))}
                 className="flex-1 rounded-xl btn-primary py-3 px-4 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? "Saving..." : isOngoing ? "Save Attendance" : "Attendance Locked"}
+                {submitting ? "Saving..." : isOngoing ? "Save Attendance" : (isCompleted && correctionRequest?.status === "approved") ? "Submit Correction" : "Attendance Locked"}
               </button>
               <button
                 onClick={() => setSelectedAttendees(new Set())}
@@ -413,6 +434,41 @@ export default function AttendanceManagement() {
               </div>
             )}
 
+            {isCompleted && (
+              <div className="rounded-3xl border border-[var(--cc-color-warning)]/60 bg-[var(--cc-color-warning-soft)] p-5 shadow-2xl shadow-[var(--cc-shadow-md)] space-y-4">
+                <h3 className="text-lg font-semibold text-[var(--cc-color-warning)]">Request Correction</h3>
+                {correctionRequest ? (
+                  <div className="space-y-2 text-sm text-[var(--cc-color-warning)]">
+                    <p>Status: <strong className="capitalize">{correctionRequest.status}</strong></p>
+                    {correctionRequest.status === "approved" && (
+                      <p>You may now amend attendance. Check the boxes and click "Submit Correction".</p>
+                    )}
+                    {correctionRequest.status === "rejected" && (
+                      <p>Reason: {correctionRequest.facultyRemark}</p>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-[var(--cc-color-warning)]/80">Request orgAdmin approval to amend attendance.</p>
+                    <textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      rows={3}
+                      className="w-full rounded-2xl border border-[var(--cc-color-warning)]/40 bg-transparent px-4 py-3 text-sm text-[var(--cc-color-warning)] placeholder:text-[var(--cc-color-warning)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cc-color-warning)]/50"
+                      placeholder="Why do you need to correct attendance?"
+                    />
+                    <button
+                      onClick={handleRequestCorrection}
+                      disabled={isProcessing === "correction"}
+                      className="w-full rounded-xl bg-[var(--cc-color-warning)] hover:bg-[var(--cc-color-warning)]/80 text-black py-3 px-4 text-sm font-semibold transition-colors disabled:opacity-40"
+                    >
+                      {isProcessing === "correction" ? "Submitting..." : "Submit Correction Request"}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="rounded-3xl border border-[var(--cc-color-brand)]/60 bg-[var(--cc-color-surface-brand)] p-5 shadow-2xl shadow-[var(--cc-shadow-md)]">
               <p className="text-sm text-indigo-200">
                 <strong>Tip:</strong> Check the box next to each student name to mark them as present. You can also uncheck attendees; click "Save Attendance" to persist changes.
@@ -421,9 +477,9 @@ export default function AttendanceManagement() {
           </div>
         </div>
 
-        {!isOngoing && (
+        {!isOngoing && !isCompleted && (
           <div className="rounded-3xl border border-[var(--cc-color-warning)]/60 bg-[var(--cc-color-warning-soft)] p-5 text-sm text-[var(--cc-color-warning)]">
-            Attendance is locked because this event is {event.status}. Use this page for analytics only.
+            Attendance is locked because this event is {event.status}.
           </div>
         )}
       </PageContainer>

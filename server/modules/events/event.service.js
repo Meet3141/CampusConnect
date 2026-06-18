@@ -5,6 +5,7 @@ import RSVP from "./rsvp.model.js";
 import User from "../users/user.model.js";
 import GraceRequest from "./grace-request.model.js";
 import ReviewHistory from "./review-history.model.js";
+import CorrectionRequest from "./correction-request.model.js";
 import VolunteerApplication from "./volunteer-application.model.js";
 import Notification from "../notifications/notification.model.js";
 import { createHttpError } from "../../utils/httpError.js";
@@ -42,22 +43,64 @@ const syncExpiredUpcomingEvents = async () => {
 };
 
 export const cleanupExpiredBlocks = async () => {
-  const result = await User.updateMany(
-    {
-      isBlocked: true,
-      blockedUntil: { $lt: new Date() },
-    },
-    {
-      $set: {
-        isBlocked: false,
-        blockedUntil: null,
-        reviewRequired: false,
-        disciplineStatus: "normal",
-      },
-    }
-  );
+  const usersToUnblock = await User.find({
+    isBlocked: true,
+    blockedUntil: { $lt: new Date() },
+  });
 
-  return result;
+  let count = 0;
+  for (const user of usersToUnblock) {
+    user.archivedMissedEvents.push(...user.missedEvents);
+    user.missedEvents = [];
+    user.warningCount = 0;
+    user.isBlocked = false;
+    user.blockedUntil = null;
+    user.reviewRequired = false;
+    user.disciplineStatus = "probation";
+    user.probationUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    await user.save();
+
+    await ReviewHistory.create({
+      eventId: null, // General governance action
+      userId: user._id,
+      action: "BLOCK_EXPIRED_PROBATION_STARTED",
+      performedBy: user._id, // System
+      role: "system",
+      reason: "Block expired naturally. Probation period started.",
+    });
+
+    count++;
+  }
+
+  return { modifiedCount: count };
+};
+
+export const cleanupExpiredProbation = async () => {
+  const usersToEndProbation = await User.find({
+    disciplineStatus: "probation",
+    probationUntil: { $lt: new Date() },
+  });
+
+  let count = 0;
+  for (const user of usersToEndProbation) {
+    user.disciplineStatus = "normal";
+    user.probationUntil = null;
+    await user.save();
+
+    await ReviewHistory.create({
+      eventId: null,
+      userId: user._id,
+      action: "PROBATION_EXPIRED",
+      performedBy: user._id,
+      role: "system",
+      reason: "Probation period naturally expired. Student restored to normal status.",
+    });
+
+    count++;
+  }
+
+  return { modifiedCount: count };
 };
 
 const loadEventAttendees = async (eventId, pagination) => {
@@ -152,8 +195,8 @@ export const createEvent = async ({ body, user }) => {
   if (attendancePolicy) {
     const threshold = Number(attendancePolicy.noShowThreshold) || 2;
     const limit = Number(attendancePolicy.warningLimit) || 3;
-    if (limit <= threshold) {
-      throw createHttpError(400, "Warning limit must be strictly greater than no-show threshold");
+    if (limit < threshold + 2) {
+      throw createHttpError(400, "Warning limit must be at least no-show threshold + 2");
     }
   }
 
@@ -346,8 +389,8 @@ export const updateEvent = async ({ id, body, user }) => {
   if (body.attendancePolicy) {
     const threshold = Number(body.attendancePolicy.noShowThreshold) || 2;
     const limit = Number(body.attendancePolicy.warningLimit) || 3;
-    if (limit <= threshold) {
-      throw createHttpError(400, "Warning limit must be strictly greater than no-show threshold");
+    if (limit < threshold + 2) {
+      throw createHttpError(400, "Warning limit must be at least no-show threshold + 2");
     }
   }
 
@@ -878,6 +921,28 @@ export const reviewAttendanceIssue = async ({ id, userId, body, user }) => {
     reason: String(body?.reason || "").trim(),
   });
 
+  const notificationType = action === "approveGrace"
+    ? "grace_approved"
+    : action === "reduceWarning"
+      ? "warning"
+      : "blocked";
+
+  await Notification.create({
+    userId: target._id,
+    type: notificationType,
+    title: action === "approveGrace"
+      ? "Grace approved"
+      : action === "reduceWarning"
+        ? "Warning reduced"
+        : "Attendance blocked",
+    message: action === "approveGrace"
+      ? "Your attendance review resulted in grace approval."
+      : action === "reduceWarning"
+        ? "Your warning count was reduced after faculty review."
+        : "Your attendance access has been temporarily blocked.",
+    eventId: event._id,
+  });
+
   return target.toJSON();
 };
 
@@ -1056,4 +1121,214 @@ export const markAttendance = async ({ id, body, user }) => {
     revertedCount: revertedModified,
     attendees,
   };
+};
+
+export const amendAttendance = async ({ id, body, user }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  if (event.status !== "completed") {
+    throw createHttpError(400, "Attendance correction is only allowed for completed events");
+  }
+
+  if (!(await canManageEvent(event, user))) {
+    throw createHttpError(403, "Forbidden");
+  }
+
+  const { attendeeIds } = body;
+  if (!Array.isArray(attendeeIds)) {
+    throw createHttpError(400, "attendeeIds must be an array");
+  }
+
+  const existingRequest = await CorrectionRequest.findOne({
+    eventId: event._id,
+    status: "approved",
+  });
+
+  if (!existingRequest) {
+    throw createHttpError(403, "Attendance amendment requires an approved Correction Request from the organization admin.");
+  }
+
+  const idSet = new Set(attendeeIds.map(String));
+  const rsvps = await RSVP.find({ eventId: event._id }).lean();
+  
+  const idsToAttend = [];
+  
+  for (const rsvp of rsvps) {
+    const attendeeId = rsvp.userId.toString();
+    const currentlyAttended = rsvp.status === "attended";
+    const desiredAttended = idSet.has(attendeeId);
+    
+    // We only support Amending No-Shows -> Attended (safest path for corrections)
+    if (!currentlyAttended && desiredAttended) {
+      idsToAttend.push(attendeeId);
+    }
+  }
+
+  if (idsToAttend.length === 0) {
+    return { message: "No attendance corrections needed", attendees: await loadEventAttendees(event._id) };
+  }
+
+  const now = new Date();
+  const policy = event.attendancePolicy || {};
+  const threshold = Number(policy.noShowThreshold) || 2;
+  const limit = Number(policy.warningLimit) || 3;
+  const reviewPoint = limit - 1;
+
+  // 1. Mark RSVPs as attended
+  const result = await RSVP.updateMany(
+    {
+      eventId: event._id,
+      userId: { $in: idsToAttend },
+      status: { $ne: "attended" }
+    },
+    {
+      $set: {
+        status: "attended",
+        "attendance.attended": true,
+        "attendance.attendanceMethod": "manual_amendment",
+        "attendance.entryTime": now,
+      },
+    }
+  );
+
+  // 2. Adjust User Governance State for those whose penalty is being rolled back
+  for (const uid of idsToAttend) {
+    const targetUser = await User.findById(uid);
+    if (!targetUser) continue;
+    
+    // Remove the event from missedEvents
+    const initialMissed = targetUser.missedEvents.length;
+    targetUser.missedEvents = targetUser.missedEvents.filter(eId => eId.toString() !== event._id.toString());
+    const newMissed = targetUser.missedEvents.length;
+    
+    // Only downgrade if the length actually changed
+    if (newMissed < initialMissed) {
+      // Recalculate discipline state based on new count
+      if (newMissed < threshold) {
+        targetUser.disciplineStatus = "normal";
+        targetUser.reviewRequired = false;
+        targetUser.isBlocked = false;
+        targetUser.blockedUntil = null;
+      } else if (newMissed < reviewPoint) {
+        targetUser.disciplineStatus = "warning";
+        targetUser.reviewRequired = false;
+        targetUser.isBlocked = false;
+        targetUser.blockedUntil = null;
+      } else if (newMissed < limit) {
+        targetUser.disciplineStatus = "review";
+        targetUser.reviewRequired = true;
+        targetUser.isBlocked = false;
+        targetUser.blockedUntil = null;
+      }
+      
+      // We do not decrement warningCount directly because warningCount is just a strike tracker 
+      // but if they are back to normal, maybe zero it out? The policy allows them to retain the strike buffer.
+      // Let's just save.
+      await targetUser.save();
+      
+      // Create Audit Log
+      await ReviewHistory.create({
+        eventId: event._id,
+        userId: targetUser._id,
+        action: "GRACE_APPROVED", // Repurposing as a "Forgiven" action
+        performedBy: user.id,
+        role: "system",
+        reason: "Attendance amended post-completion",
+      });
+    }
+  }
+
+  // 3. Update Event counts
+  await Event.findByIdAndUpdate(event._id, {
+    $inc: { 
+      attendedCount: idsToAttend.length,
+      noShowCount: -idsToAttend.length 
+    }
+  });
+
+  // 4. Mark Correction Request as amended
+  existingRequest.status = "amended";
+  await existingRequest.save();
+
+  return {
+    message: `${idsToAttend.length} attendance records corrected and penalties reverted`,
+    attendees: await loadEventAttendees(event._id)
+  };
+};
+
+export const requestAttendanceCorrection = async ({ id, user, body }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  if (event.status !== "completed") {
+    throw createHttpError(400, "Event must be completed to request correction");
+  }
+
+  if (!(await canManageEvent(event, user))) {
+    throw createHttpError(403, "Forbidden");
+  }
+
+  // 48-hour window check
+  const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  // Using updatedAt as a proxy for when it was completed, or just allowing it if endDate was within 48h
+  const completionDate = event.endDate || event.updatedAt;
+  if (completionDate < fortyEightHoursAgo) {
+    throw createHttpError(400, "Correction window has closed (48 hours).");
+  }
+
+  const existingRequest = await CorrectionRequest.findOne({
+    eventId: event._id,
+    status: { $in: ["pending", "approved"] },
+  });
+
+  if (existingRequest) {
+    throw createHttpError(400, "An active correction request already exists for this event.");
+  }
+
+  const request = await CorrectionRequest.create({
+    eventId: event._id,
+    requestedBy: user.id,
+    reason: String(body.reason || "").trim(),
+  });
+
+  return request;
+};
+
+export const reviewCorrectionRequest = async ({ id, reqId, user, body }) => {
+  const event = await Event.findById(id);
+  if (!event) throw createHttpError(404, "Event not found");
+
+  // Only orgAdmin can review correction requests
+  if (!user.roles?.includes("orgAdmin")) {
+    throw createHttpError(403, "Only organization admins can review correction requests");
+  }
+
+  const request = await CorrectionRequest.findById(reqId);
+  if (!request) throw createHttpError(404, "Request not found");
+
+  if (request.status !== "pending") {
+    throw createHttpError(400, `Request is already ${request.status}`);
+  }
+
+  const action = String(body.action || "").trim();
+  if (action === "approve") {
+    request.status = "approved";
+  } else if (action === "reject") {
+    request.status = "rejected";
+  } else {
+    throw createHttpError(400, "Invalid action");
+  }
+
+  request.reviewedBy = user.id;
+  request.reviewedAt = new Date();
+  request.facultyRemark = String(body.reason || "").trim();
+
+  await request.save();
+
+  return request;
+};
+
+export const getCorrectionRequest = async ({ id }) => {
+  return await CorrectionRequest.findOne({ eventId: id }).sort({ createdAt: -1 });
 };

@@ -123,8 +123,8 @@ export default function CreateEvent() {
     if (!form.venue.trim()) e.venue = "Venue is required.";
     if (form.showOnVolunteerHub && !form.volunteerLimit) e.volunteerLimit = "Set a volunteer limit when listing on Volunteer Hub.";
     if (form.showOnVolunteerHub && form.volunteerLimit && Number(form.volunteerLimit) < 1) e.volunteerLimit = "Limit must be at least 1.";
-    if (form.strictAttendance && Number(form.warningLimit) <= Number(form.noShowThreshold)) {
-      e.warningLimit = "Limit must be greater than threshold.";
+    if (form.strictAttendance && Number(form.warningLimit) < Number(form.noShowThreshold) + 2) {
+      e.warningLimit = "Limit must be at least threshold + 2.";
     }
     return e;
   };

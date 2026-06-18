@@ -93,6 +93,12 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
+    archivedMissedEvents: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Event",
+      default: [],
+    },
+
     warningCount: {
       type: Number,
       default: 0,
@@ -114,6 +120,11 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    probationUntil: {
+      type: Date,
+      default: null,
+    },
+
     reviewRequired: {
       type: Boolean,
       default: false,
@@ -121,7 +132,7 @@ const userSchema = new mongoose.Schema(
 
     disciplineStatus: {
       type: String,
-      enum: ["normal", "warning", "review", "blocked"],
+      enum: ["normal", "warning", "review", "blocked", "probation"],
       default: "normal",
     },
 

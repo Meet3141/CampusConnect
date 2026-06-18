@@ -43,8 +43,12 @@ export const rsvpEvent = (eventId) =>
 export const submitGraceRequest = (eventId, reason) =>
   api.post(`/events/${eventId}/grace-request`, { reason });
 
-export const reviewAttendanceIssue = (eventId, userId, action, reason = "") =>
-  api.post(`/events/${eventId}/review/${userId}`, { action, reason });
+export const reviewAttendanceIssue = (id, studentId, action, reason = "") => api.post(`/events/${id}/review/${studentId}`, { action, reason });
+
+export const amendAttendance = (id, attendeeIds) => api.post(`/events/${id}/attendance-correction`, { attendeeIds });
+export const requestAttendanceCorrection = (id, reason) => api.post(`/events/${id}/attendance-correction/request`, { reason });
+export const reviewCorrectionRequest = (id, requestId, action, reason = "") => api.post(`/events/${id}/attendance-correction/request/${requestId}/review`, { action, reason });
+export const getCorrectionRequest = (id) => api.get(`/events/${id}/attendance-correction/request`);
 
 export const cancelRsvp = (eventId) =>
   api.post(`/events/${eventId}/cancel-rsvp`);
