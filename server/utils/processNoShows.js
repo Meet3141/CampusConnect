@@ -63,13 +63,16 @@ export const processNoShows = async (eventId) => {
       user.reviewRequired = false;
       user.disciplineStatus = "normal";
       await user.save();
-      await Notification.create({
-        userId: user._id,
-        type: "warning",
-        title: "Attendance reminder",
-        message: "You missed an event. No warning was applied because this event is relaxed by policy.",
-        eventId: event._id,
-      });
+      await Notification.updateOne(
+        { userId: user._id, eventId: event._id, type: "warning" },
+        {
+          $set: {
+            title: "Attendance reminder",
+            message: "You missed an event. No warning was applied because this event is relaxed by policy.",
+          }
+        },
+        { upsert: true }
+      );
       continue;
     }
 
@@ -79,37 +82,46 @@ export const processNoShows = async (eventId) => {
       user.reviewRequired = false;
       user.disciplineStatus = "blocked";
       blockedUsers.push(user._id);
-      await Notification.create({
-        userId: user._id,
-        type: "blocked",
-        title: "Temporary attendance block",
-        message: "Your attendance access has been temporarily blocked.",
-        eventId: event._id,
-      });
+      await Notification.updateOne(
+        { userId: user._id, eventId: event._id, type: "blocked" },
+        {
+          $set: {
+            title: "Temporary attendance block",
+            message: "Your attendance access has been temporarily blocked.",
+          }
+        },
+        { upsert: true }
+      );
     } else if (allowGraceReview && missedCount === reviewPoint) {
       user.reviewRequired = true;
       user.disciplineStatus = "review";
       reviewedUsers.push(user._id);
-      await Notification.create({
-        userId: user._id,
-        type: "review",
-        title: "Attendance review required",
-        message: "Your attendance case is under review by faculty.",
-        eventId: event._id,
-      });
+      await Notification.updateOne(
+        { userId: user._id, eventId: event._id, type: "review" },
+        {
+          $set: {
+            title: "Attendance review required",
+            message: "Your attendance case is under review by faculty.",
+          }
+        },
+        { upsert: true }
+      );
     } else if (countWarnings && missedCount >= threshold) {
       if (initialState !== "warning" && initialState !== "review" && initialState !== "blocked") {
         user.warningCount = (user.warningCount || 0) + 1;
       }
       user.disciplineStatus = "warning";
       warnedUsers.push(user._id);
-      await Notification.create({
-        userId: user._id,
-        type: "warning",
-        title: "Attendance warning",
-        message: `You missed ${missedCount} strict events. Your attendance record has been updated.`,
-        eventId: event._id,
-      });
+      await Notification.updateOne(
+        { userId: user._id, eventId: event._id, type: "warning" },
+        {
+          $set: {
+            title: "Attendance warning",
+            message: `You missed ${missedCount} strict events. Your attendance record has been updated.`,
+          }
+        },
+        { upsert: true }
+      );
     } else {
       user.disciplineStatus = "normal";
     }

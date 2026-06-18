@@ -18,6 +18,7 @@ const graceRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+graceRequestSchema.index({ eventId: 1, userId: 1 }, { unique: true });
 graceRequestSchema.index({ eventId: 1, userId: 1, status: 1 });
 graceRequestSchema.index({ status: 1, createdAt: -1 });
 

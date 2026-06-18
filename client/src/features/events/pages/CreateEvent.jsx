@@ -35,6 +35,19 @@ const formatDuration = (ms) => {
   return `${minutes}m`;
 };
 
+const POLICY_RECOMMENDATIONS = {
+  hackathon: { strictAttendance: true, countWarnings: true, allowGraceReview: true, reason: "Hackathons have limited seats and resource planning." },
+  workshop: { strictAttendance: true, countWarnings: true, allowGraceReview: true, reason: "Workshops require strict seat management but allow a buffer." },
+  "placement training": { strictAttendance: true, countWarnings: false, allowGraceReview: true, reason: "Mandatory for careers. Skips warnings directly to review." },
+  "industry visit": { strictAttendance: true, countWarnings: false, allowGraceReview: false, reason: "Hard limits on transport. Zero tolerance for no-shows." },
+  "recruitment drive": { strictAttendance: false, countWarnings: false, allowGraceReview: true, reason: "High turnout desired. Penalizing can hurt club growth." },
+  "alumni session": { strictAttendance: false, countWarnings: false, allowGraceReview: false, reason: "Casual drop-ins allowed." },
+  "cultural night": { strictAttendance: false, countWarnings: false, allowGraceReview: false, reason: "Open ground event. RSVPs are for headcount only." },
+  "freshers party": { strictAttendance: false, countWarnings: false, allowGraceReview: false, reason: "Casual, high-volume event." },
+  "volunteer meeting": { strictAttendance: false, countWarnings: false, allowGraceReview: true, reason: "Encourage volunteering without scaring them away." },
+  "technical seminar": { strictAttendance: false, countWarnings: false, allowGraceReview: false, reason: "Optional seminar, tracking is generally for analytics." },
+};
+
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -110,6 +123,9 @@ export default function CreateEvent() {
     if (!form.venue.trim()) e.venue = "Venue is required.";
     if (form.showOnVolunteerHub && !form.volunteerLimit) e.volunteerLimit = "Set a volunteer limit when listing on Volunteer Hub.";
     if (form.showOnVolunteerHub && form.volunteerLimit && Number(form.volunteerLimit) < 1) e.volunteerLimit = "Limit must be at least 1.";
+    if (form.strictAttendance && Number(form.warningLimit) <= Number(form.noShowThreshold)) {
+      e.warningLimit = "Limit must be greater than threshold.";
+    }
     return e;
   };
 
@@ -130,8 +146,8 @@ export default function CreateEvent() {
         venue:       form.venue.trim(),
         showOnVolunteerHub: form.showOnVolunteerHub,
         attendancePolicy: {
-          countWarnings: form.countWarnings,
-          allowGraceReview: form.allowGraceReview,
+          countWarnings: form.strictAttendance ? form.countWarnings : false,
+          allowGraceReview: form.strictAttendance ? form.allowGraceReview : false,
           strictAttendance: form.strictAttendance,
           noShowThreshold: Number(form.noShowThreshold) || 2,
           warningLimit: Number(form.warningLimit) || 3,
@@ -336,39 +352,77 @@ export default function CreateEvent() {
               <p className="text-sm font-semibold text-[var(--cc-color-text-primary)]">Attendance Policy</p>
               <p className="text-[11px] text-muted mt-0.5">Control warning and review behavior for this event.</p>
             </div>
-            <Checkbox
-              label="Count Warnings"
-              checked={form.countWarnings}
-              onChange={(e) => set("countWarnings", e.target.checked)}
-            />
-            <Checkbox
-              label="Allow Grace Review"
-              checked={form.allowGraceReview}
-              onChange={(e) => set("allowGraceReview", e.target.checked)}
-            />
-            <Checkbox
-              label="Strict Attendance"
+
+            {form.category && POLICY_RECOMMENDATIONS[form.category.toLowerCase()] && (
+              <div className="p-4 bg-[var(--cc-color-brand)]/10 border border-[var(--cc-color-brand)]/20 rounded-xl space-y-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[var(--cc-color-brand)]">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Recommended Configuration
+                </div>
+                <div className="text-xs text-cc-muted flex gap-4">
+                   <span>Strict: <span className="font-bold text-cc">{POLICY_RECOMMENDATIONS[form.category.toLowerCase()].strictAttendance ? "ON" : "OFF"}</span></span>
+                   <span>Warnings: <span className="font-bold text-cc">{POLICY_RECOMMENDATIONS[form.category.toLowerCase()].countWarnings ? "ON" : "OFF"}</span></span>
+                   <span>Grace: <span className="font-bold text-cc">{POLICY_RECOMMENDATIONS[form.category.toLowerCase()].allowGraceReview ? "ON" : "OFF"}</span></span>
+                </div>
+                <p className="text-xs text-cc-muted italic">Reason: {POLICY_RECOMMENDATIONS[form.category.toLowerCase()].reason}</p>
+                <button
+                  type="button"
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[var(--cc-color-brand)] text-white hover:opacity-90 transition-opacity"
+                  onClick={() => {
+                    set("strictAttendance", POLICY_RECOMMENDATIONS[form.category.toLowerCase()].strictAttendance);
+                    set("countWarnings", POLICY_RECOMMENDATIONS[form.category.toLowerCase()].countWarnings);
+                    set("allowGraceReview", POLICY_RECOMMENDATIONS[form.category.toLowerCase()].allowGraceReview);
+                  }}
+                >
+                  Apply Recommendations
+                </button>
+              </div>
+            )}
+
+            <Switch
+              label="Strict Attendance (Master Switch)"
+              description="Enable to enforce punitive measures for no-shows. If OFF, other settings are ignored."
               checked={form.strictAttendance}
-              onChange={(e) => set("strictAttendance", e.target.checked)}
+              onChange={(v) => set("strictAttendance", v)}
             />
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="No-show Threshold"
-                hint="Misses before warning"
-                type="number"
-                min={1}
-                value={form.noShowThreshold}
-                onChange={(e) => set("noShowThreshold", e.target.value)}
+
+            <div className={`space-y-4 transition-opacity ${!form.strictAttendance ? 'opacity-40 pointer-events-none' : ''}`}>
+              <Checkbox
+                label="Count Warnings"
+                checked={form.countWarnings}
+                onChange={(e) => set("countWarnings", e.target.checked)}
               />
-              <Input
-                label="Warning Limit"
-                hint="Warnings before block"
-                type="number"
-                min={1}
-                value={form.warningLimit}
-                onChange={(e) => set("warningLimit", e.target.value)}
+              <Checkbox
+                label="Allow Grace Review"
+                checked={form.allowGraceReview}
+                onChange={(e) => set("allowGraceReview", e.target.checked)}
               />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="No-show Threshold"
+                  hint="Misses before warning"
+                  type="number"
+                  min={1}
+                  value={form.noShowThreshold}
+                  onChange={(e) => set("noShowThreshold", e.target.value)}
+                />
+                <Input
+                  label="Warning Limit"
+                  hint="Warnings before block"
+                  type="number"
+                  min={1}
+                  value={form.warningLimit}
+                  onChange={(e) => set("warningLimit", e.target.value)}
+                  error={errors.warningLimit}
+                />
+              </div>
             </div>
+
+            {form.category && POLICY_RECOMMENDATIONS[form.category.toLowerCase()] && form.strictAttendance !== POLICY_RECOMMENDATIONS[form.category.toLowerCase()].strictAttendance && (
+              <div className="text-xs text-[var(--cc-color-danger)] mt-2">
+                ⚠ This differs from the recommended configuration for {form.category} events.
+              </div>
+            )}
           </div>
 
           {apiError && <Alert variant="error" title={apiError} />}

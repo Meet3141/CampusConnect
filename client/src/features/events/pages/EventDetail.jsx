@@ -253,7 +253,14 @@ export default function EventDetail() {
   };
 
   const handleEndEvent = async () => {
-    if (!window.confirm("End this event now? No-shows will be processed immediately.")) return;
+    const attCount = event.attendedCount || 0;
+    if (registeredCount > 0 && attCount === 0) {
+      if (!window.confirm(`⚠️ WARNING: You have 0 attendees marked out of ${registeredCount} registered students.\n\nEnding the event now will mark ALL ${registeredCount} students as NO-SHOWS and they may be penalized.\n\nAre you absolutely sure you want to end the event without marking attendance?`)) {
+        return;
+      }
+    } else {
+      if (!window.confirm("End this event now? No-shows will be processed immediately.")) return;
+    }
     setActionLoading(true);
     try {
       const res = await endEvent(id);
@@ -367,10 +374,16 @@ export default function EventDetail() {
 
             {/* Actions */}
             <div className="flex flex-col gap-2 shrink-0">
+              {user?.isBlocked && (
+                <div className="px-4 py-3 bg-[var(--cc-color-danger-soft)] border border-[var(--cc-color-danger)] text-[var(--cc-color-danger)] rounded-xl text-sm mb-2 max-w-xs text-center">
+                  <p className="font-semibold">Attendance Blocked</p>
+                  <p className="text-xs opacity-90 mt-1">You cannot RSVP for new events until the block expires.</p>
+                </div>
+              )}
               {/* Hide RSVP for orgAdmin and clubAdmin (they are handlers, not attendees) */}
               {user && isUpcoming && !isOrgAdmin && !isClubAdminOfEvent && (
                 <>
-                  {!isRegistered && !isFull && (
+                  {!isRegistered && !isFull && !user?.isBlocked && (
                     <button onClick={handleRsvp} disabled={actionLoading}
                       className="px-5 py-2.5 btn-primary rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap">
                       {actionLoading ? "…" : "RSVP"}

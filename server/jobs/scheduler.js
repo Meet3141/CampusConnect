@@ -13,6 +13,7 @@ import logger from "../middleware/logger.js";
 import { reconcileMemberCount } from "./reconcileMemberCount.js";
 import { reconcileRsvpCount } from "./reconcileRsvpCount.js";
 import { cleanupExpiredEvents } from "./cleanupExpiredEvents.js";
+import { reconcileAttendanceCounters } from "./reconcileAttendanceCounters.js";
 import { cleanupExpiredBlocks } from "../modules/events/event.service.js";
 import { runMorningDigest } from "./morningDigest.js";
 
@@ -35,6 +36,7 @@ export const startScheduler = () => {
   cron.schedule("0 * * * *", () => {
     safeRun("cleanupExpiredEvents", cleanupExpiredEvents);
     safeRun("cleanupExpiredBlocks", cleanupExpiredBlocks);
+    safeRun("reconcileAttendanceCounters", reconcileAttendanceCounters);
   });
 
   // Daily at 8:00 AM — Morning Digest event reminders

@@ -52,6 +52,7 @@ export const cleanupExpiredBlocks = async () => {
         isBlocked: false,
         blockedUntil: null,
         reviewRequired: false,
+        disciplineStatus: "normal",
       },
     }
   );
@@ -146,6 +147,14 @@ export const createEvent = async ({ body, user }) => {
 
   if (endDate && new Date(endDate) <= new Date(date)) {
     throw createHttpError(400, "End time must be after start time");
+  }
+
+  if (attendancePolicy) {
+    const threshold = Number(attendancePolicy.noShowThreshold) || 2;
+    const limit = Number(attendancePolicy.warningLimit) || 3;
+    if (limit <= threshold) {
+      throw createHttpError(400, "Warning limit must be strictly greater than no-show threshold");
+    }
   }
 
   const event = await Event.create({
@@ -333,6 +342,14 @@ export const updateEvent = async ({ id, body, user }) => {
   editableFields.forEach((field) => {
     if (body[field] !== undefined) event[field] = body[field];
   });
+
+  if (body.attendancePolicy) {
+    const threshold = Number(body.attendancePolicy.noShowThreshold) || 2;
+    const limit = Number(body.attendancePolicy.warningLimit) || 3;
+    if (limit <= threshold) {
+      throw createHttpError(400, "Warning limit must be strictly greater than no-show threshold");
+    }
+  }
 
   if (!isAdminLevel && body.submitForApproval) {
     event.status = "pending_approval";
@@ -702,6 +719,11 @@ export const submitGraceRequest = async ({ id, user, body }) => {
 
   const rsvp = await RSVP.findOne({ eventId: event._id, userId: user.id }).lean();
   if (!rsvp) throw createHttpError(400, "You must be registered for this event to submit a grace request");
+
+  const existingRequest = await GraceRequest.findOne({ eventId: event._id, userId: user.id }).lean();
+  if (existingRequest) {
+    throw createHttpError(400, "You have already submitted a grace request for this event.");
+  }
 
   const request = await GraceRequest.create({ eventId: event._id, userId: user.id, reason });
   await Notification.create({
