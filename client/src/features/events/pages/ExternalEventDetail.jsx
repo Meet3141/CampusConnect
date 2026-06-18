@@ -21,13 +21,13 @@ import PageContainer from "../../../components/layout/PageContainer";
 import { Code2, Wrench, Mic, Drama, Zap, Landmark, Trophy, Calendar, Clock, MapPin, University, Bookmark } from "lucide-react";
 
 const CAT_META = {
-  hackathon:   { Icon: Code2,    bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]" },
-  workshop:    { Icon: Wrench,   bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
-  webinar:     { Icon: Mic,      bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
-  cultural:    { Icon: Drama,    bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:      { Icon: Zap,      bg: "from-emerald-900/50 to-green-900/30", badge: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]" },
-  conference:  { Icon: Landmark, bg: "from-amber-900/50 to-orange-900/30", badge: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]" },
-  competition: { Icon: Trophy,   bg: "from-rose-900/50 to-red-900/30",     badge: "bg-rose-950 text-rose-300 border-rose-800" },
+  hackathon: { Icon: Code2, bg: "from-indigo-900/50 to-blue-900/30", badge: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]" },
+  workshop: { Icon: Wrench, bg: "from-teal-900/50 to-cyan-900/30", badge: "bg-teal-950 text-teal-300 border-teal-800" },
+  webinar: { Icon: Mic, bg: "from-sky-900/50 to-blue-900/30", badge: "bg-sky-950 text-sky-300 border-sky-800" },
+  cultural: { Icon: Drama, bg: "from-purple-900/50 to-pink-900/30", badge: "bg-purple-950 text-purple-300 border-purple-800" },
+  sports: { Icon: Zap, bg: "from-emerald-900/50 to-green-900/30", badge: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]" },
+  conference: { Icon: Landmark, bg: "from-amber-900/50 to-orange-900/30", badge: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]" },
+  competition: { Icon: Trophy, bg: "from-rose-900/50 to-red-900/30", badge: "bg-rose-950 text-rose-300 border-rose-800" },
 };
 const catOf = (k) => CAT_META[k] || CAT_META.conference;
 
@@ -37,9 +37,9 @@ export default function ExternalEventDetail() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [event, setEvent]     = useState(null);
+  const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState("");
+  const [error, setError] = useState("");
   const [bookmarkId, setBookmarkId] = useState(null);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function ExternalEventDetail() {
   const timeStr = event.date
     ? new Date(event.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
     : "";
-  
+
   // Check if event date has passed
   const isEventExpired = event.date && new Date(event.date) < new Date();
 
@@ -149,7 +149,7 @@ export default function ExternalEventDetail() {
 
               <div className="flex flex-wrap gap-6 mt-4 text-sm text-[var(--cc-color-text-muted)]">
                 {dateStr && <span className="flex items-center gap-1.5"><Calendar size={14} className="shrink-0" /> {dateStr}</span>}
-                {timeStr && <span className="flex items-center gap-1.5"><Clock    size={24} className="shrink-0" /> {timeStr}</span>}
+                {timeStr && <span className="flex items-center gap-1.5"><Clock size={24} className="shrink-0" /> {timeStr}</span>}
                 {event.venue && <span className="flex items-center gap-1.5"><MapPin size={14} className="shrink-0" /> {event.venue}</span>}
               </div>
             </div>

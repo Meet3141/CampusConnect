@@ -714,6 +714,7 @@
 
 /* ── Semantic Component Primitives ── */
 @layer utilities {
+
   /* ── Enhanced Card Surfaces (Contrast Fix) ── */
   .surface-primary {
     background-color: var(--cc-color-surface);
@@ -748,15 +749,15 @@
 
   .input-standard:focus {
     outline: none;
-    
+
     border-color: var(--cc-color-border-strong);
     box-shadow: 0 0 0 2px var(--cc-color-brand);
   }
 
   /* ── Bulletproof Browser Autofill Override ── */
   input:-webkit-autofill,
-  input:-webkit-autofill:hover, 
-  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
   input:-webkit-autofill:active,
   .input-standard:-webkit-autofill {
     /* Delays the browser's autofill background color indefinitely */
@@ -771,7 +772,7 @@
     background-color: var(--cc-color-brand);
     color: var(--cc-color-on-brand);
   }
-  
+
   .btn-primary:hover {
     background-color: var(--cc-color-brand-hover);
   }

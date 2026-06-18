@@ -132,6 +132,12 @@ const eventSchema = new mongoose.Schema(
       },
       default: {},
     },
+
+    // Prevents duplicate Morning Digest emails (set atomically via findOneAndUpdate)
+    remindersSent: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -142,5 +148,6 @@ eventSchema.index({ category: 1 });
 eventSchema.index({ createdBy: 1 });
 eventSchema.index({ date: 1, clubId: 1 });
 eventSchema.index({ showOnVolunteerHub: 1, status: 1 });
+eventSchema.index({ date: 1, remindersSent: 1 });
 
 export default mongoose.model("Event", eventSchema);

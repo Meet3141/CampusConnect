@@ -14,6 +14,7 @@ import { reconcileMemberCount } from "./reconcileMemberCount.js";
 import { reconcileRsvpCount } from "./reconcileRsvpCount.js";
 import { cleanupExpiredEvents } from "./cleanupExpiredEvents.js";
 import { cleanupExpiredBlocks } from "../modules/events/event.service.js";
+import { runMorningDigest } from "./morningDigest.js";
 
 const safeRun = async (name, fn) => {
   try {
@@ -36,5 +37,10 @@ export const startScheduler = () => {
     safeRun("cleanupExpiredBlocks", cleanupExpiredBlocks);
   });
 
-  logger.info("[scheduler] started — reconcile every 10min, cleanup every 1hr");
+  // Daily at 8:00 AM — Morning Digest event reminders
+  cron.schedule("0 8 * * *", () => {
+    safeRun("runMorningDigest", runMorningDigest);
+  });
+
+  logger.info("[scheduler] started — reconcile every 10min, cleanup every 1hr, morning digest daily at 8 AM");
 };

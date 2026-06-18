@@ -22,11 +22,11 @@ import PageContainer from "../../../components/layout/PageContainer";
 
 export default function MyClubs() {
   const { user } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
   const [allClubs, setAllClubs] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
   useEffect(() => {
@@ -48,8 +48,8 @@ export default function MyClubs() {
   }, [user]);
 
   const counts = useMemo(() => ({
-    all:     allClubs.length,
-    active:  allClubs.filter((c) => c.myStatus === "active").length,
+    all: allClubs.length,
+    active: allClubs.filter((c) => c.myStatus === "active").length,
     pending: allClubs.filter((c) => c.myStatus === "pending").length,
   }), [allClubs]);
 
@@ -133,7 +133,7 @@ export default function MyClubs() {
    Club Card
 ───────────────────────────────────────────── */
 function MyClubCard({ club, index, onClick }) {
-  const meta   = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
+  const meta = CLUB_CATEGORY_META[club.category] || CLUB_CATEGORY_META.other;
   const status = STATUS_META[club.myStatus];
 
   return (

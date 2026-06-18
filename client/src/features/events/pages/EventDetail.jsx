@@ -35,21 +35,21 @@ import { Code2, Wrench, Mic, Drama, Zap, ClipboardList, Trophy, Landmark } from 
 import { Calendar, Clock, Hourglass, MapPin, Users, Building2, Settings, Trash2, Bookmark, BarChart3 } from "lucide-react";
 
 const EVENT_CAT = {
-  hackathon: { Icon: Code2,         bg: "from-indigo-900/50 to-blue-900/30",   badge: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]" },
-  workshop:  { Icon: Wrench,        bg: "from-teal-900/50 to-cyan-900/30",    badge: "bg-teal-950 text-teal-300 border-teal-800" },
-  webinar:   { Icon: Mic,           bg: "from-sky-900/50 to-blue-900/30",     badge: "bg-sky-950 text-sky-300 border-sky-800" },
-  cultural:  { Icon: Drama,         bg: "from-purple-900/50 to-pink-900/30",   badge: "bg-purple-950 text-purple-300 border-purple-800" },
-  sports:    { Icon: Zap,           bg: "from-emerald-900/50 to-green-900/30", badge: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]" },
-  meeting:   { Icon: ClipboardList, bg: "from-slate-800/50 to-slate-900/30",   badge: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]" },
-  competition:{ Icon: Trophy,       bg: "from-rose-900/50 to-pink-900/30",     badge: "bg-rose-950 text-rose-300 border-rose-800" },
-  conference: { Icon: Landmark,     bg: "from-amber-900/50 to-orange-900/30",  badge: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]" },
+  hackathon: { Icon: Code2, bg: "from-indigo-900/50 to-blue-900/30", badge: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]" },
+  workshop: { Icon: Wrench, bg: "from-teal-900/50 to-cyan-900/30", badge: "bg-teal-950 text-teal-300 border-teal-800" },
+  webinar: { Icon: Mic, bg: "from-sky-900/50 to-blue-900/30", badge: "bg-sky-950 text-sky-300 border-sky-800" },
+  cultural: { Icon: Drama, bg: "from-purple-900/50 to-pink-900/30", badge: "bg-purple-950 text-purple-300 border-purple-800" },
+  sports: { Icon: Zap, bg: "from-emerald-900/50 to-green-900/30", badge: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]" },
+  meeting: { Icon: ClipboardList, bg: "from-slate-800/50 to-slate-900/30", badge: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]" },
+  competition: { Icon: Trophy, bg: "from-rose-900/50 to-pink-900/30", badge: "bg-rose-950 text-rose-300 border-rose-800" },
+  conference: { Icon: Landmark, bg: "from-amber-900/50 to-orange-900/30", badge: "bg-[var(--cc-color-warning-soft)] text-[var(--cc-color-warning)] border-[var(--cc-color-warning)]" },
 };
 const catOf = (k) => EVENT_CAT[k] || EVENT_CAT.meeting;
 
 
 const STATUS_BADGE = {
-  upcoming:  "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]",
-  ongoing:   "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]",
+  upcoming: "bg-[var(--cc-color-surface-brand)] text-[var(--cc-color-brand)] border-[var(--cc-color-brand)]",
+  ongoing: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]",
   completed: "bg-[var(--cc-color-surface-elevated)] text-[var(--cc-color-text-muted)] border-[var(--cc-color-border)]",
   cancelled: "bg-[var(--cc-color-danger-soft)] text-[var(--cc-color-danger)] border-[var(--cc-color-danger)]",
 };
@@ -358,9 +358,9 @@ export default function EventDetail() {
 
               <div className="flex flex-wrap gap-6 mt-4 text-sm text-[var(--cc-color-text-muted)]">
                 <span className="flex items-center gap-1.5"><Calendar size={14} className="shrink-0" /> {dateStr}</span>
-                <span className="flex items-center gap-1.5"><Clock    size={24} className="shrink-0" /> {timeStr}</span>
+                <span className="flex items-center gap-1.5"><Clock size={24} className="shrink-0" /> {timeStr}</span>
                 {end && durationMs > 0 && <span className="flex items-center gap-1.5"><Hourglass size={14} className="shrink-0" /> {formatDuration(durationMs)}</span>}
-                <span className="flex items-center gap-1.5"><MapPin   size={24} className="shrink-0" /> {event.venue}</span>
+                <span className="flex items-center gap-1.5"><MapPin size={24} className="shrink-0" /> {event.venue}</span>
                 {event.maxAttendees && <span className="flex items-center gap-1.5"><Users size={14} className="shrink-0" /> {registeredCount}/{event.maxAttendees} spots</span>}
               </div>
             </div>
