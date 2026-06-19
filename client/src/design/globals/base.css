@@ -84,6 +84,12 @@
     --cc-color-sidebar-text: #4A5568;
     --cc-color-sidebar-text-active: #004F9F;
 
+    /* Glassmorphism sidebar tokens */
+    --cc-sidebar-glass-bg: rgba(255, 255, 255, 0.72);
+    --cc-sidebar-glass-border: rgba(0, 79, 159, 0.10);
+    --cc-sidebar-glass-shadow: 0 4px 24px rgba(0, 40, 80, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    --cc-sidebar-glass-shadow-hover: 0 20px 40px rgba(0, 40, 80, 0.14), 0 8px 16px rgba(0, 0, 0, 0.06);
+
     --cc-stat-accent-clubs: #004F9F;
     --cc-stat-accent-events: #06B6D4;
     --cc-stat-accent-chats: #00C27A;
@@ -651,8 +657,8 @@
 
     --cc-line-length-default: 68ch;
 
-    --cc-sidebar-expanded: 220px;
-    --cc-sidebar-collapsed: 56px;
+    --cc-sidebar-expanded: 250px;
+    --cc-sidebar-collapsed: 72px;
     --cc-topbar-height: 56px;
     --cc-bottom-nav-height: 60px;
     --cc-page-padding-x: var(--cc-space-6);
@@ -726,6 +732,12 @@
     --cc-color-sidebar-hover: rgba(6, 182, 212, 0.12);
     --cc-color-sidebar-text: var(--cc-color-text-secondary);
     --cc-color-sidebar-text-active: var(--cc-color-brand);
+
+    /* Glassmorphism sidebar tokens (dark) */
+    --cc-sidebar-glass-bg: rgba(13, 13, 24, 0.78);
+    --cc-sidebar-glass-border: rgba(248, 249, 250, 0.10);
+    --cc-sidebar-glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.18);
+    --cc-sidebar-glass-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.48), 0 8px 16px rgba(0, 0, 0, 0.24);
 
     --cc-stat-accent-clubs: var(--cc-color-brand);
     --cc-stat-accent-events: var(--cc-color-accent);

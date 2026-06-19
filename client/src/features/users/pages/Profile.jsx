@@ -411,21 +411,18 @@ export default function Profile() {
                   Achievements
                   <span style={{ fontSize: 10 }}>{earnedIds.length}/{allBadges.length} earned</span>
                 </h3>
-                <div style={{
-                  display: "flex",
-                  gap: 16,
-                  overflowX: "auto",
-                  paddingBottom: 4,
-                  scrollbarWidth: "none",
-                }}>
+                <div className="flex flex-row overflow-x-auto gap-4 snap-x snap-mandatory pt-6 pb-4 scrollbar-hide [&::-webkit-scrollbar]:hidden -mx-[22px] px-[22px]">
                   {allBadges.map((badge) => (
-                    <AchievementBadge
-                      key={badge.id}
-                      badge={badge}
-                      earned={earnedIds.includes(badge.id)}
-                      size="md"
-                    />
+                    <div key={badge.id} className="flex-shrink-0 snap-start">
+                      <AchievementBadge
+                        badge={badge}
+                        earned={earnedIds.includes(badge.id)}
+                        size="md"
+                      />
+                    </div>
                   ))}
+                  {/* Spacer to guarantee the last badge is not clipped */}
+                  <div className="w-[1px] flex-shrink-0" />
                 </div>
               </div>
             );

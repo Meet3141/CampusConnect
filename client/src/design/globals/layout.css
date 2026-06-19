@@ -21,75 +21,105 @@
     background-color: var(--cc-color-background);
     color: var(--cc-color-text-primary);
     overflow: hidden;
+    position: relative;
   }
 
-  /* Sidebar — desktop hover-to-expand rail */
-  .cc-sidebar {
-    position: sticky;
-    top: 0;
-    height: 100dvh;
-    flex-shrink: 0;
+  /* ── Detached Mini-Drawer Sidebar ── */
+  .sidebar-detached {
+    position: fixed;
+    z-index: var(--cc-z-modal);
+    background-color: var(--cc-sidebar-glass-bg);
+    border: 1px solid var(--cc-sidebar-glass-border);
+    box-shadow: var(--cc-sidebar-glass-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow-x: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    background-color: var(--cc-color-sidebar-bg, var(--cc-color-surface));
-    border-right: 1px solid var(--cc-color-sidebar-border, var(--cc-color-border-subtle));
-    overflow: hidden;
-    /* Always start at collapsed width — hover drives expansion */
-    width: var(--cc-sidebar-collapsed);
-    /* Smooth expand/collapse — slower speed and smoother ease-in-out */
-    transition: width 350ms ease-in-out;
-    z-index: var(--cc-z-sticky);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease;
+    scrollbar-width: none;
   }
 
-  /* Expanded state — stays in flow, pushes content right */
-  .cc-sidebar:not(.cc-sidebar--collapsed) {
-    width: var(--cc-sidebar-expanded);
+  .sidebar-detached::-webkit-scrollbar {
+    display: none;
   }
 
-  /* Collapsed state */
-  .cc-sidebar--collapsed {
-    width: var(--cc-sidebar-collapsed);
+  /* Fallback for browsers without backdrop-filter */
+  @supports not (backdrop-filter: blur(20px)) {
+    .sidebar-detached {
+      background-color: var(--cc-color-sidebar-bg);
+    }
   }
 
-  /* Mobile sidebar — off-canvas drawer */
-  .cc-sidebar--mobile {
-    position: fixed;
-    inset-y: 0;
-    left: 0;
-    z-index: var(--cc-z-modal);
-    height: 100dvh;
-    width: var(--cc-sidebar-expanded);
-    transform: translateX(-100%);
-    transition: transform var(--cc-motion-slow) var(--cc-motion-ease-emphasized);
+  /* Desktop: floating pill sidebar */
+  @media (min-width: 768px) {
+    .sidebar-detached {
+      top: 16px;
+      bottom: 16px;
+      left: 16px;
+      width: var(--cc-sidebar-collapsed);
+      border-radius: 20px;
+    }
+
+    .sidebar-detached:hover {
+      width: var(--cc-sidebar-expanded);
+      box-shadow: var(--cc-sidebar-glass-shadow-hover);
+    }
+
+    /* Text labels: hidden by default, fade in on hover */
+    .sidebar-text-label {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      transition-delay: 0s;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sidebar-detached:hover .sidebar-text-label {
+      opacity: 1;
+      transition-delay: 0.1s;
+    }
   }
 
-  .cc-sidebar--mobile-open {
-    transform: translateX(0);
+  /* Mobile: off-canvas drawer */
+  @media (max-width: 767px) {
+    .sidebar-detached {
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-radius: 0 20px 20px 0;
+      width: 280px;
+      transform: translateX(-100%);
+    }
+
+    .sidebar-detached.mobile-open {
+      transform: translateX(0);
+    }
+
+    /* Text labels always visible on mobile */
+    .sidebar-text-label {
+      opacity: 1;
+      white-space: nowrap;
+    }
   }
 
-  /* Main content column */
+  /* ── Main content column ── */
   .cc-main {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-width: 0;
-    /* prevent flex blowout */
   }
 
-  /* Topbar — sits visually below sidebar authority */
-  .cc-topbar {
-    height: var(--cc-topbar-height);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    padding-left: var(--cc-space-5);
-    padding-right: var(--cc-space-5);
-    border-bottom: 1px solid var(--cc-color-border-subtle);
-    background-color: var(--cc-color-surface);
-    position: sticky;
-    top: 0;
-    z-index: var(--cc-z-dropdown);
+  /* Desktop: offset main content to clear the collapsed sidebar */
+  @media (min-width: 768px) {
+    .cc-main {
+      margin-left: 104px; /* 16px left margin + 72px sidebar + 16px gap */
+    }
   }
 
   /* Scrollable page content */
@@ -104,9 +134,45 @@
   .cc-sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background-color: var(--cc-legacy-rgba-0-0-0-06);
-    backdrop-filter: blur(2px);
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     z-index: calc(var(--cc-z-modal) - 1);
+    animation: cc-backdrop-fade 180ms ease both;
+  }
+
+  /* ── Hamburger button (mobile/tablet) ── */
+  .sidebar-hamburger {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--cc-sidebar-glass-border);
+    background-color: var(--cc-sidebar-glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--cc-sidebar-glass-shadow);
+    color: var(--cc-color-text-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .sidebar-hamburger:hover {
+    background-color: var(--cc-color-surface-hover);
+    box-shadow: var(--cc-sidebar-glass-shadow-hover);
+  }
+
+  /* Hide hamburger on desktop */
+  @media (min-width: 768px) {
+    .sidebar-hamburger {
+      display: none;
+    }
   }
 
   /* ── Bottom navigation (mobile hybrid adaptive) ── */

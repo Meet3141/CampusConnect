@@ -2,15 +2,20 @@
  * AppLayout.jsx
  * Shared layout wrapper for all authenticated pages.
  *
- * Sidebar behaviour (desktop):
- *   - Always starts as a 56px icon-only rail
- *   - Smoothly expands to 220px on hover (spring easing)
- *   - Collapses back to rail on mouse-leave
- *   - No manual toggle / no localStorage needed
- * Mobile: Bottom navigation bar (BottomNav component), off-canvas drawer for tablet.
+ * Sidebar behaviour:
+ *   Desktop (≥1024px):
+ *     - Detached floating pill, 16px from edges
+ *     - 72px collapsed (icons only), 250px on hover
+ *     - Glassmorphism background with blur
+ *     - Overlaps content — no layout shift
+ *   Mobile/Tablet (<1024px):
+ *     - Hidden by default, hamburger button top-left
+ *     - Slides in from left as modal drawer (280px)
+ *     - Swipe from left edge to open, swipe left to close
+ *     - BottomNav preserved on phones (<768px)
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { IconBell, IconLogout, IconMenu } from "./LayoutIcons";
@@ -24,45 +29,16 @@ function isActivePath(pathname, path) {
   return pathname === path || (path !== "/dashboard" && pathname.startsWith(path + "/"));
 }
 
-/* ─── Nav item ─── */
-function NavItem({ label, path, icon, pathname, onNavigate, collapsed }) {
+/* ─── Nav item (unified — works both collapsed & expanded via CSS) ─── */
+function NavItem({ label, path, icon, pathname, onNavigate }) {
   const active = isActivePath(pathname, path);
-
-  if (collapsed) {
-    return (
-      <li className="flex justify-center">
-        <button
-          onClick={() => onNavigate(path)}
-          title={label}
-          aria-label={label}
-          className="relative flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-200"
-          style={{
-            background: active ? 'var(--cc-color-sidebar-active, rgba(0,79,159,0.08))' : 'transparent',
-            color: active ? 'var(--cc-color-sidebar-text-active, var(--cc-color-brand))' : 'var(--cc-color-sidebar-text, var(--cc-color-text-muted))',
-            transition: 'background 150ms ease, color 150ms ease',
-          }}
-        >
-          {active && (
-            <span
-              className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
-              style={{
-                width: 3,
-                height: 24,
-                backgroundColor: 'var(--cc-color-brand)',
-                transition: 'height 250ms cubic-bezier(0.34,1.56,0.64,1)',
-              }}
-            />
-          )}
-          {icon({ size: 16, active })}
-        </button>
-      </li>
-    );
-  }
 
   return (
     <li>
       <button
         onClick={() => onNavigate(path)}
+        title={label}
+        aria-label={label}
         className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200"
         style={{
           background: active ? 'var(--cc-color-sidebar-active)' : 'transparent',
@@ -82,23 +58,10 @@ function NavItem({ label, path, icon, pathname, onNavigate, collapsed }) {
           }
         }}
       >
-        {active && (
-          <span
-            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
-            style={{
-              width: 3,
-              height: 24,
-              backgroundColor: 'var(--cc-color-brand)',
-              transition: 'height 250ms cubic-bezier(0.34,1.56,0.64,1)',
-            }}
-          />
-        )}
-        <span
-          className="shrink-0 transition-transform duration-200"
-        >
-          {icon({ size: 16, active })}
+        <span className="shrink-0 flex items-center justify-center w-5 h-5">
+          {icon({ size: 18, active })}
         </span>
-        <span className="flex-1 text-left leading-none whitespace-nowrap overflow-hidden">
+        <span className="sidebar-text-label flex-1 text-left leading-none">
           {label}
         </span>
       </button>
@@ -107,18 +70,16 @@ function NavItem({ label, path, icon, pathname, onNavigate, collapsed }) {
 }
 
 /* ─── Nav section ─── */
-function NavSection({ section, items, pathname, onNavigate, collapsed }) {
+function NavSection({ section, items, pathname, onNavigate }) {
   return (
     <div className="cc-sidebar-group">
-      {!collapsed && (
-        <p
-          className="text-[11px] uppercase tracking-widest font-semibold px-3 mb-1.5 whitespace-nowrap overflow-hidden"
-          style={{ color: 'var(--cc-color-text-secondary)' }}
-        >
-          {section}
-        </p>
-      )}
-      <ul className={collapsed ? "flex flex-col items-center gap-0.5" : "space-y-0.5"}>
+      <p
+        className="sidebar-text-label text-[11px] uppercase tracking-widest font-semibold px-3 mb-1.5"
+        style={{ color: 'var(--cc-color-text-secondary)' }}
+      >
+        {section}
+      </p>
+      <ul className="space-y-0.5">
         {items.map(({ label, path, icon }) => (
           <NavItem
             key={path}
@@ -127,7 +88,6 @@ function NavSection({ section, items, pathname, onNavigate, collapsed }) {
             icon={icon}
             pathname={pathname}
             onNavigate={onNavigate}
-            collapsed={collapsed}
           />
         ))}
       </ul>
@@ -142,7 +102,7 @@ export default function AppLayout() {
   const location = useLocation();
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [sidebarHovered, setSidebarHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationLoading, setNotificationLoading] = useState(false);
@@ -150,8 +110,9 @@ export default function AppLayout() {
   const [markAllProcessing, setMarkAllProcessing] = useState(false);
   const notificationsRef = useRef(null);
 
-  // Sidebar is collapsed whenever it's not being hovered (desktop)
-  const collapsed = !sidebarHovered;
+  /* Swipe gesture refs */
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchActiveRef = useRef(false);
 
   const isAdmin = user?.roles?.includes("orgAdmin");
   const isEditor = user?.roles?.includes("editor");
@@ -195,6 +156,11 @@ export default function AppLayout() {
     load();
   }, [user]);
 
+  /* Close mobile menu on route change */
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
   const onNavigate = (path) => {
     navigate(path);
     setMobileOpen(false);
@@ -225,48 +191,91 @@ export default function AppLayout() {
     }
   };
 
-  return (
-    <div className="cc-app-shell">
+  /* ─── Swipe gesture handlers ─── */
+  const handleTouchStart = useCallback((e) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    // Only activate swipe if starting from left edge (to open) or menu is open (to close)
+    touchActiveRef.current = touch.clientX < 50 || mobileOpen;
+  }, [mobileOpen]);
 
-      {/* ── Mobile overlay ── */}
+  const handleTouchMove = useCallback((e) => {
+    // Intentionally empty — we process in touchEnd
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (!touchActiveRef.current) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+
+    // Only process horizontal swipes (ignore vertical scrolling)
+    if (Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+    if (deltaX > 50 && touchStartRef.current.x < 50) {
+      // Swipe right from left edge → open
+      setMobileOpen(true);
+    } else if (deltaX < -50 && mobileOpen) {
+      // Swipe left → close
+      setMobileOpen(false);
+    }
+
+    touchActiveRef.current = false;
+  }, [mobileOpen]);
+
+  return (
+    <div
+      className="cc-app-shell"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+
+      {/* ── Hamburger button (mobile/tablet only) ── */}
+      <button
+        className="sidebar-hamburger"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        <IconMenu size={20} />
+      </button>
+
+      {/* ── Mobile overlay backdrop ── */}
       {mobileOpen && (
         <div
-          className="cc-sidebar-backdrop lg:hidden"
+          className="cc-sidebar-backdrop md:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
       )}
 
       {/* ══════════════════════════════════════════════
-          SIDEBAR — desktop (hover-to-expand rail)
+          UNIFIED SIDEBAR — Detached Mini-Drawer
       ══════════════════════════════════════════════ */}
       <aside
-        onMouseEnter={() => setSidebarHovered(true)}
-        onMouseLeave={() => setSidebarHovered(false)}
-        className={`cc-sidebar hidden lg:flex ${collapsed ? "cc-sidebar--collapsed" : ""}`}
+        className={`sidebar-detached overflow-x-hidden${mobileOpen ? " mobile-open" : ""}`}
         aria-label="Main navigation"
+        onMouseEnter={() => window.innerWidth >= 768 && setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
       >
-        {/* Logo / wordmark */}
-        <div className={`flex items-center border-b border-[var(--cc-color-sidebar-border)] shrink-0 transition-all duration-300 ${collapsed ? "justify-center px-3 py-4" : "gap-3 px-4 py-4"
-          }`}>
-          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 transition-transform duration-200">
-            <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-0.5 bg-white" />
+        {/* ── Logo / wordmark ── */}
+        <div
+          className="flex items-center shrink-0 px-4 py-4"
+          style={{ borderBottom: '1px solid var(--cc-sidebar-glass-border)' }}
+        >
+          <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
+            <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-0.5 bg-white rounded-lg" />
           </div>
-          <span
-            className="font-semibold text-sm text-cc tracking-tight whitespace-nowrap overflow-hidden"
-            style={{
-              maxWidth: collapsed ? 0 : 160,
-              opacity: collapsed ? 0 : 1,
-              transition: "max-width 300ms cubic-bezier(0.16,1,0.3,1), opacity 200ms ease",
-            }}
+          <span className="sidebar-text-label font-semibold text-sm tracking-tight ml-3"
+            style={{ color: 'var(--cc-color-text-primary)' }}
           >
             CampusConnect
           </span>
         </div>
 
-        {/* Nav */}
-        <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-5 transition-all duration-300 ${collapsed ? "px-2" : "px-3"
-          }`}>
+        {/* ── Navigation ── */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2 space-y-2">
           {NAV.map(({ section, items }) => (
             <NavSection
               key={section}
@@ -274,7 +283,6 @@ export default function AppLayout() {
               items={items}
               pathname={location.pathname}
               onNavigate={onNavigate}
-              collapsed={collapsed}
             />
           ))}
 
@@ -284,173 +292,81 @@ export default function AppLayout() {
               items={adminNav}
               pathname={location.pathname}
               onNavigate={onNavigate}
-              collapsed={collapsed}
             />
           )}
         </nav>
 
-        {/* Bottom: user profile */}
-        <div className={`shrink-0 border-t border-[var(--cc-color-sidebar-border)] transition-all duration-300 ${collapsed ? "px-2 py-3 flex flex-col items-center gap-2" : "px-3 pb-4 pt-3"
-          }`}>
-          {!collapsed ? (
-            /* Expanded: avatar + name + logout */
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate("/profile")}
-                className="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-surface-hover transition-colors text-left group/profile"
-                title="View your profile"
-              >
-                <div className="w-7 h-7 rounded-full bg-primary-soft ring-1 ring-primary-border flex items-center justify-center text-[11px] font-bold text-primary shrink-0 transition-all duration-200 group-hover/profile:ring-2 group-hover/profile:ring-primary-border">
-                  {userInitials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-cc truncate group-hover/profile:text-accent transition-colors">
-                    {user?.name}
-                  </p>
-                  <p className="text-[10px] text-cc-muted capitalize">{user?.roles?.[0] || "member"}</p>
-                </div>
-              </button>
-              <button
-                onClick={logout}
-                className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] transition-all"
-                title="Log out"
-              >
-                <IconLogout size={24} />
-              </button>
-            </div>
-          ) : (
-            /* Rail: avatar only */
-            <>
-              <button
-                onClick={() => navigate("/profile")}
-                title={user?.name || "Profile"}
-                className="w-9 h-9 rounded-full bg-primary-soft ring-1 ring-primary-border flex items-center justify-center text-[11px] font-bold text-primary hover:ring-2 hover:ring-primary-border transition-all duration-200"
-              >
-                {userInitials}
-              </button>
-              <button
-                onClick={logout}
-                title="Log out"
-                className="p-2 rounded-xl text-cc-muted hover:text-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] transition-all"
-              >
-                <IconLogout size={24} />
-              </button>
-            </>
-          )}
-        </div>
-      </aside>
+        {/* ── Sidebar footer ── */}
+        <div
+          className="shrink-0 py-3"
+          style={{ borderTop: '1px solid var(--cc-sidebar-glass-border)' }}
+        >
 
-      {/* ══════════════════════════════════════════════
-          SIDEBAR — mobile (off-canvas drawer)
-      ══════════════════════════════════════════════ */}
-      <aside
-        className={`cc-sidebar--mobile flex flex-col lg:hidden ${mobileOpen ? "cc-sidebar--mobile-open" : ""}`}
-        aria-label="Main navigation"
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--cc-color-sidebar-border)] shrink-0">
-          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
-            <img src="/depstar-logo.jpeg" alt="DEPSTAR" className="w-full h-full object-contain p-0.5 bg-white" />
-          </div>
-          <span className="font-semibold text-sm text-cc tracking-tight">CampusConnect</span>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          {NAV.map(({ section, items }) => (
-            <NavSection
-              key={section}
-              section={section}
-              items={items}
-              pathname={location.pathname}
-              onNavigate={onNavigate}
-              collapsed={false}
-            />
-          ))}
-          {adminNav.length > 0 && (
-            <NavSection
-              section="Administration"
-              items={adminNav}
-              pathname={location.pathname}
-              onNavigate={onNavigate}
-              collapsed={false}
-            />
-          )}
-        </nav>
-
-        {/* User panel */}
-        <div className="px-3 pb-4 pt-3 border-t border-[var(--cc-color-sidebar-border)] shrink-0">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onNavigate("/profile")}
-              className="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-surface-hover transition-colors text-left"
-            >
-              <div className="w-7 h-7 rounded-full bg-primary-soft ring-1 ring-primary-border flex items-center justify-center text-[11px] font-bold text-primary shrink-0">
-                {userInitials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-cc truncate">{user?.name}</p>
-                <p className="text-[10px] text-cc-muted capitalize">{user?.roles?.[0] || "member"}</p>
-              </div>
-            </button>
-            <button
-              onClick={logout}
-              className="shrink-0 p-2 rounded-xl text-cc-muted hover:text-[var(--cc-color-danger)] hover:bg-[var(--cc-color-danger-soft)] transition-all"
-              title="Log out"
-            >
-              <IconLogout size={24} />
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* ══════════════════════════════════════════════
-          MAIN CONTENT COLUMN
-      ══════════════════════════════════════════════ */}
-      <div className="cc-main">
-
-        {/* ── Topbar ── */}
-        <header className="cc-topbar">
-          {/* Hamburger — only for tablet (sm-lg), mobile uses BottomNav */}
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="hidden sm:flex lg:hidden text-cc-muted hover:text-cc transition-colors p-1 -ml-1"
-              aria-label="Open menu"
-            >
-              <IconMenu size={24} />
-            </button>
-          </div>
-
-          {/* Right: utilities */}
-          <div className="flex items-center gap-1.5 ml-auto">
-            {/* Notifications */}
+          {/* ── UTILITY ROW: Bell + Theme Toggle ──
+               Expanded  → flex-row, left-aligned
+               Collapsed → flex-col, centred          */}
+          <div
+            className={`flex items-center px-2 pb-1 ${
+              isExpanded || mobileOpen
+                ? 'flex-row gap-1'
+                : 'flex-col gap-3'
+            }`}
+          >
+            {/* Notification Bell */}
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setNotificationsOpen((o) => !o)}
-                className="relative p-2 rounded-xl hover:bg-surface-hover transition-all duration-150 text-cc-muted hover:text-cc"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-150"
+                style={{ color: 'var(--cc-color-sidebar-text)' }}
                 title="Notifications"
                 aria-label="Notifications"
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--cc-color-sidebar-hover)';
+                  e.currentTarget.style.color = 'var(--cc-color-text-primary)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = 'var(--cc-color-sidebar-text)';
+                }}
               >
-                <IconBell size={24} />
-                {unreadNotifications.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-[var(--cc-color-warning)] text-[var(--cc-color-on-brand)] font-bold flex items-center justify-center animate-pop-in">
-                    {unreadNotifications.length}
-                  </span>
-                )}
+                <span className="relative flex items-center justify-center">
+                  <IconBell size={18} />
+                  {unreadNotifications.length > 0 && (
+                    <span
+                      className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-1 rounded-full flex items-center justify-center text-[9px] font-bold"
+                      style={{
+                        backgroundColor: 'var(--cc-color-warning)',
+                        color: 'var(--cc-color-on-brand)',
+                      }}
+                    >
+                      {unreadNotifications.length}
+                    </span>
+                  )}
+                </span>
               </button>
 
+              {/* Notifications dropdown */}
               {notificationsOpen && (
-                <div className="absolute right-0 mt-3 w-80 rounded-2xl border border-cc-soft bg-cc-surface shadow-xl overflow-hidden z-50 animate-fade-scale">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-cc-soft">
+                <div
+                  className="absolute left-full bottom-0 ml-2 w-80 rounded-2xl shadow-xl overflow-hidden z-50"
+                  style={{
+                    backgroundColor: 'var(--cc-color-surface)',
+                    border: '1px solid var(--cc-color-border)',
+                  }}
+                >
+                  <div
+                    className="flex items-center justify-between px-4 py-3"
+                    style={{ borderBottom: '1px solid var(--cc-color-border-subtle)' }}
+                  >
                     <div>
-                      <p className="text-sm font-semibold text-cc">Notifications</p>
-                      <p className="text-[11px] text-cc-muted">Attendance and moderation updates</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--cc-color-text-primary)' }}>Notifications</p>
+                      <p className="text-[11px]" style={{ color: 'var(--cc-color-text-muted)' }}>Attendance and moderation updates</p>
                     </div>
                     <button
                       disabled={markAllProcessing}
                       onClick={handleMarkAllRead}
-                      className="text-xs text-accent hover:text-brand transition-colors disabled:opacity-50 font-medium"
+                      className="text-xs font-medium transition-colors disabled:opacity-50"
+                      style={{ color: 'var(--cc-color-accent)' }}
                     >
                       Mark all read
                     </button>
@@ -465,7 +381,7 @@ export default function AppLayout() {
                     ) : notifications.length === 0 ? (
                       <div className="px-4 py-8 text-center">
                         <span className="text-2xl mb-2 block">🔔</span>
-                        <p className="text-sm text-cc-muted">No notifications yet.</p>
+                        <p className="text-sm" style={{ color: 'var(--cc-color-text-muted)' }}>No notifications yet.</p>
                       </div>
                     ) : (
                       notifications.map((n) => (
@@ -473,16 +389,28 @@ export default function AppLayout() {
                           key={n._id}
                           onClick={() => handleMarkRead(n._id)}
                           disabled={notificationProcessingId === n._id}
-                          className={`w-full text-left px-4 py-3 border-b border-cc-soft/60 hover:bg-surface-hover transition-colors ${n.status === "read" || n.readAt ? "opacity-60" : "bg-cc-surface-weak"
-                            }`}
+                          className="w-full text-left px-4 py-3 transition-colors"
+                          style={{
+                            borderBottom: '1px solid var(--cc-color-border-subtle)',
+                            backgroundColor: n.status === "read" || n.readAt ? 'transparent' : 'var(--cc-color-surface-weak)',
+                            opacity: n.status === "read" || n.readAt ? 0.6 : 1,
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--cc-color-surface-hover)'; }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.backgroundColor =
+                              n.status === "read" || n.readAt ? 'transparent' : 'var(--cc-color-surface-weak)';
+                          }}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-sm font-medium text-cc">{n.title}</p>
-                              <p className="text-xs text-cc-muted mt-0.5">{n.message}</p>
+                              <p className="text-sm font-medium" style={{ color: 'var(--cc-color-text-primary)' }}>{n.title}</p>
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--cc-color-text-muted)' }}>{n.message}</p>
                             </div>
                             {n.status !== "read" && !n.readAt && (
-                              <span className="mt-1 h-2 w-2 rounded-full bg-[var(--cc-color-warning)] shrink-0" />
+                              <span
+                                className="mt-1 h-2 w-2 rounded-full shrink-0"
+                                style={{ backgroundColor: 'var(--cc-color-warning)' }}
+                              />
                             )}
                           </div>
                         </button>
@@ -493,13 +421,82 @@ export default function AppLayout() {
               )}
             </div>
 
-            {/* Divider */}
-            <span className="w-px h-5 bg-cc-border-soft mx-1" aria-hidden="true" />
-
-            <ThemeToggle />
+            {/* Theme Toggle */}
+            <div className="flex items-center justify-center shrink-0">
+              <ThemeToggle />
+            </div>
           </div>
-        </header>
 
+          {/* ── USER ROW: Avatar + Info + Logout ──
+               Expanded  → flex-row, space-between: [Avatar | Name+Role ···· Logout]
+               Collapsed → Avatar centred, Info+Logout hidden              */}
+          <div
+            className={`flex items-center w-full px-2 pt-1 ${
+              isExpanded || mobileOpen ? 'justify-between' : 'justify-center'
+            }`}
+          >
+            {/* Avatar (always visible) */}
+            <button
+              onClick={() => onNavigate('/profile')}
+              className="flex items-center gap-2.5 rounded-xl py-1.5 transition-colors min-w-0"
+              style={{
+                paddingLeft: isExpanded || mobileOpen ? '4px' : '0',
+                flex: isExpanded || mobileOpen ? '1' : 'none',
+              }}
+              title={user?.name || 'Profile'}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--cc-color-sidebar-hover)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+            >
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                style={{
+                  backgroundColor: 'var(--cc-color-primary-soft)',
+                  color: 'var(--cc-color-brand)',
+                  border: '1px solid var(--cc-color-primary-border)',
+                }}
+              >
+                {userInitials}
+              </div>
+              {/* User info — hidden when collapsed */}
+              {(isExpanded || mobileOpen) && (
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium truncate" style={{ color: 'var(--cc-color-text-primary)' }}>
+                    {user?.name}
+                  </p>
+                  <p className="text-[10px] capitalize" style={{ color: 'var(--cc-color-text-muted)' }}>
+                    {user?.roles?.[0] || 'member'}
+                  </p>
+                </div>
+              )}
+            </button>
+
+            {/* Logout — hidden when collapsed */}
+            {(isExpanded || mobileOpen) && (
+              <button
+                onClick={logout}
+                className="shrink-0 p-2 rounded-xl transition-all ml-1"
+                style={{ color: 'var(--cc-color-text-muted)' }}
+                title="Log out"
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = 'var(--cc-color-danger)';
+                  e.currentTarget.style.backgroundColor = 'var(--cc-color-danger-soft)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = 'var(--cc-color-text-muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <IconLogout size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      {/* ══════════════════════════════════════════════
+          MAIN CONTENT COLUMN
+      ══════════════════════════════════════════════ */}
+      <div className="cc-main">
         {/* ── Page content ── */}
         <main className="cc-scroll-area" id="main-content">
           <Outlet />
