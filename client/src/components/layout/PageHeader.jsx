@@ -59,6 +59,7 @@ export default function PageHeader({
 
   // Build the title node — optionally highlight an accent word with a gradient
   const renderTitle = () => {
+    if (!title) return null;
     if (!titleAccent || !title.includes(titleAccent)) {
       return <h1 className="text-display-lg font-heading text-cc leading-tight">{title}</h1>;
     }

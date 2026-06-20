@@ -485,6 +485,7 @@ export default {
         display: "var(--cc-font-heading)",
         body: "var(--cc-font-body)",
         mono: "var(--cc-font-family-mono)",
+        space: ['"Space Grotesk"', 'sans-serif'],
       },
       width: {
         sidebar: "var(--cc-sidebar-expanded)",
