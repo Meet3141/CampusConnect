@@ -39,15 +39,16 @@ export const verifyExternalEvent = (eventId) =>
  * Fetches all data needed for the platform analytics dashboard.
  * Returns a Promise.allSettled result array — callers handle individual failures.
  */
-export const fetchPlatformStats = () =>
-  Promise.allSettled([
-    api.get("/clubs",           { params: { limit: 200 } }),
-    api.get("/events",          { params: { limit: 200 } }),
-    api.get("/external-events", { params: { limit: 1 } }),
-    api.get("/external-events", { params: { limit: 1, verified: "true" } }),
-    api.get("/chats"),
-    api.get("/bookmarks"),
-  ]);
+  export const fetchPlatformStats = () =>
+    Promise.allSettled([
+      api.get("/clubs",           { params: { limit: 200 } }),
+      api.get("/events",          { params: { limit: 200 } }),
+      api.get("/external-events", { params: { limit: 1 } }),
+      api.get("/external-events", { params: { limit: 1, verified: "true" } }),
+      api.get("/chats"),
+      api.get("/bookmarks"),
+      api.get("/events/reviews"), // For governance stats
+    ]);
 
 /** GET /events/reviews — governance review dashboard */
 export const fetchReviewDashboard = () =>

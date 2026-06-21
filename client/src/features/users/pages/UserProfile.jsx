@@ -12,6 +12,7 @@ import { useUserProfile } from "../hooks";
 import { TechStackBadges } from "../techStack.jsx";
 import AchievementBadge, { BADGE_DEFINITIONS, deriveEarnedBadges } from "../../../components/ui/AchievementBadge";
 import PageContainer from "../../../components/layout/PageContainer";
+import GovernanceStatusBadge from "../../../components/ui/GovernanceStatusBadge";
 
 // ─── 12 Geometric SVG Avatars ────────────────────────────────────────────────
 const AVATARS = {
@@ -163,6 +164,8 @@ export default function UserProfile() {
   const allBadges = Object.values(BADGE_DEFINITIONS);
   const displayBadges = allBadges.filter(b => earnedIds.includes(b.id)).slice(0, 4);
 
+  const isAdmin = me?.roles?.includes("orgAdmin") || me?.roles?.includes("clubAdmin");
+
   return (
     <>
       <style>{`
@@ -281,6 +284,46 @@ export default function UserProfile() {
             <BentoCard title="Social Links">
               <PublicSocialLinks links={profile.socialLinks} email={profile.email} phone={profile.phone} />
             </BentoCard>
+
+            {/* ── Admin Only: Governance Status ── */}
+            {isAdmin && (
+              <BentoCard title="Governance Status" className="col-span-1 lg:col-span-2 border-[var(--cc-color-warning)] bg-[var(--cc-color-warning-soft)]">
+                <div className="flex flex-wrap gap-6 items-center">
+                  <div>
+                    <p className="text-xs text-[var(--cc-color-text-muted)] uppercase tracking-wider mb-2">Status</p>
+                    <GovernanceStatusBadge status={profile.disciplineStatus || "normal"} />
+                  </div>
+                  {profile.disciplineStatus === "probation" && profile.probationUntil && (
+                    <>
+                      <div>
+                        <p className="text-xs text-[var(--cc-color-text-muted)] uppercase tracking-wider mb-1">Probation Ends</p>
+                        <p className="font-medium text-[var(--cc-color-text-primary)]">{new Date(profile.probationUntil).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[var(--cc-color-text-muted)] uppercase tracking-wider mb-1">Remaining Days</p>
+                        <p className="font-medium text-[var(--cc-color-text-primary)]">{Math.max(0, Math.ceil((new Date(profile.probationUntil) - new Date()) / (1000 * 60 * 60 * 24)))} days</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[var(--cc-color-text-muted)] uppercase tracking-wider mb-1">Attendance Risk Level</p>
+                        <p className="font-bold text-[#e53935]">ZERO TOLERANCE</p>
+                      </div>
+                    </>
+                  )}
+                  {profile.disciplineStatus === "blocked" && profile.blockedUntil && (
+                    <div>
+                      <p className="text-xs text-[var(--cc-color-text-muted)] uppercase tracking-wider mb-1">Blocked Until</p>
+                      <p className="font-medium text-[var(--cc-color-text-primary)]">{new Date(profile.blockedUntil).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {["warning", "review", "blocked"].includes(profile.disciplineStatus) && (
+                    <div>
+                      <p className="text-xs text-[var(--cc-color-text-muted)] uppercase tracking-wider mb-1">Warnings</p>
+                      <p className="font-medium text-[var(--cc-color-text-primary)]">{profile.warningCount || 0}</p>
+                    </div>
+                  )}
+                </div>
+              </BentoCard>
+            )}
 
           </div>
         </PageContainer>

@@ -243,7 +243,7 @@ export const updateRoles = async (targetId, roles) => {
 
 export const getPublicProfile = async (userId) => {
   const user = await User.findById(userId)
-    .select("name email phone bio roles interests techStack profilePicture createdAt socialLinks")
+    .select("name email phone bio roles interests techStack profilePicture createdAt socialLinks disciplineStatus probationUntil warningCount blockedUntil reviewRequired")
     .lean();
   if (!user) {
     const err = new Error("User not found"); err.statusCode = 404; throw err;

@@ -71,6 +71,7 @@ export default function EventDetail() {
 
   const { event, setEvent, attendees, setAttendees, loading, error, bookmarkId, setBookmarkId } = useEventDetail(id, user);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showProbationModal, setShowProbationModal] = useState(false);
 
   /* ── Derived state ── */
   const myRsvp = attendees.find((a) => String(a.userId?._id || a.userId) === String(user?._id));
@@ -101,11 +102,10 @@ export default function EventDetail() {
     !isEventCreator &&
     !isClubAdminOfEvent &&
     !isVolunteer &&
-    // do not show direct apply button to regular members; they should use Volunteer Hub
     !user?.roles?.includes("member");
 
 
-  const handleRsvp = async () => {
+  const executeRsvp = async () => {
     setActionLoading(true);
     try {
       await rsvpEvent(id);
@@ -125,11 +125,20 @@ export default function EventDetail() {
         updated[index] = { ...updated[index], ...nextAttendee };
         return updated;
       });
+      setShowProbationModal(false);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to RSVP.");
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleRsvp = async () => {
+    if (user?.disciplineStatus === "probation") {
+      setShowProbationModal(true);
+      return;
+    }
+    await executeRsvp();
   };
 
   const handleCancelRsvp = async () => {
@@ -553,6 +562,36 @@ export default function EventDetail() {
         </div>
       )}
     </PageContainer>
+
+      {showProbationModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+          <div className="bg-[var(--cc-color-surface)] border border-[var(--cc-color-warning)] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-[fadeUp_0.3s_ease-out]">
+            <div className="bg-[var(--cc-color-warning-soft)] p-5 border-b border-[var(--cc-color-warning)] border-opacity-30">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">⚠️</span>
+                <h2 className="text-[var(--cc-color-warning)] font-bold text-lg m-0">Attendance Probation Notice</h2>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-[var(--cc-color-text-primary)] mb-4 leading-relaxed">
+                You may still register and attend events.
+              </p>
+              <p className="text-[var(--cc-color-text-primary)] mb-6 leading-relaxed font-semibold">
+                However, any additional unexcused absence during probation may result in an immediate attendance block.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button className="px-4 py-2 rounded-lg font-medium text-[var(--cc-color-text-secondary)] border border-[var(--cc-color-border-subtle)] hover:bg-[var(--cc-color-surface-hover)] transition-colors cursor-pointer" onClick={() => setShowProbationModal(false)}>
+                  Cancel
+                </button>
+                <button className="px-4 py-2 rounded-lg font-medium bg-[var(--cc-color-warning)] text-white hover:opacity-90 transition-opacity cursor-pointer" onClick={executeRsvp} disabled={actionLoading}>
+                  {actionLoading ? "Confirming..." : "Confirm RSVP"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

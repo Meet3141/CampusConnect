@@ -132,7 +132,7 @@ export default function AdminStats() {
   /* ── Derived analytics ── */
   const analytics = useMemo(() => {
     if (!data) return null;
-    const { clubs, events, extTotal, extVerif, chats, bookmarks } = data;
+    const { clubs, events, extTotal, extVerif, chats, bookmarks, governance } = data;
 
     const clubsByCategory = clubs.reduce((acc, c) => {
       acc[c.category] = (acc[c.category] || 0) + 1;
@@ -160,6 +160,7 @@ export default function AdminStats() {
       extVerif,
       chatTotal:        chats.length,
       bookmarkTotal:    bookmarks.length,
+      governance:       governance || {},
       totalActiveMembers,
       upcomingCount,
       clubsByCategory:  Object.entries(clubsByCategory).map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count),
@@ -222,6 +223,14 @@ export default function AdminStats() {
           <StatsCard icon={CheckCircle2}  value={<CountUp target={a.extVerif} />}      label="Verified"        sub={`${a.extTotal - a.extVerif} still pending`}  accent="emerald" />
           <StatsCard icon={MessageCircle} value={<CountUp target={a.chatTotal} />}     label="Active Chats"    sub="club + event chats"                        accent="sky"     />
           <StatsCard icon={Bookmark}      value={<CountUp target={a.bookmarkTotal} />} label="Bookmarks"       sub="saved by users"                            accent="rose"    />
+        </div>
+
+        {/* ── Governance Stat cards ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatsCard icon={Bookmark} value={<CountUp target={a.governance.warningUsers || 0} />} label="Current Warning Users" sub="warning state" accent="amber" />
+          <StatsCard icon={Bookmark} value={<CountUp target={a.governance.reviewUsers || 0} />} label="Current Review Users" sub="review required" accent="amber" />
+          <StatsCard icon={Bookmark} value={<CountUp target={a.governance.blockedUsers || 0} />} label="Current Blocked Users" sub="currently blocked" accent="rose" />
+          <StatsCard icon={Bookmark} value={<CountUp target={a.governance.probationUsers || 0} />} label="Current Probation Users" sub="zero tolerance" accent="amber" />
         </div>
 
         {/* ── Charts row ── */}

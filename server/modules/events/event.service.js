@@ -302,21 +302,28 @@ export const getEventAnalytics = async ({ id }) => {
 };
 
 export const getReviewDashboard = async () => {
-  const [pendingGraceRequests, reviewRequiredUsers, blockedUsers] = await Promise.all([
+  const [pendingGraceRequests, reviewRequiredUsers, blockedUsers, probationUsers] = await Promise.all([
     GraceRequest.find({ status: "pending" })
       .populate({ path: "eventId", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
-      .populate("userId", "name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil")
+      .populate("userId", "name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil probationUntil")
       .sort({ createdAt: -1 })
       .lean(),
     User.find({ disciplineStatus: { $in: ["warning", "review"] } })
-      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked")
+      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked probationUntil archivedMissedEvents")
       .populate({ path: "missedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
       .sort({ warningCount: -1, updatedAt: -1 })
       .lean(),
     User.find({ isBlocked: true })
-      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked")
+      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked probationUntil archivedMissedEvents")
       .populate({ path: "missedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
+      .populate({ path: "archivedMissedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
       .sort({ blockedUntil: 1 })
+      .lean(),
+    User.find({ disciplineStatus: "probation" })
+      .select("name email warningCount missedEvents disciplineStatus reviewRequired blockedUntil isBlocked probationUntil archivedMissedEvents")
+      .populate({ path: "missedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
+      .populate({ path: "archivedMissedEvents", select: "title date status clubId", populate: { path: "clubId", select: "name" } })
+      .sort({ probationUntil: 1 })
       .lean(),
   ]);
 
@@ -324,10 +331,13 @@ export const getReviewDashboard = async () => {
     pendingGraceRequests,
     reviewRequiredUsers,
     blockedUsers,
+    probationUsers,
     summary: {
       pendingGraceRequests: pendingGraceRequests.length,
-      reviewRequiredUsers: reviewRequiredUsers.length,
+      warningUsers: reviewRequiredUsers.filter(u => u.disciplineStatus === "warning").length,
+      reviewUsers: reviewRequiredUsers.filter(u => u.disciplineStatus === "review").length,
       blockedUsers: blockedUsers.length,
+      probationUsers: probationUsers.length,
     },
   };
 };

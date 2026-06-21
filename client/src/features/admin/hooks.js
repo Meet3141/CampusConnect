@@ -90,7 +90,7 @@ export const useAdminStats = (canView) => {
     if (!canView) return;
 
     const load = async () => {
-      const [clubsRes, eventsRes, extAllRes, extVerifiedRes, chatsRes, bkRes] =
+      const [clubsRes, eventsRes, extAllRes, extVerifiedRes, chatsRes, bkRes, govRes] =
         await fetchPlatformStats();
 
       setData({
@@ -100,6 +100,7 @@ export const useAdminStats = (canView) => {
         extVerif:  extVerifiedRes.status === "fulfilled" ? extVerifiedRes.value.data.meta?.total  || 0 : 0,
         chats:     chatsRes.status    === "fulfilled" ? chatsRes.value.data.data    || [] : [],
         bookmarks: bkRes.status       === "fulfilled" ? bkRes.value.data.data       || [] : [],
+        governance:govRes?.status     === "fulfilled" ? govRes.value.data.data?.summary || {} : {},
       });
       setLoading(false);
     };

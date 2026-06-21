@@ -10,6 +10,7 @@ import { fetchReviewDashboard } from "../api";
 import api from "../../../services/api";
 import PageHeader from "../../../components/layout/PageHeader";
 import PageContainer from "../../../components/layout/PageContainer";
+import GovernanceStatusBadge from "../../../components/ui/GovernanceStatusBadge";
 
 const STATUS_BADGE = {
   normal: "bg-[var(--cc-color-success-soft)] text-[var(--cc-color-success)] border-[var(--cc-color-success)]",
@@ -24,6 +25,7 @@ const VIEW_OPTIONS = [
   { value: "warningsOnly", label: "Warnings only" },
   { value: "gracePending", label: "Grace pending" },
   { value: "blocked", label: "Blocked users" },
+  { value: "probation", label: "Probation" },
 ];
 
 function getClubMeta(club) {
@@ -118,9 +120,20 @@ export default function ReviewDashboard() {
     };
   }), [data]);
 
+  const probation = useMemo(() => (data?.probationUsers || []).map((student) => {
+    const { clubIds, clubNames, primaryClubId, primaryClubName } = getStudentClubMeta(student);
+    return {
+      ...student,
+      clubIds,
+      clubNames,
+      clubId: primaryClubId,
+      clubName: primaryClubName,
+    };
+  }), [data]);
+
   const clubs = useMemo(() => {
     const map = new Map();
-    [...rows, ...blocked].forEach((item) => {
+    [...rows, ...blocked, ...probation].forEach((item) => {
       const ids = Array.isArray(item.clubIds) ? item.clubIds : [];
       const names = Array.isArray(item.clubNames) ? item.clubNames : [];
       ids.forEach((id, index) => {
@@ -137,7 +150,7 @@ export default function ReviewDashboard() {
       }
     });
     return [...map.entries()].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [rows, requests, blocked]);
+  }, [rows, requests, blocked, probation]);
 
   const visibleRows = useMemo(() => {
     let filtered = rows;
@@ -145,7 +158,7 @@ export default function ReviewDashboard() {
       filtered = filtered.filter((student) => student.disciplineStatus === "warning");
     } else if (view === "pendingReview") {
       filtered = filtered.filter((student) => student.disciplineStatus === "review" || student.reviewRequired);
-    } else if (view === "blocked") {
+    } else if (view === "blocked" || view === "probation") {
       filtered = [];
     }
     if (clubFilter !== "all") {
@@ -175,6 +188,17 @@ export default function ReviewDashboard() {
     }
     return filtered;
   }, [blocked, view, clubFilter]);
+
+  const visibleProbation = useMemo(() => {
+    let filtered = probation;
+    if (view !== "all" && view !== "probation") {
+      filtered = [];
+    }
+    if (clubFilter !== "all") {
+      filtered = filtered.filter((student) => Array.isArray(student.clubIds) && student.clubIds.includes(clubFilter));
+    }
+    return filtered;
+  }, [probation, view, clubFilter]);
 
   const reviewUser = async (user, action, eventId, extra = {}) => {
     const key = `${user._id}-${action}`;
@@ -228,10 +252,11 @@ export default function ReviewDashboard() {
       />
       <PageContainer className="py-6 space-y-6">
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5"><p className="text-sm text-cc-muted">Pending Grace</p><p className="text-3xl font-bold mt-1">{data?.summary?.pendingGraceRequests || 0}</p></div>
         <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5"><p className="text-sm text-cc-muted">Review Required</p><p className="text-3xl font-bold mt-1">{data?.summary?.reviewRequiredUsers || 0}</p></div>
         <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5"><p className="text-sm text-cc-muted">Blocked</p><p className="text-3xl font-bold mt-1">{data?.summary?.blockedUsers || 0}</p></div>
+        <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-5"><p className="text-sm text-cc-muted">Probation</p><p className="text-3xl font-bold mt-1">{data?.summary?.probationUsers || 0}</p></div>
       </div>
 
       <div className="rounded-2xl border border-cc-soft bg-cc-surface-weak p-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -334,7 +359,30 @@ export default function ReviewDashboard() {
                 <p className="font-medium">{student.name}</p>
                 <p className="text-sm text-cc-muted">Warnings: {student.warningCount || 0} · Until: {student.blockedUntil ? new Date(student.blockedUntil).toLocaleDateString() : "n/a"} · Club: {student.clubNames?.join(", ") || "Unknown club"}</p>
               </div>
-              <span className={`px-3 py-1 rounded-full border text-xs ${STATUS_BADGE.blocked}`}>Blocked</span>
+              <GovernanceStatusBadge status="blocked" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-cc-soft overflow-hidden">
+        <div className="px-5 py-3 border-b border-[var(--cc-color-warning)] bg-[var(--cc-color-warning-soft)]">
+          <h2 className="font-semibold text-[var(--cc-color-warning)]">Students on Probation</h2>
+        </div>
+        <div className="divide-y divide-cc-soft">
+          {visibleProbation.length === 0 ? (
+            <div className="px-5 py-8 text-cc-muted text-sm">No students on probation.</div>
+          ) : visibleProbation.map((student) => (
+            <div key={student._id} className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p className="font-medium">{student.name}</p>
+                <p className="text-sm text-cc-muted">
+                  Probation Ends: {student.probationUntil ? new Date(student.probationUntil).toLocaleDateString() : "n/a"} · 
+                  Archived Misses: {student.archivedMissedEvents?.length || 0} · 
+                  Club: {student.clubNames?.join(", ") || "Unknown club"}
+                </p>
+              </div>
+              <GovernanceStatusBadge status="probation" />
             </div>
           ))}
         </div>

@@ -81,6 +81,7 @@ function DashboardPageHeader({ name, onCreateEvent, onBrowseClubs, onOpenChats }
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showProbationBanner, setShowProbationBanner] = useState(() => !sessionStorage.getItem("probationBannerDismissed"));
 
   const { myClubs, events, ongoingEvents, chats, bookmarks, loading, stats } = useDashboardData(user);
   const {
@@ -117,6 +118,39 @@ export default function Dashboard() {
         onBrowseClubs={() => navigate("/clubs")}
         onOpenChats={() => navigate("/chats")}
       />
+
+      {/* ── Probation Banner ── */}
+      {user?.disciplineStatus === "probation" && showProbationBanner && user.probationUntil && new Date(user.probationUntil) > new Date() && (
+        <div className="cc-content-wrapper mt-6 relative">
+          <div className="rounded-xl border border-[var(--cc-color-warning)] bg-[var(--cc-color-warning-soft)] p-5 flex flex-col md:flex-row gap-4 items-start md:items-center relative">
+            <button 
+              onClick={() => {
+                sessionStorage.setItem("probationBannerDismissed", "true");
+                setShowProbationBanner(false);
+              }}
+              className="absolute top-3 right-3 text-[var(--cc-color-warning)] opacity-70 hover:opacity-100 text-lg cursor-pointer"
+            >
+              ×
+            </button>
+            <span className="text-3xl">⚠️</span>
+            <div className="flex-1">
+              <h3 className="text-[var(--cc-color-warning)] font-bold text-lg mb-1.5">Attendance Probation Active</h3>
+              <p className="text-sm text-[var(--cc-color-warning)] opacity-95 mb-0">
+                You are currently under a 30-day attendance probation period.
+              </p>
+              <p className="text-sm text-[var(--cc-color-warning)] opacity-95 mb-0 font-semibold">
+                Any unexcused absence may result in an immediate attendance block.
+              </p>
+            </div>
+            <div className="flex flex-col gap-1 md:items-end mt-2 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-[var(--cc-color-warning)] border-opacity-20 md:border-l md:pl-5 min-w-[140px]">
+              <p className="text-xs text-[var(--cc-color-warning)] uppercase tracking-wider mb-0">Probation Ends:</p>
+              <p className="font-mono font-medium text-[var(--cc-color-warning)] mb-2 text-sm">{new Date(user.probationUntil).toLocaleDateString()}</p>
+              <p className="text-xs text-[var(--cc-color-warning)] uppercase tracking-wider mb-0">Remaining Days:</p>
+              <p className="font-mono font-bold text-[var(--cc-color-warning)] text-sm">{Math.max(0, Math.ceil((new Date(user.probationUntil) - new Date()) / (1000 * 60 * 60 * 24)))}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Activity pulse strip ── */}
       <ActivityStrip stats={stats} />
