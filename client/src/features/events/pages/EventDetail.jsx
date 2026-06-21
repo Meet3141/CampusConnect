@@ -332,6 +332,7 @@ export default function EventDetail() {
   const durationMs = (d && end) ? Math.max(0, end.getTime() - d.getTime()) : 0;
 
   return (
+    <>
     <PageContainer inset className="text-[var(--cc-color-text-primary)]">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl mb-6">

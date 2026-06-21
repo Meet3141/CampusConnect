@@ -10,6 +10,7 @@
  *   5. Dashboard split: events (with live indicator + capacity bar) + chats/bookmarks
  */
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bookmark, Building2, CalendarDays, MessageCircle, Radio } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
