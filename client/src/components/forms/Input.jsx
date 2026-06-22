@@ -14,9 +14,9 @@ import { AlertCircle } from "lucide-react";
 /* ── Base: semantic surface + border tokens, no raw dark opacity hacks ── */
 const INPUT_BASE = [
   "input-standard w-full rounded-xl text-sm transition-all duration-150 focus:outline-none",
-  "bg-white border border-border-subtle",
-  "text-brand placeholder:text-text-muted",
-  "focus:border-border-focus focus:ring-2 focus:ring-border-focus/20",
+  "bg-surface-weak border border-border-subtle",
+  "text-text-primary placeholder:text-text-muted",
+  "focus:bg-surface focus:border-border-focus focus:ring-2 focus:ring-border-focus/20",
 ].join(" ");
 
 const SIZE_CLS = {
