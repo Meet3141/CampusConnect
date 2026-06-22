@@ -142,7 +142,7 @@ const eventSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-eventSchema.pre("validate", function (next) {
+eventSchema.pre("validate", function () {
   if (this.attendancePolicy) {
     const threshold = this.attendancePolicy.noShowThreshold || 2;
     const limit = this.attendancePolicy.warningLimit || 3;
@@ -150,7 +150,6 @@ eventSchema.pre("validate", function (next) {
       this.invalidate("attendancePolicy.warningLimit", "Warning limit must be at least no-show threshold + 2");
     }
   }
-  next();
 });
 
 eventSchema.index({ clubId: 1 });
